@@ -14,7 +14,6 @@ import { SchoolManagementSection } from './components/SchoolManagementSection';
 import { AdmissionsSection } from './components/AdmissionsSection';
 import { ResultsSection } from './components/ResultsSection';
 import { NewsEventsSection } from './components/NewsEventsSection';
-import { FAQSection } from './components/FAQSection';
 import { GallerySection } from './components/GallerySection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
@@ -220,13 +219,7 @@ function MainSchoolApp() {
         {/* 11. News & Events */}
         <NewsEventsSection />
 
-        {/* 12. Frequently Asked Questions (FAQ) */}
-        <FAQSection
-          onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
-          onNavigate={handleNavigate}
-        />
-
-        {/* 13. Gallery */}
+        {/* 12. Gallery */}
         <GallerySection />
 
         {/* 13. Contact */}

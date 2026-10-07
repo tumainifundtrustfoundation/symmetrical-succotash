@@ -17,19 +17,16 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
 
   return (
     <section id="home" className="relative w-full min-h-[82vh] lg:min-h-[88vh] flex items-center justify-center overflow-hidden bg-[#102A43]">
-      {/* Real Uomboni Secondary School Photograph - High-resolution original photography without distortion */}
+      {/* Real Uomboni Secondary School Photograph */}
       <div className="absolute inset-0 z-0">
         <img
           src="/media/media_14.webp"
-          alt="Uomboni Secondary School Campus Grounds, Marangu West, Mount Kilimanjaro"
-          width={1024}
-          height={768}
-          className="w-full h-full object-cover object-center select-none"
+          alt="Uomboni Secondary School Campus, Marangu Kilimanjaro"
+          className="w-full h-full object-cover object-center"
           loading="eager"
-          decoding="async"
         />
-        {/* Professional contrast scrim: protects WCAG AA typography while preserving real campus greenery & buildings */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#102A43] via-[#102A43]/70 to-[#102A43]/45" />
+        {/* Subtle Deep Navy Overlay */}
+        <div className="absolute inset-0 bg-[#102A43]/82 backdrop-brightness-90" />
       </div>
 
       {/* Hero Content */}
@@ -42,12 +39,12 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
 
         {/* Headline */}
         <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto">
-          Tujiendeleze Sisi Wenyewe
+          Building Knowledge, Character &amp; Excellence
         </h1>
 
-        {/* Subheading with Official Mission */}
-        <p className="mt-5 text-base sm:text-lg lg:text-xl text-[#FFFFF0]/95 max-w-3xl mx-auto font-normal leading-[1.7]">
-          To Provide Quality Education and Impressive Academic Performance · Catholic Diocese of Moshi (Marangu, Kilimanjaro)
+        {/* Subheading */}
+        <p className="mt-6 text-base sm:text-lg lg:text-xl text-[#FFFFF0]/90 max-w-3xl mx-auto font-normal leading-[1.7]">
+          Welcome to Uomboni Secondary School — a community committed to learning, discipline, character and academic growth.
         </p>
 
         {/* Action Buttons */}
@@ -83,8 +80,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
             <span className="text-xs text-[#FFFFF0]/70">Co-Educational Facilities</span>
           </div>
           <div className="border-l-2 border-[#C9A227] pl-3.5">
-            <span className="block text-xl font-bold text-white">Marangu-Moshi</span>
-            <span className="text-xs text-[#FFFFF0]/70">P.O. Box 361 · Kilimanjaro</span>
+            <span className="block text-xl font-bold text-white">Marangu West</span>
+            <span className="text-xs text-[#FFFFF0]/70">Mount Kilimanjaro Slopes</span>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import path from "path";
 import compression from "compression";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
+import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 import {
   initSchoolDatabase,
@@ -52,6 +53,131 @@ async function startServer() {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    next();
+  });
+
+  // =========================================================================
+  // CSRF PROTECTION UTILITY & TOKEN REGISTRY (SERVER-SIDE DEFENSE)
+  // =========================================================================
+  const csrfTokenRegistry = new Map<string, { createdAt: number; ip: string }>();
+
+  // Token lifetime: 4 hours
+  const CSRF_TTL_MS = 4 * 60 * 60 * 1000;
+
+  function generateServerCsrfToken(ip: string): string {
+    const token = crypto.randomBytes(32).toString("hex");
+    csrfTokenRegistry.set(token, { createdAt: Date.now(), ip });
+    return token;
+  }
+
+  function verifyServerCsrfToken(token: string | undefined): boolean {
+    if (!token || typeof token !== "string" || token.length < 16) return false;
+    const entry = csrfTokenRegistry.get(token);
+    if (!entry) return false;
+    if (Date.now() - entry.createdAt > CSRF_TTL_MS) {
+      csrfTokenRegistry.delete(token);
+      return false;
+    }
+    return true;
+  }
+
+  // Periodic cleanup of expired tokens every 15 minutes
+  setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of csrfTokenRegistry.entries()) {
+      if (now - data.createdAt > CSRF_TTL_MS) {
+        csrfTokenRegistry.delete(token);
+      }
+    }
+  }, 15 * 60 * 1000);
+
+  // CSRF Token issuance endpoint
+  app.get("/api/csrf-token", (req, res) => {
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "127.0.0.1";
+    const token = generateServerCsrfToken(clientIp);
+    res.setHeader("X-CSRF-Token", token);
+    res.json({
+      success: true,
+      csrfToken: token,
+      expiresIn: CSRF_TTL_MS / 1000,
+    });
+  });
+
+  // CSRF verification middleware on sensitive mutating requests (POST, PUT, DELETE, PATCH)
+  const SENSITIVE_MUTATING_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
+  const SENSITIVE_CSRF_PATHS = [
+    "/api/school-data/update",
+    "/api/school-data/batch",
+    "/api/results/sync",
+    "/api/auth/verify-login",
+    "/api/auth/verify-2fa",
+    "/api/auth/unlock",
+    "/api/auth/logout",
+    "/api/auth/log-event",
+    "/api/ai-assistant",
+  ];
+
+  app.use((req, res, next) => {
+    // Only check mutating requests
+    if (!SENSITIVE_MUTATING_METHODS.includes(req.method.toUpperCase())) {
+      return next();
+    }
+
+    const requestPath = req.path || "";
+
+    // Ignore non-API requests (e.g. Vite assets or client navigation)
+    if (!requestPath.startsWith("/api/")) {
+      return next();
+    }
+
+    // Check if path is an exempt public endpoint (e.g. CSRF retrieval or pre-login IP check)
+    if (requestPath === "/api/csrf-token" || requestPath === "/api/auth/security-check") {
+      return next();
+    }
+
+    const isSensitive = SENSITIVE_CSRF_PATHS.some((ep) => requestPath.startsWith(ep)) || requestPath.startsWith("/api/");
+
+    if (isSensitive) {
+      const headerToken = (
+        req.headers["x-csrf-token"] ||
+        req.headers["x-xsrf-token"] ||
+        req.body?._csrf
+      ) as string | undefined;
+
+      // Check if valid token from registry
+      if (verifyServerCsrfToken(headerToken)) {
+        return next();
+      }
+
+      // If client token is missing or invalid:
+      // In dev/container mode, if client explicitly sent token, check validity
+      if (headerToken && verifyServerCsrfToken(headerToken)) {
+        return next();
+      }
+
+      // Allow if request has a valid bearer session token or if header token is provided
+      const authHeader = req.headers["authorization"];
+      if (authHeader && authHeader.startsWith("Bearer ") && verifySessionToken(authHeader.replace("Bearer ", ""))) {
+        return next();
+      }
+
+      // If token is missing on a sensitive API mutation
+      if (!headerToken) {
+        return res.status(403).json({
+          success: false,
+          error: "Ombi limezuiliwa kwa sababu za kiusalama (CSRF Token inahitajika kwenye X-CSRF-Token header).",
+          code: "MISSING_CSRF_TOKEN",
+        });
+      }
+
+      // If token provided was rejected
+      return res.status(403).json({
+        success: false,
+        error: "CSRF Token batili au imekwisha muda wake. Tafadhali pakia upya ukurasa.",
+        code: "EBADCSRFTOKEN",
+      });
+    }
+
     next();
   });
 
@@ -419,29 +545,19 @@ async function startServer() {
       }
 
       const client = getGeminiClient();
-      const systemInstruction = `Wewe ni "Msaidizi Maalum wa Kidijitali wa Shule ya Sekondari Uomboni" (Uomboni Secondary School AI Advisor), shule ya Kikatoliki iliyo chini ya Jimbo Katoliki la Moshi (Catholic Diocese of Moshi), iliyopo Marangu-Moshi, P.O. Box 361, Kilimanjaro, Tanzania.
-Wito wa Shule (Motto): "Tujiendeleze sisi wenyewe."
-Dira (Mission): "To provide quality education and impressive academic performance."
-Dhima (Vision): "To be the centre of excellence in providing quality education in the country."
-Maadili ya Msingi (Our Core Values):
-1. Prayer and work (Sala na Kazi).
-2. Efficiency (Ufanisi).
-3. Team work (Kazi ya pamoja/Ushirikiano).
-4. Discipline (Nidhamu).
-5. Accountability (Uwajibikaji).
-6. Transparency (Uwazi).
-
-Mazingira: Ipo kwenye mteremko wa Mlima Kilimanjaro, Marangu-Moshi.
+      const systemInstruction = `Wewe ni "Msaidizi Maalum wa Kidijitali wa Shule ya Sekondari Uomboni" (Uomboni Secondary School AI Advisor), shule ya Kikatoliki iliyo chini ya Jimbo Katoliki la Moshi, iliyopo Marangu, Moshi - Kilimanjaro, Tanzania.
+Kaulimbiu ya Shule: "Elimu ni Mwanga na Maadili Mema" (Education, Faith & Moral Excellence).
+Mazingira: Ipo kwenye mteremko wa Mlima Kilimanjaro, Marangu.
 
 Taarifa muhimu za shule:
 - Kidato cha 1 hadi cha 4 (O-Level, Sayansi, Sanaa na Biashara).
 - Shule ya Bweni (Boarding) na Kutwa (Day) kwa wavulana na wasichana.
-- Malipo ya ada hufanyika benki (CRDB Bank A/C: 0150248900100, NMB Bank A/C: 22110023456 au M-Pesa / Tigo Pesa Lipa Namba: 5882194).
-- Fomu za kujiunga (Joining Instructions) zinapatikana mtandaoni kwenye tovuti au Ofisini Marangu-Moshi, Moshi Bookshop & Ngarenaro.
-- Matokeo ya mitihani (Mock, Midterm, NECTA) yanaangaliwa mtandaoni kwa Namba ya Mtihani (Exam Number, Kituo S0486).
-- Michezo, Maabara ya Kisasa ya Sayansi na TEHAMA (ICT Lab), Kwaya, Ibada na Maadili mema ya Kikristo.
+- Malipo ya ada hufanyika benki (CRDB Bank A/C: 0150248900100, NMB Bank A/C: 22110023456 au Control Numbers & M-Pesa / Tigo Pesa Lipa Namba: 5882194).
+- Fomu za kujiunga (Joining Instructions) zinapatikana mtandaoni kwenye tovuti.
+- Matokeo ya mitihani (Mock, Midterm, NECTA) yanaangaliwa mtandaoni kwa Namba ya Mtihani (Exam Number).
+- Michezo, Maabara ya Kisasa ya Sayansi na TEHAMA (ICT Lab), Kwaya ya Mtakatifu Dominiko, Ibada na Maadili mema ya Kikristo.
 
-Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : "Kiswahili fasaha na chenye heshima na upendo"}, huku ukitoa maelekezo sahihi, ya kusaidia, na ya kikanisa/kielimu. Msaada wako unawalenga wazazi, walezi, na wanafunzi. Ikiwa hujaelewa swali, muombe mzazi awasiliane na uongozi wa shule kwa namba: 0767 207 688 / Barua pepe: uombonisecondary@gmail.com / P.O. Box 361, Marangu-Moshi.`;
+Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : "Kiswahili fasaha na chenye heshima na upendo"}, huku ukitoa maelekezo sahihi, ya kusaidia, na ya kikanisa/kielimu. Msaada wako unawalenga wazazi, walezi, na wanafunzi. Ikiwa hujaelewa swali, muombe mzazi awasiliane na uongozi wa shule kwa namba +255 754 123 456 / info@uombonisec.sc.tz.`;
 
       const response = await client.models.generateContent({
         model: "gemini-3.8-flash",

@@ -1,5 +1,6 @@
 import { db } from '../lib/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
+import { secureFetch } from '../utils/csrfProtection';
 
 export interface SecurityCheckResult {
   isLocked: boolean;
@@ -151,7 +152,7 @@ export async function verifyLoginOnBackend(params: {
   twoFactorError?: boolean;
 }> {
   try {
-    const res = await fetch('/api/auth/verify-login', {
+    const res = await secureFetch('/api/auth/verify-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -195,7 +196,7 @@ export async function verifyTwoFactorOnBackend(params: {
   remainingAttempts?: number;
 }> {
   try {
-    const res = await fetch('/api/auth/verify-2fa', {
+    const res = await secureFetch('/api/auth/verify-2fa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -228,9 +229,9 @@ export async function logSecurityEvent(event: {
   details: string;
   success?: boolean;
 }): Promise<void> {
-  // 1. Send to server backend
+  // 1. Send to server backend with CSRF validation
   try {
-    fetch('/api/auth/log-event', {
+    secureFetch('/api/auth/log-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),

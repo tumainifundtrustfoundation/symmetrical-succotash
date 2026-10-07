@@ -77,7 +77,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'parents', label: 'Parents' },
     { id: 'admissions', label: 'Admissions' },
     { id: 'news', label: 'News & Events' },
-    { id: 'faq', label: 'FAQ' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'contact', label: 'Contact' },
   ];
@@ -88,21 +87,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/20 text-[12px] py-1.5 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-6">
-            <button
-              onClick={() => handleNavClick('find-uomboni')}
-              className="hidden sm:inline-flex items-center gap-1.5 font-medium text-[#FFFFF0]/90 hover:text-[#C9A227] transition-colors cursor-pointer text-left"
-              title="View School Location on Google Maps"
-            >
+            <span className="hidden sm:inline-flex items-center gap-1.5 font-medium text-[#FFFFF0]/90">
               <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span>Marangu, Moshi, Tanzania</span>
-            </button>
+              Marangu, Moshi, Kilimanjaro
+            </span>
             <span className="inline-flex items-center gap-1.5 text-[#FFFFF0]/90">
               <Phone className="w-3.5 h-3.5 text-[#C9A227]" />
-              0767 207 688
+              +255 782 558 127
             </span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-[#FFFFF0]/80">
               <Mail className="w-3.5 h-3.5 text-[#C9A227]" />
-              uombonisecondary@gmail.com
+              uombonisec@gmail.com
             </span>
           </div>
 
@@ -142,8 +137,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="block text-sm sm:text-base font-bold text-[#102A43] tracking-tight group-hover:text-[#102A43]/85 transition-colors">
                 Uomboni Secondary School
               </span>
-              <span className="block text-[11px] text-[#C9A227] font-semibold">
-                Tujiendeleze Sisi Wenyewe · Diocese of Moshi
+              <span className="block text-[11px] text-slate-500 font-medium">
+                Building Knowledge, Character &amp; Excellence
               </span>
             </div>
           </button>

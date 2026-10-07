@@ -51,9 +51,11 @@ import {
   seedInstitutionSchemaFoundation,
   DEFAULT_SCHOOL_SETTINGS,
 } from '../../services/schoolFirestoreService';
+import { useCsrfProtection } from '../../hooks/useCsrfProtection';
 
 export const AdminDashboard: React.FC = () => {
   const { user, userProfile, updateUserRoleByAdmin } = useAuth();
+  const { csrfToken, validateRequest } = useCsrfProtection();
   const [activeAdminTab, setActiveAdminTab] = useState<
     'users' | 'students' | 'teachers' | 'academics' | 'exams' | 'announcements' | 'settings'
   >('users');

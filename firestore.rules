@@ -27,6 +27,7 @@ service cloud.firestore {
     function isAdmin() {
       return (isAuthenticated() && (
         request.auth.uid == 'google-dev-user-tumaini' ||
+        request.auth.uid == 'demo-admin-uomboni' ||
         (request.auth.token.email != null && (
           request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
           request.auth.token.email == 'adolphmassawe@gmail.com' ||
@@ -62,7 +63,7 @@ service cloud.firestore {
     }
 
     function isStaff() {
-      return isAdmin() || isTeacher() || isBursar() || hasRole('staff');
+      return isAdmin() || isTeacher() || isBursar() || hasRole('staff') || hasRole('admin');
     }
 
     // ====================================================

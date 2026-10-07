@@ -46,13 +46,8 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
         <img
           src={logoSrc}
           alt="Official School Logo of Uomboni Secondary School (Catholic Diocese of Moshi — Prayer, Education, Work)"
-          width={1024}
-          height={1024}
-          className="w-full h-full object-contain select-none transition-transform"
-          style={{
-            aspectRatio: '1 / 1',
-            imageRendering: 'auto',
-          }}
+          className="w-full h-full object-contain select-none"
+          style={{ aspectRatio: '1 / 1' }}
           loading="eager"
           decoding="async"
           onError={() => {
