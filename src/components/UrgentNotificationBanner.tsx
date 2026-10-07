@@ -45,7 +45,7 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
   const tickerItems = useMemo<TickerItem[]>(() => {
     const items: TickerItem[] = [];
 
-    // 1. Active urgent alerts first
+    // 1. Active urgent alerts first (marked as urgent)
     const activeAlerts = (alerts || []).filter((a) => a.active);
     activeAlerts.forEach((alert) => {
       items.push({
@@ -68,7 +68,7 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
           id: `news-${n.id}`,
           text: language === 'sw' ? n.titleSw : n.titleEn,
           category: n.category ? n.category.toUpperCase() : (language === 'sw' ? 'HABARI' : 'NEWS'),
-          isUrgent: false,
+          isUrgent: !!n.featured,
           action: 'news',
           linkText: language === 'sw' ? 'Soma Zaidi' : 'Read More',
         });
@@ -82,19 +82,19 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
           id: 'def-1',
           text:
             language === 'sw'
-              ? 'Uhamisho wa Kidato cha 2 & 3 Unaendelea. Pakua fomu na maelekezo ya kujiunga sasa.'
-              : 'Form 2 & 3 Student Transfers Ongoing. Download joining instructions and application forms now.',
-          category: language === 'sw' ? 'UHAMISHO' : 'TRANSFERS',
+              ? 'Nafasi za Kidato cha 1 (2026) na Uhamisho wa Kidato cha 2 & 3 Ziko Wazi Shule ya Sekondari Uomboni (NECTA S0486).'
+              : 'Form 1 (2026) Admissions and Form 2 & 3 Student Transfers Now Open at Uomboni Secondary School (NECTA S0486).',
+          category: language === 'sw' ? 'UDAHILI' : 'ADMISSIONS',
           isUrgent: true,
           action: 'admissions',
-          linkText: language === 'sw' ? 'Pakua Fomu' : 'Download Forms',
+          linkText: language === 'sw' ? 'Fomu za Kujiunga' : 'Admissions Form',
         },
         {
           id: 'def-2',
           text:
             language === 'sw'
-              ? 'Matokeo Rasmi ya NECTA CSEE: Kituo S0486 Uomboni chapata ufaulu mzuri wa madaraja ya juu (Div I, II na III).'
-              : 'Official NECTA CSEE Results: Center S0486 Uomboni achieves high performance in Division I, II and III.',
+              ? 'Matokeo Rasmi ya NECTA CSEE: Kituo S0486 Uomboni chashika nafasi za juu na ufaulu wa madaraja I, II na III.'
+              : 'Official NECTA CSEE Results: Center S0486 Uomboni registers high performance across Divisions I, II and III.',
           category: 'NECTA',
           isUrgent: false,
           action: 'results',
@@ -104,12 +104,12 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
           id: 'def-3',
           text:
             language === 'sw'
-              ? 'Matangazo ya Shule: Nafasi za Udahili Kidato cha Kwanza 2026 za Bweni na Kutwa ziko wazi.'
-              : 'School Announcements: Form One 2026 Boarding and Day admissions are now open.',
-          category: language === 'sw' ? 'MATANGAZO' : 'ANNOUNCEMENTS',
+              ? 'Ufunguzi wa Maabara ya Kisasa ya Sayansi na TEHAMA kwa Mafunzo ya Vitendo ya Kompyuta na Sayansi.'
+              : 'Commissioning of Modern Science and ICT Laboratory for Practical STEM Learning and Digital Skills.',
+          category: language === 'sw' ? 'TEHAMA' : 'ICT LAB',
           isUrgent: false,
-          action: 'admissions',
-          linkText: language === 'sw' ? 'Fomu za Kujiunga' : 'Admission Forms',
+          action: 'news',
+          linkText: language === 'sw' ? 'Soma Zaidi' : 'Read More',
         }
       );
     }
@@ -144,21 +144,21 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
       id="top-school-news-ticker"
       role="region"
       aria-label={language === 'sw' ? 'Habari na Matangazo ya Shule' : 'School News and Announcements'}
-      className="w-full bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/30 shadow-xs relative z-50 overflow-hidden select-none"
+      className="w-full bg-[#0B2A5B] text-[#FFFFFF] border-b border-[#174A8B] shadow-xs relative z-50 overflow-hidden select-none"
     >
       <div className="w-full max-w-7xl mx-auto flex items-center h-9 sm:h-10 px-2 sm:px-4">
         {/* =========================================================================
             1. FIXED LEFT BADGE: [ 📢 TAARIFA ]
            ========================================================================= */}
-        <div className="flex items-center gap-1.5 shrink-0 bg-[#102A43] text-[#FFFFF0] py-1 pr-2.5 sm:pr-3.5 border-r border-[#C9A227]/30 font-bold text-[11px] sm:text-xs uppercase tracking-wider z-20">
-          <Megaphone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" aria-hidden="true" />
-          <span className="font-bold text-white tracking-wide">
+        <div className="flex items-center gap-1.5 shrink-0 bg-[#0B2A5B] text-[#FFFFFF] py-1 pr-2.5 sm:pr-3.5 border-r border-[#174A8B] font-bold text-[11px] sm:text-xs uppercase tracking-wider z-20">
+          <Megaphone className="w-3.5 h-3.5 text-[#C62828] shrink-0" aria-hidden="true" />
+          <span className="font-bold text-[#FFFFFF] tracking-wide">
             {language === 'sw' ? 'TAARIFA' : 'NEWS'}
           </span>
         </div>
 
         {/* Subtle gradient separator on left */}
-        <div className="w-3 sm:w-5 h-full bg-gradient-to-r from-[#102A43] to-transparent z-10 shrink-0 pointer-events-none" />
+        <div className="w-3 sm:w-5 h-full bg-gradient-to-r from-[#0B2A5B] to-transparent z-10 shrink-0 pointer-events-none" />
 
         {/* =========================================================================
             2. ANIMATED NEWS CONTENT (Moving Right to Left)
@@ -168,19 +168,25 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
             /* ACCESSIBILITY: Display latest announcement statically without continuous animation */
             <div
               onClick={() => handleActionClick(primaryUrgent.action)}
-              className="flex items-center gap-2 px-2 text-xs text-[#FFFFF0] truncate cursor-pointer group"
+              className="flex items-center gap-2 px-2 text-xs text-[#FFFFFF] truncate cursor-pointer group"
             >
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#C9A227]/20 text-[#C9A227] border border-[#C9A227]/40">
+              <span
+                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  primaryUrgent.isUrgent
+                    ? 'bg-[#C62828] text-[#FFFFFF]'
+                    : 'bg-[#174A8B] text-[#FFFFFF]'
+                }`}
+              >
                 {primaryUrgent.category}
               </span>
-              <span className="truncate font-medium group-hover:text-[#C9A227] transition-colors">
+              <span className="truncate font-medium group-hover:text-[#F5F7FA] transition-colors">
                 {primaryUrgent.text}
               </span>
             </div>
           ) : (
             /* CONTINUOUS SMOOTH TICKER TRACK (Right to Left) */
             <div
-              className="news-ticker-track flex items-center gap-8 sm:gap-12 text-xs sm:text-[13px] font-medium text-[#FFFFF0] py-1"
+              className="news-ticker-track flex items-center gap-8 sm:gap-12 text-xs sm:text-[13px] font-medium text-[#FFFFFF] py-1"
               style={{ animationDuration: `${animationDurationSeconds}s` }}
             >
               {/* Set 1 */}
@@ -190,13 +196,19 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
                   onClick={() => handleActionClick(item.action)}
                   className="flex items-center gap-2 shrink-0 cursor-pointer group"
                 >
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#C9A227]/20 text-[#C9A227] border border-[#C9A227]/40 group-hover:bg-[#C9A227] group-hover:text-[#102A43] transition-colors">
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      item.isUrgent
+                        ? 'bg-[#C62828] text-[#FFFFFF]'
+                        : 'bg-[#174A8B] text-[#FFFFFF] group-hover:bg-[#123A6E]'
+                    }`}
+                  >
                     {item.category}
                   </span>
-                  <span className="text-[#FFFFF0] group-hover:text-[#C9A227] transition-colors whitespace-nowrap">
+                  <span className="text-[#FFFFFF] group-hover:text-[#F5F7FA] transition-colors whitespace-nowrap">
                     {item.text}
                   </span>
-                  <span className="text-[#C9A227] font-bold mx-2 select-none">•</span>
+                  <span className="text-[#174A8B] font-bold mx-2 select-none">•</span>
                 </div>
               ))}
 
@@ -207,13 +219,19 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
                   onClick={() => handleActionClick(item.action)}
                   className="flex items-center gap-2 shrink-0 cursor-pointer group"
                 >
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#C9A227]/20 text-[#C9A227] border border-[#C9A227]/40 group-hover:bg-[#C9A227] group-hover:text-[#102A43] transition-colors">
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      item.isUrgent
+                        ? 'bg-[#C62828] text-[#FFFFFF]'
+                        : 'bg-[#174A8B] text-[#FFFFFF] group-hover:bg-[#123A6E]'
+                    }`}
+                  >
                     {item.category}
                   </span>
-                  <span className="text-[#FFFFF0] group-hover:text-[#C9A227] transition-colors whitespace-nowrap">
+                  <span className="text-[#FFFFFF] group-hover:text-[#F5F7FA] transition-colors whitespace-nowrap">
                     {item.text}
                   </span>
-                  <span className="text-[#C9A227] font-bold mx-2 select-none">•</span>
+                  <span className="text-[#174A8B] font-bold mx-2 select-none">•</span>
                 </div>
               ))}
             </div>
@@ -221,27 +239,27 @@ export const UrgentNotificationBanner: React.FC<UrgentNotificationBannerProps> =
         </div>
 
         {/* Subtle gradient separator on right */}
-        <div className="w-3 sm:w-5 h-full bg-gradient-to-l from-[#102A43] to-transparent z-10 shrink-0 pointer-events-none" />
+        <div className="w-3 sm:w-5 h-full bg-gradient-to-l from-[#0B2A5B] to-transparent z-10 shrink-0 pointer-events-none" />
 
         {/* =========================================================================
             3 & 4. FIXED RIGHT ELEMENTS: [ HARAKA ] [ Important Link ]
            ========================================================================= */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 bg-[#102A43] pl-2 sm:pl-3 border-l border-[#C9A227]/30 z-20">
-          {/* [ HARAKA ] Badge */}
-          <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded font-bold text-[10px] sm:text-[11px] bg-[#C9A227] text-[#102A43] uppercase tracking-wider shadow-2xs shrink-0">
-            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#102A43]" aria-hidden="true" />
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 bg-[#0B2A5B] pl-2 sm:pl-3 border-l border-[#174A8B] z-20">
+          {/* [ HARAKA ] Badge in Professional Red #C62828 */}
+          <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded font-bold text-[10px] sm:text-[11px] bg-[#C62828] text-[#FFFFFF] uppercase tracking-wider shadow-2xs shrink-0">
+            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFFFFF]" aria-hidden="true" />
             <span>{language === 'sw' ? 'HARAKA' : 'URGENT'}</span>
           </span>
 
-          {/* [ Important Link ] */}
+          {/* [ Important Link ] Button with Secondary Blue #174A8B */}
           <button
             onClick={() => handleActionClick(actionTarget)}
-            className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-[#FFFFF0] hover:text-[#C9A227] bg-[#FFFFF0]/10 hover:bg-[#FFFFF0]/20 border border-[#C9A227]/40 px-2 sm:px-2.5 py-1 rounded transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-[#FFFFFF] hover:text-[#FFFFFF] bg-[#174A8B] hover:bg-[#123A6E] border border-white/20 px-2 sm:px-2.5 py-1 rounded transition-colors cursor-pointer shrink-0"
             title={actionLabel}
           >
             <span className="hidden xs:inline">{actionLabel}</span>
             <span className="xs:hidden">Fomu</span>
-            <ArrowRight className="w-3 h-3 text-[#C9A227]" aria-hidden="true" />
+            <ArrowRight className="w-3 h-3 text-[#FFFFFF]" aria-hidden="true" />
           </button>
         </div>
       </div>

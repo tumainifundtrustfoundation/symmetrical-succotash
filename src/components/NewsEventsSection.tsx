@@ -2,11 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Calendar,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
   X,
   FileText,
-  CheckCircle2,
-  Share2,
+  Clock,
   Sparkles,
+  Layers,
+  BookOpen,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -29,6 +34,14 @@ interface NewsEventsSectionProps {
   onNavigate?: (sectionId: string) => void;
 }
 
+/**
+ * UPDATES & HIGHLIGHTS — BLUE + RED COLOR PALETTE (Strict Specification)
+ * - Primary Deep Blue:   #0B2A5B (Headings, Main Controls, Read Full Story, Borders)
+ * - Secondary Blue:      #174A8B (Secondary Controls, Labels, Hover States)
+ * - Professional Red:    #C62828 (SPARINGLY: "HARAKA", Urgent Badges, Active Slide Dot)
+ * - White:               #FFFFFF (Card backgrounds, Content, Button Text)
+ * - Light Gray:          #F5F7FA (Subtle backgrounds, Light borders)
+ */
 export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
   onOpenAdmissions,
   onNavigate,
@@ -36,10 +49,19 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
   const { language } = useLanguage();
   const isSwahili = language === 'sw';
 
+  // Carousel State
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+
+  // Filter & Modal State
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedModalItem, setSelectedModalItem] = useState<NewsItem | null>(null);
+  const [showAllGrid, setShowAllGrid] = useState<boolean>(false);
 
-  // Animation and viewport intersection states
+  // Viewport & Accessibility
   const sectionRef = useRef<HTMLElement>(null);
   const [hasEntered, setHasEntered] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
@@ -50,16 +72,12 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
 
-    const listener = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
+    const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', listener);
     } else {
       mediaQuery.addListener(listener);
     }
-
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', listener);
@@ -69,11 +87,9 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
     };
   }, []);
 
-  // IntersectionObserver: Triggers the entrance animation once when the section enters the viewport
+  // IntersectionObserver: trigger section entrance only once
   useEffect(() => {
     if (typeof window === 'undefined' || !sectionRef.current) return;
-
-    // If reduced motion is preferred, immediately show content
     if (prefersReducedMotion) {
       setHasEntered(true);
       return;
@@ -84,47 +100,18 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setHasEntered(true);
-            // Trigger entrance only once; do not replay on scroll
             observer.disconnect();
           }
         });
       },
-      {
-        threshold: 0.15,
-        rootMargin: '0px 0px -40px 0px',
-      }
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
     );
 
     observer.observe(sectionRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [prefersReducedMotion]);
 
-  // Handle ESC key for modal dialog
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedModalItem) {
-        setSelectedModalItem(null);
-      }
-    },
-    [selectedModalItem]
-  );
-
-  useEffect(() => {
-    if (selectedModalItem) {
-      window.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [selectedModalItem, handleKeyDown]);
-
+  // Authentic Uomboni Secondary School News Records
   const newsItems: NewsItem[] = [
     {
       id: 'news-1',
@@ -225,6 +212,76 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
     },
   ];
 
+  // Progressive image preloading for next slide
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const nextIdx = (currentIndex + 1) % newsItems.length;
+    const img = new Image();
+    img.src = newsItems[nextIdx].imageUrl;
+  }, [currentIndex, newsItems]);
+
+  // Smooth slide change with crossfade & vertical settling (450ms)
+  const changeSlide = useCallback(
+    (newIndex: number) => {
+      if (isTransitioning) return;
+      if (prefersReducedMotion) {
+        setCurrentIndex(newIndex);
+        return;
+      }
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex(newIndex);
+        setIsTransitioning(false);
+      }, 220);
+    },
+    [isTransitioning, prefersReducedMotion]
+  );
+
+  const handleNext = useCallback(() => {
+    changeSlide((currentIndex + 1) % newsItems.length);
+  }, [changeSlide, currentIndex, newsItems.length]);
+
+  const handlePrev = useCallback(() => {
+    changeSlide((currentIndex - 1 + newsItems.length) % newsItems.length);
+  }, [changeSlide, currentIndex, newsItems.length]);
+
+  // Automatic Rotation: 7 seconds (pause on click, hover, or focus)
+  useEffect(() => {
+    if (isPaused || isHovered || isFocused || prefersReducedMotion) return;
+
+    const timer = setInterval(() => {
+      handleNext();
+    }, 7000);
+
+    return () => clearInterval(timer);
+  }, [isPaused, isHovered, isFocused, prefersReducedMotion, handleNext]);
+
+  // Handle ESC for modal
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedModalItem) {
+        setSelectedModalItem(null);
+      }
+    },
+    [selectedModalItem]
+  );
+
+  useEffect(() => {
+    if (selectedModalItem) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedModalItem, handleKeyDown]);
+
+  const currentNews = newsItems[currentIndex] || newsItems[0];
+  const isUrgent = currentNews.category === 'Announcements' || currentNews.featured;
+
   const categories = [
     'All',
     'Announcements',
@@ -243,23 +300,21 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
     <section
       ref={sectionRef}
       id="news"
-      className="py-20 sm:py-24 bg-[#FFFFF0] relative overflow-hidden"
+      className="py-16 sm:py-20 lg:py-24 bg-[#F5F7FA] relative overflow-hidden border-t border-b border-[#E2E8F0]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ================================================================= */}
-        {/* SECTION HEADER — SMOOTH ENTRANCE FADE-IN & STAGGER               */}
-        {/* ================================================================= */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        {/* =========================================================================
+            SECTION HEADER — DOMINANT DEEP BLUE #0B2A5B WITH SUBTLE RED ACCENT
+           ========================================================================= */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div className="max-w-2xl">
-            {/* 1. Heading 'Updates & Highlights' fades in smoothly (0.5s ease-out) */}
+            {/* Small Label using Secondary Blue #174A8B */}
             <span
-              className="text-xs font-semibold text-[#C9A227] tracking-wider block mb-2 uppercase"
+              className="text-xs font-semibold text-[#174A8B] tracking-wider block mb-2 uppercase"
               style={{
                 opacity: prefersReducedMotion || hasEntered ? 1 : 0,
                 transform:
-                  prefersReducedMotion || hasEntered
-                    ? 'translateY(0)'
-                    : 'translateY(12px)',
+                  prefersReducedMotion || hasEntered ? 'translateY(0)' : 'translateY(10px)',
                 transition: prefersReducedMotion
                   ? 'none'
                   : 'opacity 0.5s ease-out, transform 0.5s ease-out',
@@ -268,14 +323,13 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
               {isSwahili ? 'Habari na Taarifa Muhimu' : 'Updates & Highlights'}
             </span>
 
+            {/* Main News Heading using Deep Blue #0B2A5B */}
             <h2
-              className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#102A43] tracking-tight leading-[1.2]"
+              className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0B2A5B] tracking-tight leading-[1.2]"
               style={{
                 opacity: prefersReducedMotion || hasEntered ? 1 : 0,
                 transform:
-                  prefersReducedMotion || hasEntered
-                    ? 'translateY(0)'
-                    : 'translateY(14px)',
+                  prefersReducedMotion || hasEntered ? 'translateY(0)' : 'translateY(12px)',
                 transition: prefersReducedMotion
                   ? 'none'
                   : 'opacity 0.5s ease-out, transform 0.5s ease-out',
@@ -284,15 +338,13 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
               {isSwahili ? 'Habari & Matukio ya Shule' : 'Updates & Highlights'}
             </h2>
 
-            {/* 2. Subtitle fades in slightly after the heading (0.6s ease-out, 0.15s delay) */}
+            {/* Subtitle */}
             <p
               className="mt-3 text-sm sm:text-base text-slate-700 leading-[1.75] font-normal"
               style={{
                 opacity: prefersReducedMotion || hasEntered ? 1 : 0,
                 transform:
-                  prefersReducedMotion || hasEntered
-                    ? 'translateY(0)'
-                    : 'translateY(14px)',
+                  prefersReducedMotion || hasEntered ? 'translateY(0)' : 'translateY(12px)',
                 transition: prefersReducedMotion
                   ? 'none'
                   : 'opacity 0.6s ease-out 0.15s, transform 0.6s ease-out 0.15s',
@@ -304,132 +356,363 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
             </p>
           </div>
 
-          {/* Clean Segmented Filter Controls */}
-          <div
-            className="flex flex-wrap items-center gap-1.5 p-1 bg-white rounded-md border border-slate-200 shadow-2xs"
-            style={{
-              opacity: prefersReducedMotion || hasEntered ? 1 : 0,
-              transform:
-                prefersReducedMotion || hasEntered
-                  ? 'translateY(0)'
-                  : 'translateY(12px)',
-              transition: prefersReducedMotion
-                ? 'none'
-                : 'opacity 0.5s ease-out 0.22s, transform 0.5s ease-out 0.22s',
-            }}
-          >
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#102A43] text-white font-semibold'
-                    : 'text-slate-600 hover:text-[#102A43] hover:bg-slate-50'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Quick Toggle for All News Grid */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowAllGrid(!showAllGrid)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F5F7FA] text-[#0B2A5B] border border-[#0B2A5B]/30 hover:border-[#174A8B] text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              <Layers className="w-3.5 h-3.5 text-[#174A8B]" />
+              <span>
+                {showAllGrid
+                  ? isSwahili
+                    ? 'Ficha Orodha'
+                    : 'Collapse Grid'
+                  : isSwahili
+                  ? 'Tazama Habari Zote'
+                  : 'All News'}
+              </span>
+            </button>
           </div>
         </div>
 
-        {/* ================================================================= */}
-        {/* NEWS / HIGHLIGHT CARDS GRID WITH STAGGERED ENTRANCE               */}
-        {/* ================================================================= */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredItems.map((item, index) => {
-            // 3. Staggered animation: Card 1 -> Card 2 -> Card 3 -> Card 4...
-            // Timing: 0.6s each with 120ms stagger delay (between 100-150ms)
-            const staggerDelay = prefersReducedMotion ? 0 : 0.25 + index * 0.12;
-
-            return (
-              <article
-                key={item.id}
-                onClick={() => setSelectedModalItem(item)}
-                className="news-card-animated bg-white rounded-lg border border-[#102A43]/10 overflow-hidden shadow-xs flex flex-col justify-between group cursor-pointer"
+        {/* =========================================================================
+            NEWS CAROUSEL — BLUE + RED COLOR SYSTEM & SMOOTH CROSSFADE ANIMATION
+           ========================================================================= */}
+        <div
+          role="region"
+          aria-roledescription="carousel"
+          aria-label={isSwahili ? 'Habari Muhimu za Shule' : 'Featured School News Carousel'}
+          className="bg-white rounded-xl border border-[#0B2A5B]/20 shadow-md overflow-hidden relative"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onFocusCapture={() => setIsFocused(true)}
+          onBlurCapture={() => setIsFocused(false)}
+        >
+          {/* Main Carousel Grid: Responsive for Mobile, Tablet, Desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[420px] lg:min-h-[460px]">
+            {/* -------------------------------------------------------------
+                IMAGE AREA (Mobile: Image First | Desktop: Left 6 columns)
+               ------------------------------------------------------------- */}
+            <div className="lg:col-span-6 relative overflow-hidden bg-[#0B2A5B] min-h-[260px] sm:min-h-[320px] lg:min-h-full">
+              {/* Image Crossfade Container */}
+              <div
+                className="w-full h-full relative"
                 style={{
-                  opacity: prefersReducedMotion || hasEntered ? 1 : 0,
-                  transform:
-                    prefersReducedMotion || hasEntered
-                      ? 'translateY(0)'
-                      : 'translateY(16px)',
+                  opacity: isTransitioning ? 0.25 : 1,
                   transition: prefersReducedMotion
                     ? 'none'
-                    : `opacity 0.6s ease-out ${staggerDelay}s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}s, box-shadow 0.35s ease, border-color 0.35s ease`,
+                    : 'opacity 500ms ease-out',
                 }}
               >
-                <div>
-                  {/* Real Image Container with gentle 1.00 -> 1.03 hover zoom */}
-                  <div className="aspect-16/10 overflow-hidden bg-slate-100 relative">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="news-card-image w-full h-full object-cover"
-                      loading="lazy"
-                      width={800}
-                      height={500}
-                    />
+                <img
+                  src={currentNews.imageUrl}
+                  alt={isSwahili && currentNews.titleSw ? currentNews.titleSw : currentNews.title}
+                  className="w-full h-full object-cover object-center select-none"
+                  width={800}
+                  height={520}
+                  loading="eager"
+                  decoding="async"
+                />
 
-                    {/* Category pill indicator */}
-                    <div className="absolute top-3 left-3 bg-[#102A43]/90 text-white text-[11px] font-semibold px-2.5 py-1 rounded backdrop-blur-xs shadow-xs">
-                      {item.category}
-                    </div>
-                  </div>
+                {/* Scrim with Deep Blue gradient for academic elegance */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B2A5B]/90 via-[#0B2A5B]/30 to-transparent pointer-events-none" />
+              </div>
 
-                  {/* Content */}
-                  <div className="p-6">
-                    {/* Unboxed metadata */}
-                    <div className="flex items-center gap-2 text-xs text-slate-500 mb-2.5">
-                      <span className="font-semibold text-[#C9A227]">
-                        {item.category}
-                      </span>
-                      <span aria-hidden="true" className="text-slate-300">
-                        ·
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        {item.date}
-                      </span>
-                    </div>
+              {/* Category Badges on Image (Red for Urgent/Important, Secondary Blue for others) */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                {isUrgent ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#C62828] text-white text-[11px] font-bold uppercase tracking-wider shadow-xs border border-white/20">
+                    <Sparkles className="w-3 h-3 text-white" />
+                    <span>{isSwahili ? 'HARAKA' : 'URGENT'}</span>
+                  </span>
+                ) : null}
 
-                    <h3 className="text-base font-bold text-[#102A43] leading-snug group-hover:text-[#102A43]/85 transition-colors line-clamp-2">
-                      {isSwahili && item.titleSw ? item.titleSw : item.title}
-                    </h3>
+                <span className="px-2.5 py-1 rounded bg-[#0B2A5B]/90 text-white text-[11px] font-semibold tracking-wide backdrop-blur-xs border border-white/15 shadow-xs">
+                  {currentNews.category}
+                </span>
+              </div>
 
-                    <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
-                      {isSwahili && item.excerptSw ? item.excerptSw : item.excerpt}
-                    </p>
-                  </div>
-                </div>
+              {/* Status Ribbon on bottom of Image */}
+              <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between text-white text-[11px]">
+                <span className="flex items-center gap-1.5 font-medium text-white/90">
+                  <Calendar className="w-3.5 h-3.5 text-white/80" />
+                  <span>{currentNews.date}</span>
+                </span>
 
-                <div className="px-6 pb-6 pt-0">
-                  <span className="text-xs font-semibold text-[#102A43] group-hover:text-[#C9A227] inline-flex items-center gap-1.5 transition-colors">
-                    <span>
-                      {isSwahili ? 'Soma Tangazo Kamili' : 'Read Announcement'}
+                <span className="text-white/80 font-mono text-[10px]">
+                  NECTA Center: S0486
+                </span>
+              </div>
+            </div>
+
+            {/* -------------------------------------------------------------
+                CONTENT AREA (Mobile: Category/Date -> Headline -> Description -> Buttons -> Controls)
+               ------------------------------------------------------------- */}
+            <div className="lg:col-span-6 p-6 sm:p-8 lg:p-10 flex flex-col justify-between bg-white">
+              {/* Upper Content Block with Animated Fade & Slide Up */}
+              <div className="space-y-4">
+                {/* 1. Category & Date Header (Metadata appears subtly) */}
+                <div
+                  className="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-[#E2E8F0]"
+                  style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transform: isTransitioning ? 'translateY(6px)' : 'translateY(0)',
+                    transition: prefersReducedMotion
+                      ? 'none'
+                      : 'opacity 400ms ease-out, transform 400ms ease-out',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`font-semibold ${
+                        isUrgent ? 'text-[#C62828]' : 'text-[#174A8B]'
+                      }`}
+                    >
+                      {currentNews.category}
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    <span className="text-slate-300">·</span>
+                    <span className="flex items-center gap-1 text-slate-600">
+                      <Clock className="w-3 h-3 text-[#174A8B]" />
+                      <span>{currentNews.date}</span>
+                    </span>
+                  </div>
+
+                  <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-[#F5F7FA] text-[#174A8B] border border-[#E2E8F0]">
+                    {currentIndex + 1} / {newsItems.length}
                   </span>
                 </div>
-              </article>
-            );
-          })}
+
+                {/* 2. Headline in Primary Deep Blue #0B2A5B (Fades and slides upward slightly) */}
+                <h3
+                  onClick={() => setSelectedModalItem(currentNews)}
+                  className="font-serif text-xl sm:text-2xl lg:text-[26px] font-bold text-[#0B2A5B] hover:text-[#174A8B] transition-colors leading-[1.3] cursor-pointer"
+                  style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transform: isTransitioning ? 'translateY(10px)' : 'translateY(0)',
+                    transition: prefersReducedMotion
+                      ? 'none'
+                      : 'opacity 460ms ease-out 40ms, transform 460ms ease-out 40ms',
+                  }}
+                >
+                  {isSwahili && currentNews.titleSw ? currentNews.titleSw : currentNews.title}
+                </h3>
+
+                {/* 3. Description follows smoothly */}
+                <p
+                  className="text-sm sm:text-base text-slate-700 leading-[1.7] font-normal"
+                  style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transform: isTransitioning ? 'translateY(8px)' : 'translateY(0)',
+                    transition: prefersReducedMotion
+                      ? 'none'
+                      : 'opacity 500ms ease-out 80ms, transform 500ms ease-out 80ms',
+                  }}
+                >
+                  {isSwahili && currentNews.excerptSw ? currentNews.excerptSw : currentNews.excerpt}
+                </p>
+              </div>
+
+              {/* -----------------------------------------------------------
+                  4. BUTTONS & 5. CAROUSEL CONTROLS
+                 ----------------------------------------------------------- */}
+              <div className="pt-6 mt-6 border-t border-[#E2E8F0] space-y-4">
+                {/* Action Buttons Row */}
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Read Full Story Button: Deep Blue #0B2A5B, White text */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedModalItem(currentNews)}
+                    className="px-5 py-2.5 bg-[#0B2A5B] hover:bg-[#071F43] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>{isSwahili ? 'Soma Habari Kamili' : 'Read Full Story'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* All News Button: Secondary Blue Outline / Light Gray */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAllGrid(!showAllGrid)}
+                    className="px-4 py-2.5 bg-[#F5F7FA] hover:bg-[#E2E8F0] text-[#174A8B] border border-[#174A8B]/30 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{isSwahili ? 'Habari Zote →' : 'All News →'}</span>
+                  </button>
+                </div>
+
+                {/* Carousel Navigation Controls Row */}
+                <div
+                  className="flex items-center justify-between gap-3 pt-2"
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                >
+                  {/* Slide Indicators: Red #C62828 for active, Deep Blue tint for inactive */}
+                  <div className="flex items-center gap-1.5">
+                    {newsItems.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => changeSlide(idx)}
+                        aria-label={`Slide ${idx + 1}`}
+                        className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                          currentIndex === idx
+                            ? 'w-7 bg-[#C62828]'
+                            : 'w-2.5 bg-[#0B2A5B]/20 hover:bg-[#174A8B]/60'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Carousel Buttons: Previous, Play/Pause, Next */}
+                  <div className="flex items-center gap-2">
+                    {/* Pause / Play Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsPaused(!isPaused)}
+                      title={
+                        isPaused
+                          ? isSwahili
+                            ? 'Endelea (Play)'
+                            : 'Resume Auto Rotation'
+                          : isSwahili
+                          ? 'Simamisha (Pause)'
+                          : 'Pause Auto Rotation'
+                      }
+                      className="w-8 h-8 rounded-md bg-[#F5F7FA] hover:bg-[#0B2A5B] text-[#0B2A5B] hover:text-white border border-[#0B2A5B]/30 flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {/* Previous Button: Deep Blue border/hover */}
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      aria-label="Previous News"
+                      className="w-8 h-8 rounded-md bg-[#F5F7FA] hover:bg-[#0B2A5B] text-[#0B2A5B] hover:text-white border border-[#0B2A5B]/30 flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Next Button: Deep Blue border/hover */}
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      aria-label="Next News"
+                      className="w-8 h-8 rounded-md bg-[#F5F7FA] hover:bg-[#0B2A5B] text-[#0B2A5B] hover:text-white border border-[#0B2A5B]/30 flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* =========================================================================
+            "ALL NEWS" EXPANDABLE GRID (Clean Academic Presentation)
+           ========================================================================= */}
+        {showAllGrid && (
+          <div className="mt-12 pt-8 border-t border-[#E2E8F0] animate-in fade-in duration-300">
+            {/* Filter Tabs using Deep Blue #0B2A5B & Secondary Blue #174A8B */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <h4 className="font-serif text-lg font-bold text-[#0B2A5B]">
+                {isSwahili ? 'Mkusanyiko Kamili wa Habari' : 'All School Bulletins'}
+              </h4>
+
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white rounded-md border border-[#E2E8F0] shadow-2xs">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors cursor-pointer ${
+                      selectedCategory === cat
+                        ? 'bg-[#0B2A5B] text-white font-semibold'
+                        : 'text-slate-600 hover:text-[#0B2A5B] hover:bg-[#F5F7FA]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Grid of Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item) => {
+                const itemIsUrgent = item.category === 'Announcements' || item.featured;
+                return (
+                  <article
+                    key={item.id}
+                    onClick={() => setSelectedModalItem(item)}
+                    className="bg-white rounded-lg border border-[#0B2A5B]/15 overflow-hidden shadow-xs hover:shadow-md hover:border-[#174A8B] transition-all flex flex-col justify-between group cursor-pointer"
+                  >
+                    <div>
+                      {/* Image */}
+                      <div className="aspect-16/10 overflow-hidden bg-slate-100 relative">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-2.5 left-2.5">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              itemIsUrgent
+                                ? 'bg-[#C62828] text-white'
+                                : 'bg-[#0B2A5B] text-white'
+                            }`}
+                          >
+                            {item.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+                          <Calendar className="w-3 h-3 text-[#174A8B]" />
+                          <span>{item.date}</span>
+                        </div>
+
+                        <h5 className="font-serif text-base font-bold text-[#0B2A5B] leading-snug group-hover:text-[#174A8B] transition-colors line-clamp-2">
+                          {isSwahili && item.titleSw ? item.titleSw : item.title}
+                        </h5>
+
+                        <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+                          {isSwahili && item.excerptSw ? item.excerptSw : item.excerpt}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="px-5 pb-5 pt-0">
+                      <span className="text-xs font-semibold text-[#0B2A5B] group-hover:text-[#174A8B] inline-flex items-center gap-1 transition-colors">
+                        <span>{isSwahili ? 'Soma Habari Kamili' : 'Read Full Story'}</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ================================================================= */}
-      {/* ANNOUNCEMENT DETAIL DIALOG / MODAL                                */}
-      {/* ================================================================= */}
+      {/* =========================================================================
+          FULL STORY DETAIL MODAL (Deep Blue Header, Red Accent, Accessible)
+         ========================================================================= */}
       {selectedModalItem && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="announcement-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
           onClick={() => setSelectedModalItem(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#102A43]/20 relative"
+            className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#0B2A5B]/20 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Image Header */}
@@ -439,24 +722,30 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
                 alt={selectedModalItem.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B2A5B]/90 via-[#0B2A5B]/30 to-transparent" />
 
               <button
                 type="button"
                 onClick={() => setSelectedModalItem(null)}
                 aria-label="Close Announcement Dialog"
-                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="absolute bottom-4 left-6 right-6 text-white">
-                <span className="inline-block px-2.5 py-0.5 rounded bg-[#C9A227] text-[#102A43] text-[11px] font-bold uppercase tracking-wider mb-2">
+                <span
+                  className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider mb-2 ${
+                    selectedModalItem.category === 'Announcements' || selectedModalItem.featured
+                      ? 'bg-[#C62828] text-white'
+                      : 'bg-[#174A8B] text-white'
+                  }`}
+                >
                   {selectedModalItem.category}
                 </span>
                 <h3
                   id="announcement-modal-title"
-                  className="font-serif text-lg sm:text-2xl font-bold leading-snug drop-shadow-xs"
+                  className="font-serif text-lg sm:text-2xl font-bold leading-snug text-white"
                 >
                   {isSwahili && selectedModalItem.titleSw
                     ? selectedModalItem.titleSw
@@ -466,10 +755,10 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
             </div>
 
             {/* Modal Content Body */}
-            <div className="p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-3 text-xs text-slate-500 pb-4 border-b border-slate-100">
-                <span className="flex items-center gap-1.5 font-medium text-[#102A43]">
-                  <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
+            <div className="p-6 sm:p-8 space-y-5 bg-white">
+              <div className="flex items-center gap-3 text-xs text-slate-500 pb-4 border-b border-[#E2E8F0]">
+                <span className="flex items-center gap-1.5 font-medium text-[#0B2A5B]">
+                  <Calendar className="w-3.5 h-3.5 text-[#174A8B]" />
                   {selectedModalItem.date}
                 </span>
                 <span>•</span>
@@ -477,7 +766,7 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
               </div>
 
               <div className="text-sm text-slate-700 leading-relaxed space-y-4">
-                <p className="font-medium text-[#102A43]">
+                <p className="font-semibold text-[#0B2A5B]">
                   {isSwahili && selectedModalItem.excerptSw
                     ? selectedModalItem.excerptSw
                     : selectedModalItem.excerpt}
@@ -490,7 +779,7 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3">
                 {selectedModalItem.category === 'Announcements' && onOpenAdmissions ? (
                   <button
                     type="button"
@@ -498,9 +787,9 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
                       setSelectedModalItem(null);
                       onOpenAdmissions();
                     }}
-                    className="px-5 py-2.5 bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                    className="px-5 py-2.5 bg-[#0B2A5B] hover:bg-[#071F43] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <FileText className="w-3.5 h-3.5 text-[#C9A227]" />
+                    <FileText className="w-3.5 h-3.5" />
                     <span>
                       {isSwahili ? 'Tuma Maombi ya Kujiunga' : 'Apply for Admission'}
                     </span>
@@ -512,7 +801,7 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
                       setSelectedModalItem(null);
                       if (onNavigate) onNavigate('contact');
                     }}
-                    className="px-5 py-2.5 bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                    className="px-5 py-2.5 bg-[#0B2A5B] hover:bg-[#071F43] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <span>
                       {isSwahili ? 'Wasiliana na Ofisi ya Shule' : 'Contact Administration'}
@@ -523,7 +812,7 @@ export const NewsEventsSection: React.FC<NewsEventsSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedModalItem(null)}
-                  className="px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-md transition-colors cursor-pointer"
+                  className="px-4 py-2 border border-slate-300 hover:bg-[#F5F7FA] text-slate-700 text-xs font-medium rounded-md transition-colors cursor-pointer"
                 >
                   {isSwahili ? 'Funga' : 'Close'}
                 </button>
