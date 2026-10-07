@@ -47,6 +47,18 @@ export interface UseCsrfProtectionReturn {
    * Checks if an endpoint and method pair is considered sensitive
    */
   isSensitive: (url: string, method?: string) => boolean;
+  /**
+   * Validates that a sensitive form submission contains a valid CSRF token
+   */
+  validateFormSubmit: (
+    providedToken?: string
+  ) => Promise<{ valid: boolean; token: string; error?: string }>;
+  /**
+   * Injects the active CSRF token into a sensitive form payload or object
+   */
+  attachCsrfPayload: <T extends Record<string, any>>(
+    payload: T
+  ) => Promise<T & { _csrf: string }>;
 }
 
 /**
@@ -190,6 +202,47 @@ export function useCsrfProtection(): UseCsrfProtectionReturn {
     return requiresCsrfProtection(url, method);
   }, []);
 
+  /**
+   * Validates that a sensitive form submission contains a valid CSRF token.
+   * Throws an error or returns false if token is missing or compromised.
+   */
+  const validateFormSubmit = useCallback(
+    async (providedToken?: string): Promise<{ valid: boolean; token: string; error?: string }> => {
+      try {
+        const activeToken = providedToken || csrfToken || (await getToken());
+        if (!activeToken || activeToken.length < 16) {
+          return {
+            valid: false,
+            token: '',
+            error: 'Ulinzi wa CSRF: Token ya usalama haijathibitishwa. Tafadhali jaribu tena.',
+          };
+        }
+        return { valid: true, token: activeToken };
+      } catch (err: any) {
+        return {
+          valid: false,
+          token: '',
+          error: err?.message || 'Hitilafu ya ukaguzi wa CSRF token.',
+        };
+      }
+    },
+    [csrfToken, getToken]
+  );
+
+  /**
+   * Injects the active CSRF token into a sensitive form payload or object
+   */
+  const attachCsrfPayload = useCallback(
+    async <T extends Record<string, any>>(payload: T): Promise<T & { _csrf: string }> => {
+      const token = await getToken();
+      return {
+        ...payload,
+        _csrf: token,
+      };
+    },
+    [getToken]
+  );
+
   return {
     csrfToken,
     isLoading,
@@ -200,6 +253,8 @@ export function useCsrfProtection(): UseCsrfProtectionReturn {
     secureFetch,
     getCsrfHeaders,
     isSensitive,
+    validateFormSubmit,
+    attachCsrfPayload,
   };
 }
 

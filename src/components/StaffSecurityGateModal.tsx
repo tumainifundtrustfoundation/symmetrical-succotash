@@ -21,9 +21,11 @@ import {
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { CsrfTokenInput } from './CsrfTokenInput';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { signInWithGoogle, logOutFromFirebase, getUserProfile } from '../lib/firebase';
+import { useCsrfProtection } from '../hooks/useCsrfProtection';
 import {
   StaffRole,
   checkStaffAuthorization,
@@ -59,6 +61,8 @@ export const StaffSecurityGateModal: React.FC<StaffSecurityGateModalProps> = ({
     logoutAdmin,
     logoutBursar,
   } = useData();
+
+  const { validateFormSubmit, refreshCsrfToken } = useCsrfProtection();
 
   const [selectedRole, setSelectedRole] = useState<StaffRole>(initialRole);
   const [authMethod, setAuthMethod] = useState<'google' | 'email'>('email');
@@ -249,6 +253,20 @@ export const StaffSecurityGateModal: React.FC<StaffSecurityGateModalProps> = ({
 
     if (!pass) {
       setErrorMessage(language === 'sw' ? 'Tafadhali weka nenosiri / PIN yako ya ulinzi.' : 'Please enter your password / security PIN.');
+      setIsProcessing(false);
+      return;
+    }
+
+    // CSRF Protection Token Validation for sensitive staff gate submission
+    const csrfCheck = await validateFormSubmit();
+    if (!csrfCheck.valid) {
+      setErrorMessage(
+        csrfCheck.error ||
+          (language === 'sw'
+            ? 'Ulinzi wa CSRF: Hitilafu ya uthibitishaji wa token ya usalama. Tafadhali jaribu tena.'
+            : 'CSRF Protection: Security token verification failed. Please try again.')
+      );
+      await refreshCsrfToken();
       setIsProcessing(false);
       return;
     }
@@ -532,6 +550,7 @@ export const StaffSecurityGateModal: React.FC<StaffSecurityGateModalProps> = ({
           ) : (
             /* Method 2: Email and Password Form */
             <form onSubmit={handleEmailPasswordSubmit} className="space-y-3">
+              <CsrfTokenInput />
               <div>
                 <label className="block text-[11px] font-bold text-[#704214] uppercase tracking-wider mb-1">
                   {language === 'sw' ? 'Barua Pepe au Jina la Mtumiaji:' : 'Staff Email or Username:'}
