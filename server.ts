@@ -47,6 +47,8 @@ async function startServer() {
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+  app.use(express.text({ type: ["text/*"], limit: "50mb" }));
+  app.use(express.raw({ type: ["application/octet-stream", "application/pdf", "image/*"], limit: "50mb" }));
 
   // Web Security Headers
   app.use((_req, res, next) => {
@@ -130,8 +132,12 @@ async function startServer() {
       return next();
     }
 
-    // Check if path is an exempt public endpoint (e.g. CSRF retrieval or pre-login IP check)
-    if (requestPath === "/api/csrf-token" || requestPath === "/api/auth/security-check") {
+    // Check if path is an exempt public endpoint (e.g. CSRF retrieval, pre-login IP check, or blob uploads)
+    if (
+      requestPath === "/api/csrf-token" ||
+      requestPath === "/api/auth/security-check" ||
+      requestPath.startsWith("/api/blobs/")
+    ) {
       return next();
     }
 
@@ -581,6 +587,93 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
         details: error?.message || "Kosa halijatambuliwa",
       });
     }
+  });
+
+  // =========================================================================
+  // BLOB STORAGE ENDPOINTS (@vercel/blob in-memory and HTTP compatibility)
+  // =========================================================================
+  const serverBlobStore = new Map<string, { content: any; contentType: string; createdAt: string; size: number }>();
+
+  app.put("/api/blobs/*", (req, res) => {
+    try {
+      const pathname = req.path.replace(/^\/api\/blobs\//, "");
+      const content = req.body;
+      const contentType = (req.headers["content-type"] as string) || "text/plain";
+      const size = typeof content === "string" ? Buffer.byteLength(content) : JSON.stringify(content).length;
+      serverBlobStore.set(pathname, {
+        content,
+        contentType,
+        createdAt: new Date().toISOString(),
+        size,
+      });
+
+      const host = req.get("host") || "localhost:3000";
+      const protocol = req.protocol || "http";
+      const url = `${protocol}://${host}/api/blobs/${pathname}`;
+      const filename = pathname.split("/").pop() || "file";
+
+      res.json({
+        url,
+        downloadUrl: `${url}?download=1`,
+        pathname,
+        contentType,
+        contentDisposition: `inline; filename="${filename}"`,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to put blob" });
+    }
+  });
+
+  app.get("/api/blobs/*", (req, res) => {
+    const pathname = req.path.replace(/^\/api\/blobs\//, "");
+    const entry = serverBlobStore.get(pathname);
+    if (!entry) {
+      return res.status(404).json({ error: "Blob not found" });
+    }
+    const filename = pathname.split("/").pop() || "file";
+    if (req.query.download === "1") {
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    } else {
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    }
+    res.setHeader("Content-Type", entry.contentType);
+    if (typeof entry.content === "string") {
+      res.send(entry.content);
+    } else {
+      res.json(entry.content);
+    }
+  });
+
+  // Query-param style endpoint (/api/blob?pathname=articles/blob.txt)
+  app.get("/api/blob", (req, res) => {
+    const pathname = ((req.query.pathname as string) || "").replace(/^\/+/, "");
+    if (!pathname) {
+      return res.status(400).json({ error: "Missing pathname" });
+    }
+    const entry = serverBlobStore.get(pathname);
+    if (!entry) {
+      return res.status(404).send("Not found");
+    }
+    const filename = pathname.split("/").pop() || "file";
+    res.setHeader("Cache-Control", "private, no-cache");
+    res.setHeader("Content-Type", entry.contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    if (req.query.download === "1") {
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    } else {
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    }
+    if (typeof entry.content === "string") {
+      res.send(entry.content);
+    } else {
+      res.json(entry.content);
+    }
+  });
+
+  app.delete("/api/blobs/*", (req, res) => {
+    const pathname = req.path.replace(/^\/api\/blobs\//, "");
+    serverBlobStore.delete(pathname);
+    res.json({ success: true, message: "Blob deleted" });
   });
 
   // Vite middleware in dev or static files in production

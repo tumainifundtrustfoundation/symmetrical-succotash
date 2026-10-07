@@ -18,6 +18,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@vercel/blob": [
+        "./src/lib/blobMock.ts"
       ]
     },
     "allowImportingTsExtensions": true,

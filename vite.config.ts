@@ -10,6 +10,7 @@ export default defineConfig(() => {
       dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
+        '@vercel/blob': path.resolve(__dirname, 'src/lib/blobMock.ts'),
       },
     },
     optimizeDeps: {
