@@ -63,7 +63,7 @@ export const PortalContainer: React.FC = () => {
         {currentTab === 'academics' && (
           <>
             {activeRoleDashboard === 'student' && <StudentDashboard activeTab="academics" />}
-            {activeRoleDashboard === 'parent' && <ParentDashboard />}
+            {activeRoleDashboard === 'parent' && <ParentDashboard initialSubTab="academics" />}
             {activeRoleDashboard === 'teacher' && <TeacherDashboard />}
             {activeRoleDashboard === 'staff' && <StaffDashboard />}
             {activeRoleDashboard === 'admin' && <AdminDashboard />}
@@ -71,7 +71,11 @@ export const PortalContainer: React.FC = () => {
         )}
 
         {currentTab === 'results' && (
-          <StudentDashboard activeTab="results" />
+          activeRoleDashboard === 'parent' ? (
+            <ParentDashboard initialSubTab="academics" />
+          ) : (
+            <StudentDashboard activeTab="results" />
+          )
         )}
 
         {currentTab === 'announcements' && (
