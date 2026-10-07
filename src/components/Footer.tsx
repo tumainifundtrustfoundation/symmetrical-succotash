@@ -5,6 +5,7 @@ import {
   Phone,
   Mail,
   Lock,
+  KeyRound,
   Users,
   Award,
   ArrowUp,
@@ -281,9 +282,10 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 onClick={onOpenStaffPortal}
                 className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                title="Chumba cha Walimu (Private Staffroom) — Lango la Ndani la Watumishi"
               >
-                <span>Staff Portal</span>
-                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Chumba cha Walimu (Staffroom)</span>
+                <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
               </button>
             </div>
 

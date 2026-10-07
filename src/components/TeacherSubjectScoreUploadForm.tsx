@@ -39,6 +39,7 @@ import {
   savePendingSubjectScoresToFirestore,
   getPendingSubjectSubmissionsFromFirestore,
 } from '../services/academicFirestoreService';
+import { normalizeTeacherAssignedSubjects } from '../services/teacherAuthDirectory';
 import { PendingSubjectSubmission } from '../types';
 
 interface TeacherSubjectScoreUploadFormProps {
@@ -68,14 +69,46 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
     toggleMarkEntryAuthorization,
   } = useData();
 
+  // Filter selectable subjects strictly to teacher's assigned subjects unless Academic Master
+  const teacherAllowedSubjects = useMemo(() => {
+    if (isAcademicMaster) {
+      return OFFICIAL_NECTA_SUBJECTS;
+    }
+    const normalized = normalizeTeacherAssignedSubjects(assignedSubjects);
+    const filtered = OFFICIAL_NECTA_SUBJECTS.filter((sub) =>
+      normalized.some(
+        (a) =>
+          a.toLowerCase() === sub.name.toLowerCase() ||
+          a.toLowerCase().includes(sub.name.toLowerCase()) ||
+          sub.name.toLowerCase().includes(a.toLowerCase())
+      )
+    );
+    return filtered.length > 0 ? filtered : [OFFICIAL_NECTA_SUBJECTS[6]]; // fallback Chemistry
+  }, [isAcademicMaster, assignedSubjects]);
+
   // Primary Selection States
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');
   const [selectedStream, setSelectedStream] = useState<string>('ALL');
   const [selectedExam, setSelectedExam] = useState<string>('NECTA Mock 2025');
   const [academicYear, setAcademicYear] = useState<string>('2025/2026');
   const [selectedSubject, setSelectedSubject] = useState<string>(() => {
+    if (teacherAllowedSubjects && teacherAllowedSubjects.length > 0) {
+      return teacherAllowedSubjects[0].name;
+    }
     return assignedSubjects.length > 0 ? assignedSubjects[0] : 'Chemistry';
   });
+
+  // Ensure selectedSubject is strictly within teacherAllowedSubjects whenever teacher changes
+  useEffect(() => {
+    if (!isAcademicMaster && teacherAllowedSubjects.length > 0) {
+      const match = teacherAllowedSubjects.find(
+        (s) => s.name.toLowerCase() === selectedSubject.toLowerCase()
+      );
+      if (!match) {
+        setSelectedSubject(teacherAllowedSubjects[0].name);
+      }
+    }
+  }, [teacherAllowedSubjects, isAcademicMaster, selectedSubject]);
 
   // Entry method tabs
   const [entryMethod, setEntryMethod] = useState<'gradebook' | 'upload_file' | 'paste_text'>('gradebook');
@@ -430,6 +463,12 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Primary Action: Submit and Save to Cloud Firestore as 'pending' results
   const handleSubmitToFirestore = async () => {
+    // Strict security assertion: Verify teacher is authorized for this subject
+    if (!isAcademicMaster && !teacherAllowedSubjects.some((s) => s.name.toLowerCase() === selectedSubject.toLowerCase())) {
+      alert(language === 'sw' ? 'Ombi limezuiliwa: Umeidhinishwa kuingiza alama za somo lako pekee.' : 'Action restricted: You may only submit marks for your assigned subject.');
+      return;
+    }
+
     setIsSavingToFirestore(true);
 
     // Prepare list of scores to save
@@ -797,25 +836,43 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
           {/* Subject */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {language === 'sw' ? '3. Somo (Subject)' : '3. Subject'}
-            </label>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-emerald-400 text-slate-900 font-bold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm"
-            >
-              {OFFICIAL_NECTA_SUBJECTS.map((sub) => {
-                const isAssigned = assignedSubjects.some(
-                  (a) => a.toLowerCase() === sub.name.toLowerCase()
-                );
-                return (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-slate-700">
+                {language === 'sw' ? '3. Somo (Subject)' : '3. Subject'}
+              </label>
+              {!isAcademicMaster && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                  {language === 'sw' ? '🔒 Somo Lako Pekee' : '🔒 Assigned Only'}
+                </span>
+              )}
+            </div>
+
+            {/* If single assigned subject, display locked active pill; otherwise allow choice among assigned subjects */}
+            {!isAcademicMaster && teacherAllowedSubjects.length === 1 ? (
+              <div className="w-full px-3 py-2 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-slate-900 font-extrabold text-xs flex items-center justify-between shadow-xs">
+                <span>{teacherAllowedSubjects[0].name} ({teacherAllowedSubjects[0].code})</span>
+                <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-black">
+                  ★ Somo Lako
+                </span>
+              </div>
+            ) : (
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 border-2 border-emerald-500 text-slate-900 font-bold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm"
+              >
+                {teacherAllowedSubjects.map((sub) => (
                   <option key={sub.code} value={sub.name}>
-                    {sub.name} ({sub.code}) {isAssigned ? '★ Mwalimu Mhusika' : ''}
+                    {sub.name} ({sub.code}) {!isAcademicMaster ? '— Somo Lako Pekee' : ''}
                   </option>
-                );
-              })}
-            </select>
+                ))}
+              </select>
+            )}
+            {!isAcademicMaster && (
+              <p className="text-[10px] text-emerald-700 mt-1 font-semibold flex items-center gap-1">
+                <span>✓ Umeidhinishwa kuingiza alama za somo hili pekee.</span>
+              </p>
+            )}
           </div>
 
           {/* Exam Type */}

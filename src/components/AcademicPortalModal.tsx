@@ -147,7 +147,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   const [teacherSelectedExam, setTeacherSelectedExam] = useState<string>('NECTA Mock 2025');
   const [teacherMarksDraft, setTeacherMarksDraft] = useState<{ [examNumber: string]: { score: number; remarks: string } }>({});
   const [teacherSaveSuccess, setTeacherSaveSuccess] = useState(false);
-  const [teacherActiveTab, setTeacherActiveTab] = useState<'excel_upload' | 'subject_entry' | 'master_grid' | 'single_add' | 'broadcast'>('excel_upload');
+  const [teacherActiveTab, setTeacherActiveTab] = useState<'excel_upload' | 'subject_entry' | 'master_grid' | 'single_add' | 'broadcast'>('subject_entry');
 
   // Excel / CSV File Upload State for Teachers
   const [isParsingExcel, setIsParsingExcel] = useState(false);
@@ -442,7 +442,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   };
 
   // Handle Teacher Direct / PIN / Faculty Selection Sign-In
-  const handleTeacherDirectLogin = (teacher: { id?: string; name: string; email: string; role?: string }) => {
+  const handleTeacherDirectLogin = (teacher: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => {
     const found =
       teachers.find(
         (t) =>
@@ -451,16 +451,21 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
           t.name.toLowerCase().includes(teacher.name.toLowerCase())
       ) || teachers[0];
 
-    setSelectedTeacher(found);
+    const teacherAssignedSubjects = teacher.subjects || found.subjects || ['Chemistry'];
+    setSelectedTeacher({
+      ...found,
+      subjects: teacherAssignedSubjects,
+    });
     setTeacherEmailInput(found.email || teacher.email || 'walimu@uombonisec.ac.tz');
-    if (found.subjects && found.subjects.length > 0) {
-      setTeacherSelectedSubject(found.subjects[0]);
+    if (teacherAssignedSubjects && teacherAssignedSubjects.length > 0) {
+      setTeacherSelectedSubject(teacherAssignedSubjects[0]);
     }
     setTeacherGoogleUser({
       email: found.email || teacher.email,
       displayName: found.name,
       photoURL: found.imageUrl,
     });
+    setTeacherActiveTab('subject_entry');
     setTeacherAuthError(false);
     setTeacherEmailError('');
     setIsAuthenticated(true);
@@ -921,16 +926,16 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                  {language === 'sw' ? 'Portal Kuu ya Taaluma na Matokeo' : 'Academic Management & Results Portal'}
+                  {language === 'sw' ? 'Mfumo wa Ndani wa Kiutawala na Taaluma' : 'Internal Academic & Faculty Gate'}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
-                  RBAC 2026
+                  🔒 {language === 'sw' ? 'Lango la Ndani' : 'Restricted'}
                 </span>
               </div>
               <p className="text-xs text-emerald-300/90 font-medium">
                 {language === 'sw'
-                  ? 'Mfumo Rasmi wa Shule ya Sekondari Uomboni (Kituo cha NECTA S0486) • Marangu, Moshi'
-                  : 'Official Uomboni Secondary School Academic System • NECTA Centre S0486'}
+                  ? 'Mfumo Rasmi wa Ndani wa Shule ya Sekondari Uomboni (Kituo cha NECTA S0486) • Marangu, Moshi'
+                  : 'Official Uomboni Secondary School Staff Intranet (NECTA S0486) • Marangu, Moshi'}
               </p>
             </div>
           </div>
@@ -1464,12 +1469,12 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setTeacherActiveTab('subject_entry')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'subject_entry'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
+                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black ring-2 ring-amber-400/50'
                           : 'text-slate-400 hover:text-white hover:bg-slate-900'
                       }`}
                     >
                       <BookOpen className="w-4 h-4 text-amber-400" />
-                      <span>{language === 'sw' ? '✍️ Pakia & Ingiza kwa Somo (Pending)' : '✍️ Upload Subject Scores (Pending)'}</span>
+                      <span>{language === 'sw' ? '✍️ Ingiza Alama za Somo Lako Pekee' : '✍️ My Assigned Subject Marks'}</span>
                     </button>
 
                     <button
@@ -1772,8 +1777,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </h5>
                           <p className="text-xs text-slate-400">
                             {language === 'sw'
-                              ? 'Tazama na uhariri alama za masomo yote 10 kwa wakati mmoja. Mfumo unaonyesha Division na Pointi mara moja.'
-                              : 'View and edit all 10 subjects simultaneously. Real-time updates of Division, points, and average.'}
+                              ? `Mwalimu ${selectedTeacher?.name}: Masomo yako pekee ya kuingiza maksi ni: ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'}. Masomo mengine yanalindwa kwa usalama.`
+                              : `Teacher ${selectedTeacher?.name}: Your assigned subjects are: ${selectedTeacher?.subjects?.join(', ')}. Other subjects are securely locked.`}
                           </p>
                         </div>
 
@@ -1786,6 +1791,21 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             <span>{language === 'sw' ? 'Pakua Excel' : 'Export Excel'}</span>
                           </button>
                         </div>
+                      </div>
+
+                      {/* Teacher assigned subject reminder badge */}
+                      <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-600/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-emerald-200">
+                          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>
+                            {language === 'sw'
+                              ? `Uthibitisho wa Ulinzi: Umeidhinishwa kuingiza alama kwa somo la ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'} pekee.`
+                              : `Access Controlled: You may only input scores for your assigned subjects (${selectedTeacher?.subjects?.join(', ')}).`}
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider self-start sm:self-center">
+                          ★ Somo Lako Pekee
+                        </span>
                       </div>
 
                       <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
@@ -1949,38 +1969,63 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </div>
                         </div>
 
-                        {/* Subject Marks Entry Grid */}
+                        {/* Subject Marks Entry Grid - Filtered Strictly to Teacher's Assigned Subject(s) */}
                         <div className="pt-3">
-                          <label className="text-xs font-bold text-amber-300 block mb-2">Alama za Masomo (/100):</label>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {STANDARD_SUBJECTS.map((sub) => {
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="text-xs font-bold text-amber-300 block">
+                              {language === 'sw'
+                                ? `Alama za Somo Lako Pekee (${selectedTeacher?.subjects.join(', ')}):`
+                                : `Assigned Subject Mark Entry (${selectedTeacher?.subjects.join(', ')}):`}
+                            </label>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold">
+                              🔒 Somo Lako Pekee
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {STANDARD_SUBJECTS.filter((sub) => {
+                              const assigned = selectedTeacher?.subjects || [];
+                              return assigned.some(
+                                (a) =>
+                                  a.toLowerCase() === sub.name.toLowerCase() ||
+                                  sub.name.toLowerCase().includes(a.toLowerCase()) ||
+                                  a.toLowerCase().includes(sub.name.toLowerCase())
+                              );
+                            }).map((sub) => {
                               const score = teacherSingleStudentDraft.subjectScores[sub.code] ?? 70;
                               const { grade } = calculateGradeAndPoints(score);
                               return (
-                                <div key={sub.code} className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                                  <div className="flex items-center justify-between text-[11px]">
-                                    <span className="font-bold text-white">{sub.name}</span>
-                                    <span className={`px-1.5 py-0.2 rounded text-[10px] font-black ${getGradeBadge(grade)}`}>
+                                <div key={sub.code} className="p-3.5 rounded-2xl bg-slate-950 border-2 border-emerald-500/60 space-y-2 shadow-md">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-black text-white">{sub.name} ({sub.code})</span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
+                                      ★ Somo Lako
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      value={score}
+                                      onChange={(e) => {
+                                        const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                        setTeacherSingleStudentDraft((prev) => ({
+                                          ...prev,
+                                          subjectScores: {
+                                            ...prev.subjectScores,
+                                            [sub.code]: val,
+                                          },
+                                        }));
+                                      }}
+                                      className="flex-1 p-2 text-center font-black text-lg rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-hidden focus:border-amber-400"
+                                    />
+                                    <span className={`px-2.5 py-1.5 rounded-xl text-xs font-black border ${getGradeBadge(grade)}`}>
                                       {grade}
                                     </span>
                                   </div>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    value={score}
-                                    onChange={(e) => {
-                                      const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                      setTeacherSingleStudentDraft((prev) => ({
-                                        ...prev,
-                                        subjectScores: {
-                                          ...prev.subjectScores,
-                                          [sub.code]: val,
-                                        },
-                                      }));
-                                    }}
-                                    className="w-full p-1.5 text-center font-black text-base rounded-lg bg-slate-900 border border-slate-700 text-amber-300 focus:outline-hidden focus:border-amber-400"
-                                  />
+                                  <p className="text-[10px] text-emerald-400 font-medium">
+                                    ✓ Umeidhinishwa kuingiza alama za somo hili
+                                  </p>
                                 </div>
                               );
                             })}

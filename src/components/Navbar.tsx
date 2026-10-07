@@ -10,6 +10,7 @@ import {
   Mail,
   MapPin,
   Lock,
+  KeyRound,
   Users,
   ChevronRight,
   Globe,
@@ -196,10 +197,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="nav-staff-portal-btn"
               onClick={onOpenStaffPortal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#102A43] hover:bg-[#0A1C2E] rounded-md transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#102A43] bg-[#FFFFF0] border border-[#102A43]/20 hover:border-[#102A43] hover:bg-white rounded-md transition-all shadow-2xs cursor-pointer"
+              title="Chumba cha Walimu (Private Staffroom) — Lango la Ndani la Watumishi"
             >
-              <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span>Staff Portal</span>
+              <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span>{language === 'sw' ? 'Chumba cha Walimu' : 'Chumba cha Walimu'}</span>
             </button>
 
             {user ? (
@@ -282,10 +284,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   if (onOpenStaffPortal) onOpenStaffPortal();
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-[#102A43] rounded-md hover:bg-[#0A1C2E] transition-colors cursor-pointer shadow-xs"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#102A43] bg-[#FFFFF0] border border-[#102A43]/25 rounded-md hover:bg-white transition-colors cursor-pointer shadow-xs"
               >
-                <Lock className="w-4 h-4 text-[#C9A227]" />
-                <span>Staff Portal</span>
+                <KeyRound className="w-4 h-4 text-[#C9A227]" />
+                <span>{language === 'sw' ? 'Chumba cha Walimu (Staffroom)' : 'Chumba cha Walimu (Staffroom)'}</span>
               </button>
 
               {user ? (
