@@ -1,5 +1,22 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Send,
+  CheckCircle2,
+  Navigation,
+  ExternalLink,
+  Compass,
+  Building,
+} from 'lucide-react';
+import {
+  UOMBONI_LOCATION_CONFIG,
+  getSchoolMapUrl,
+  getSchoolDirectionsUrl,
+  getSchoolMapEmbedUrl,
+} from '../config/mapConfig';
 
 export const ContactSection: React.FC = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -23,6 +40,7 @@ export const ContactSection: React.FC = () => {
   return (
     <section id="contact" className="py-20 sm:py-24 bg-[#FFFFF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
         <div className="max-w-3xl">
           <span className="text-xs font-semibold text-[#C9A227] tracking-wider block mb-2 uppercase">
             Get In Touch
@@ -35,6 +53,7 @@ export const ContactSection: React.FC = () => {
           </p>
         </div>
 
+        {/* Contact Info & Inquiry Form Grid */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Contact Details (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
@@ -49,11 +68,11 @@ export const ContactSection: React.FC = () => {
                   <MapPin className="w-4 h-4 text-[#102A43]" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#102A43] block">Physical Address</span>
+                  <span className="text-xs font-bold text-[#102A43] block">Physical Address &amp; Postal Box</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">
-                    Marangu West, Moshi Rural District<br />
-                    Mount Kilimanjaro Slopes, Kilimanjaro Region<br />
-                    P.O. Box 273, Moshi, Tanzania
+                    {UOMBONI_LOCATION_CONFIG.schoolName}<br />
+                    Marangu-Moshi, Kilimanjaro Region, Tanzania<br />
+                    {UOMBONI_LOCATION_CONFIG.postalAddress}
                   </p>
                 </div>
               </div>
@@ -64,12 +83,27 @@ export const ContactSection: React.FC = () => {
                   <Phone className="w-4 h-4 text-[#102A43]" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#102A43] block">Telephone Lines</span>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1">
-                    <span className="block">+255 782 558 127 (Headmaster)</span>
-                    <span className="block">+255 754 532 949 (Second Master)</span>
-                    <span className="block">+255 745 548 225 (Academic Master)</span>
-                  </p>
+                  <span className="text-xs font-bold text-[#102A43] block">SIMU Na / Telephone Lines</span>
+                  <div className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1">
+                    <a
+                      href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.primary.replace(/\s+/g, '')}`}
+                      className="block font-semibold text-[#102A43] hover:text-[#C9A227] transition-colors"
+                    >
+                      {UOMBONI_LOCATION_CONFIG.contactPhones.primary} (Simu Kuu ya Shule)
+                    </a>
+                    <a
+                      href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.headmaster.replace(/\s+/g, '')}`}
+                      className="block hover:text-[#102A43] transition-colors"
+                    >
+                      {UOMBONI_LOCATION_CONFIG.contactPhones.headmaster} (Mkuu wa Shule)
+                    </a>
+                    <a
+                      href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.secondMaster.replace(/\s+/g, '')}`}
+                      className="block hover:text-[#102A43] transition-colors"
+                    >
+                      {UOMBONI_LOCATION_CONFIG.contactPhones.secondMaster} (Makamu Mkuu wa Shule)
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -81,8 +115,12 @@ export const ContactSection: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Official Email</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-                    uombonisec@gmail.com<br />
-                    info@uombonisec.ac.tz
+                    <a
+                      href={`mailto:${UOMBONI_LOCATION_CONFIG.email}`}
+                      className="font-semibold text-[#102A43] hover:text-[#C9A227] transition-colors"
+                    >
+                      {UOMBONI_LOCATION_CONFIG.email}
+                    </a>
                   </p>
                 </div>
               </div>
@@ -214,6 +252,181 @@ export const ContactSection: React.FC = () => {
                   </button>
                 </form>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* DEDICATED GOOGLE MAPS LOCATION SECTION                                   */}
+        {/* ========================================================================= */}
+        <div id="find-uomboni" className="mt-20 pt-16 border-t border-[#102A43]/15">
+          {/* Section Heading & Subtitle */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div className="max-w-2xl">
+              <span className="text-xs font-semibold text-[#C9A227] tracking-wider block mb-1 uppercase">
+                Location &amp; Directions
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#102A43] tracking-tight">
+                Find Uomboni Secondary School
+              </h3>
+              <p className="mt-2 text-sm sm:text-base text-slate-700">
+                Visit us at our school campus in Marangu, Moshi.
+              </p>
+            </div>
+
+            {/* Top Interactive Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <a
+                href={getSchoolDirectionsUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-semibold rounded-md transition-colors shadow-xs"
+              >
+                <Navigation className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Get Directions</span>
+              </a>
+
+              <a
+                href={getSchoolMapUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-[#FFFFF0] text-[#102A43] border border-[#102A43]/20 text-xs font-semibold rounded-md transition-colors shadow-xs"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Open in Google Maps</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Interactive Map Wrapper */}
+          <div className="bg-white rounded-lg border border-[#102A43]/15 overflow-hidden shadow-xs">
+            {/* School Location Marker Bar */}
+            <div className="px-4 py-3.5 bg-[#102A43] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded bg-[#FFFFF0]/15 flex items-center justify-center shrink-0">
+                  <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
+                </div>
+                <div>
+                  <span className="font-bold tracking-tight text-[#FFFFF0]">
+                    {UOMBONI_LOCATION_CONFIG.schoolName}
+                  </span>
+                  <span className="text-[#FFFFF0]/70 ml-2">
+                    • Marangu, Moshi, Tanzania ({UOMBONI_LOCATION_CONFIG.coordinates.dms})
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-[#FFFFF0]/80">
+                <span className="inline-block w-2 h-2 rounded-full bg-[#C9A227]"></span>
+                <span>NECTA Center: S0486 • Catholic Diocese of Moshi</span>
+              </div>
+            </div>
+
+            {/* Interactive Google Map Responsive Iframe */}
+            <div className="relative w-full h-[360px] sm:h-[420px] lg:h-[480px] bg-slate-100">
+              <iframe
+                title="Interactive Google Map showing Uomboni Secondary School in Marangu, Moshi"
+                src={getSchoolMapEmbedUrl()}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+
+          {/* Location Details & Contacts Grid */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 1. School Address & Location Details */}
+            <div className="bg-white p-6 rounded-lg border border-[#102A43]/15 shadow-xs space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded bg-[#FFFFF0] border border-[#C9A227]/40 flex items-center justify-center text-[#102A43]">
+                  <Building className="w-4 h-4 text-[#102A43]" />
+                </div>
+                <h4 className="text-sm font-bold text-[#102A43]">
+                  School Address &amp; Location
+                </h4>
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed font-normal">
+                <strong className="block text-[#102A43] font-semibold">
+                  {UOMBONI_LOCATION_CONFIG.schoolName}
+                </strong>
+                {UOMBONI_LOCATION_CONFIG.wardAndDistrict}<br />
+                {UOMBONI_LOCATION_CONFIG.regionAndCountry}<br />
+                {UOMBONI_LOCATION_CONFIG.postalAddress}
+              </p>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>GPS: {UOMBONI_LOCATION_CONFIG.coordinates.latitude}, {UOMBONI_LOCATION_CONFIG.coordinates.longitude}</span>
+              </div>
+            </div>
+
+            {/* 2. Contact Phone */}
+            <div className="bg-white p-6 rounded-lg border border-[#102A43]/15 shadow-xs space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded bg-[#FFFFF0] border border-[#C9A227]/40 flex items-center justify-center text-[#102A43]">
+                  <Phone className="w-4 h-4 text-[#102A43]" />
+                </div>
+                <h4 className="text-sm font-bold text-[#102A43]">
+                  Contact Phone
+                </h4>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                For administrative assistance, admissions, or directions while traveling:
+              </p>
+              <div className="text-xs space-y-1.5 pt-1">
+                <a
+                  href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.primary.replace(/\s+/g, '')}`}
+                  className="flex items-center justify-between text-[#102A43] font-semibold hover:text-[#C9A227] transition-colors"
+                >
+                  <span>Simu Kuu ya Shule:</span>
+                  <span>{UOMBONI_LOCATION_CONFIG.contactPhones.primary}</span>
+                </a>
+                <a
+                  href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.headmaster.replace(/\s+/g, '')}`}
+                  className="flex items-center justify-between text-slate-700 hover:text-[#102A43] transition-colors"
+                >
+                  <span>Mkuu wa Shule:</span>
+                  <span>{UOMBONI_LOCATION_CONFIG.contactPhones.headmaster}</span>
+                </a>
+                <a
+                  href={`tel:${UOMBONI_LOCATION_CONFIG.contactPhones.secondMaster.replace(/\s+/g, '')}`}
+                  className="flex items-center justify-between text-slate-700 hover:text-[#102A43] transition-colors"
+                >
+                  <span>Makamu Mkuu:</span>
+                  <span>{UOMBONI_LOCATION_CONFIG.contactPhones.secondMaster}</span>
+                </a>
+              </div>
+            </div>
+
+            {/* 3. School Email & Visitor Hours */}
+            <div className="bg-white p-6 rounded-lg border border-[#102A43]/15 shadow-xs space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded bg-[#FFFFF0] border border-[#C9A227]/40 flex items-center justify-center text-[#102A43]">
+                  <Mail className="w-4 h-4 text-[#102A43]" />
+                </div>
+                <h4 className="text-sm font-bold text-[#102A43]">
+                  School Email &amp; Visiting
+                </h4>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Official inquiries and admissions documents:
+              </p>
+              <div className="text-xs">
+                <a
+                  href={`mailto:${UOMBONI_LOCATION_CONFIG.email}`}
+                  className="font-semibold text-[#102A43] hover:text-[#C9A227] transition-colors block"
+                >
+                  {UOMBONI_LOCATION_CONFIG.email}
+                </a>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-600 leading-relaxed">
+                <span className="font-semibold text-[#102A43] block">Campus Visiting Hours:</span>
+                Mon – Fri: 8:00 AM – 4:30 PM (Reception Gate)
+              </div>
             </div>
           </div>
         </div>

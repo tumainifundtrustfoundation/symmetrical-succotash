@@ -1772,7 +1772,7 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
                   Shule ya Sekondari Uomboni
                 </h4>
                 <p className="text-[11px] text-slate-600 font-mono">
-                  P.O. BOX 246 MARANGU, MOSHI, KILIMANJARO • NECTA CENTER S0486
+                  P.O. BOX 361 MARANGU-MOSHI, KILIMANJARO • NECTA CENTER S0486
                 </p>
                 <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-700 text-white font-mono font-black text-xs tracking-wider">
                   HATI YA UTHIBITISHO WA KUMALIZA ADA (FEE CLEARANCE)

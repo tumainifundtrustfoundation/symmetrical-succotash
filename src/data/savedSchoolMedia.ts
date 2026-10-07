@@ -341,21 +341,21 @@ export const SAVED_GALLERY: GalleryPhoto[] = [
   {
     "id": "gal-006",
     "filename": "IMG_20260824_173537_537.jpg",
-    "titleSw": "Mahafali na Sherehe za Wanafunzi Wanaomaliza Kidato cha Nne",
-    "titleEn": "Graduation Ceremony & Academic Honors for Form Four Students",
-    "category": "Mahafali (Graduation)",
-    "imageUrl": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80",
-    "fallbackUrl": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=80",
+    "titleSw": "Michezo ya Riadha na Bonanza la Wanafunzi (UMISETA)",
+    "titleEn": "Track & Field Athletics Tournament & School Sports Day",
+    "category": "Michezo na Sanaa",
+    "imageUrl": "/media/media_10.jpg",
+    "fallbackUrl": "/media/media_10.jpg",
     "date": "2026-08-24"
   },
   {
     "id": "gal-007",
     "filename": "IMG_20260824_173430_561.jpg",
-    "titleSw": "Maktaba ya Shule, Vitabu vya Ziada na Kujisomea kwa Utulivu",
-    "titleEn": "School Academic Library, Textbooks & Self-Study Sessions",
-    "category": "Taaluma na Maktaba",
-    "imageUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=80",
-    "fallbackUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=80",
+    "titleSw": "Maabara ya Kisasa ya Kompyuta na Mafunzo ya TEHAMA",
+    "titleEn": "Modern ICT Computer Lab & Academic Research Suite",
+    "category": "Maabara na Sayansi",
+    "imageUrl": "/media/media_8.jpg",
+    "fallbackUrl": "/media/media_8.jpg",
     "date": "2026-08-24"
   },
   {
@@ -3307,61 +3307,79 @@ export const SAVED_JOINING_DOCS: JoiningDocument[] = [
 export const SAVED_SCHOOL_PROFILE = {
   "name": "UOMBONI SECONDARY SCHOOL",
   "nectaCode": "S0486",
+  "diocese": "CATHOLIC DIOCESE OF MOSHI",
   "establishedYear": 1985,
   "firstNectaYear": 1988,
   "yearsOfService": "40+",
-  "postalAddress": "P.O. BOX 361, MARANGU",
+  "postalAddress": "P.O. BOX 361, MARANGU-MOSHI",
   "email": "uombonisecondary@gmail.com",
+  "primaryPhone": "0767 207 688",
   "phones": [
+    "0767 207 688",
     "0752 000 939",
     "0782 558 127",
     "0745 548 225",
     "0754 532 949"
   ],
   "phonesFormatted": [
+    "+255 767 207 688",
     "+255 752 000 939",
     "+255 782 558 127",
     "+255 745 548 225",
     "+255 754 532 949"
   ],
-  "location": "Marangu, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
-  "motto": "PRAYER, EDUCATION AND WORK",
-  "mottoSw": "SALA, ELIMU NA KAZI",
-  "slogan": "TUJIENDELEZE SISI WENYEWE",
-  "vision": "To provide quality education and impressive academic performance",
-  "visionSw": "Kutoa elimu bora na ufaulu wa kuvutia kitaaluma",
-  "mission": "To educate boys and girls to their full potential so that they become independent and disciplined persons who can face contemporary and future challenges through the cooperation with parents and relevant community.",
-  "missionSw": "Kuelimisha wavulana na wasichana kufikia uwezo wao kamili ili wawe watu wanaojitegemea na wenye nidhamu wanaoweza kukabiliana na changamoto za sasa na zijazo kupitia ushirikiano na wazazi na jamii husika.",
-  "historySummarySw": "Shule ya Sekondari Uomboni ilianzishwa rasmi mwaka 1985 na kufanya mitihani yake ya kwanza ya Taifa ya NECTA (CSEE) mwaka 1988, ikijenga historia ya zaidi ya miaka 40 ya uongozi bora wa kitaaluma na maadili mema.",
-  "historySummaryEn": "Uomboni Secondary School was founded in 1985 and its pioneer class sat for NECTA CSEE national examinations in 1988, establishing over 40 years of academic distinction and moral leadership.",
+  "location": "Marangu-Moshi, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
+  "motto": "Tujiendeleze sisi wenyewe.",
+  "mottoSw": "Tujiendeleze sisi wenyewe.",
+  "slogan": "Tujiendeleze sisi wenyewe.",
+  "mission": "To provide quality education and impressive academic performance.",
+  "missionSw": "Kutoa elimu bora na ufaulu wa kuvutia/juu kitaaluma.",
+  "vision": "To be the centre of excellence in providing quality education in the country.",
+  "visionSw": "Kuwa kituo cha mfano bora katika kutoa elimu yenye ubora wa juu nchini.",
+  "historySummarySw": "Shule ya Sekondari Uomboni ilianzishwa rasmi mwaka 1985 na kufanya mitihani yake ya kwanza ya Taifa ya NECTA (CSEE) mwaka 1988 chini ya Jimbo Katoliki la Moshi, ikijenga historia ya zaidi ya miaka 40 ya uongozi bora wa kitaaluma na maadili mema.",
+  "historySummaryEn": "Uomboni Secondary School was founded in 1985 and its pioneer class sat for NECTA CSEE national examinations in 1988 under the Catholic Diocese of Moshi, establishing over 40 years of academic distinction and moral leadership.",
   "coreValues": [
     {
-      "title": "PRAYER",
-      "titleSw": "SALA (Kumcha Mungu)",
-      "description": "To enhance students to rely on prayer through different religious practices.",
-      "descriptionSw": "Kukuza wanafunzi kumtegemea Mungu kupitia maombi na taratibu mbalimbali za kiimani.",
+      "title": "Prayer and work.",
+      "titleSw": "Prayer and work (Sala na Kazi)",
+      "description": "Spiritual devotion paired with diligent, focused hard work.",
+      "descriptionSw": "Kumtanguliza Mungu na kufanya kazi kwa bidii na nidhamu.",
       "icon": "🙏"
     },
     {
-      "title": "DISCIPLINE",
-      "titleSw": "NIDHAMU NA MAADILI",
-      "description": "To assist students adhere to standard social and moral behaviour.",
-      "descriptionSw": "Kuwasaidia wanafunzi kuzingatia misingi imara ya maadili mema na nidhamu ya kijamii.",
+      "title": "Efficiency.",
+      "titleSw": "Efficiency (Ufanisi)",
+      "description": "Optimal execution of academic and administrative duties.",
+      "descriptionSw": "Ufanisi wa hali ya juu katika masomo na utekelezaji wa majukumu.",
+      "icon": "⚡"
+    },
+    {
+      "title": "Team work.",
+      "titleSw": "Team work (Kazi ya Pamoja)",
+      "description": "Collaborative unity among teachers, students, parents, and administration.",
+      "descriptionSw": "Mshikamano na ushirikiano thabiti wa jumuiya nzima ya shule.",
+      "icon": "🤝"
+    },
+    {
+      "title": "Discipline.",
+      "titleSw": "Discipline (Nidhamu)",
+      "description": "Exemplary personal conduct, respect for rules, and integrity.",
+      "descriptionSw": "Nidhamu thabiti ya kibinafsi na kufuata miongozo ya shule.",
       "icon": "💎"
     },
     {
-      "title": "HARD WORKING",
-      "titleSw": "KAZI KWA BIDII",
-      "description": "To empower students to focus on hard working so as to achieve expected academic goals.",
-      "descriptionSw": "Kuwawezesha wanafunzi kujituma na kufanya kazi kwa bidii ili kufikia malengo ya kitaaluma.",
-      "icon": "🔥"
+      "title": "Accountability.",
+      "titleSw": "Accountability (Uwajibikaji)",
+      "description": "Taking full ownership of academic and administrative results.",
+      "descriptionSw": "Uwajibikaji kamili katika majukumu na matokeo ya kitaaluma.",
+      "icon": "⚖️"
     },
     {
-      "title": "CO-OPERATION",
-      "titleSw": "USHIRIKIANO THABITI",
-      "description": "To build mutual understanding and interaction among students, parents, teachers, and non-teaching staff.",
-      "descriptionSw": "Kujenga maelewano na mshikamano thabiti baina ya wanafunzi, wazazi, walimu na wafanyakazi wasio walimu.",
-      "icon": "🤝"
+      "title": "Transparency.",
+      "titleSw": "Transparency (Uwazi)",
+      "description": "Openness, honesty, and truthfulness in all school operations.",
+      "descriptionSw": "Uwazi na uaminifu katika uendeshaji na uongozi wa shule.",
+      "icon": "🔍"
     }
   ]
 };

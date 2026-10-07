@@ -11,8 +11,14 @@ import {
   Facebook,
   Youtube,
   MessageCircle,
-  FileText
+  FileText,
+  Navigation,
 } from 'lucide-react';
+import {
+  UOMBONI_LOCATION_CONFIG,
+  getSchoolDirectionsUrl,
+  getSchoolMapUrl,
+} from '../config/mapConfig';
 
 interface FooterProps {
   onNavigate?: (sectionId: string) => void;
@@ -58,27 +64,32 @@ export const Footer: React.FC<FooterProps> = ({
                   Uomboni Secondary School
                 </h3>
                 <p className="text-xs text-[#C9A227] font-semibold">
-                  NECTA Centre S0486 · Marangu West
+                  Tujiendeleze Sisi Wenyewe · Diocese of Moshi
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-[#FFFFF0]/80 leading-relaxed max-w-sm">
-              A registered Catholic Ordinary Level (Forms 1–4) day and boarding secondary school under the Catholic Diocese of Moshi. Dedicated to academic excellence, discipline, and moral integrity.
+            <p className="text-xs text-[#FFFFF0]/85 leading-relaxed max-w-sm">
+              &ldquo;To provide quality education and impressive academic performance.&rdquo; A Catholic co-educational Ordinary Level (Forms 1–4) secondary school under the Catholic Diocese of Moshi.
             </p>
 
-            <div className="pt-2 text-xs space-y-2 text-[#FFFFF0]/80">
+            <div className="pt-2 text-xs space-y-2.5 text-[#FFFFF0]/85">
+              {/* Official School Location */}
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
-                <span>Marangu West, Moshi Rural, Kilimanjaro, Tanzania</span>
+                <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="leading-snug">
+                  <span className="block font-semibold text-white">Uomboni Secondary School</span>
+                  <span className="text-[#FFFFF0]/80">Marangu, Moshi, Tanzania</span>
+                </div>
               </div>
+
               <div className="flex items-center gap-2.5">
                 <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <span>+255 782 558 127 / +255 754 532 949</span>
+                <span>SIMU Na: 0767 207 688</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <span>uombonisec@gmail.com</span>
+                <span>uombonisecondary@gmail.com</span>
               </div>
             </div>
 
@@ -146,6 +157,11 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               </li>
               <li>
+                <button onClick={() => handleNav('faq')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                  Maswali ya Mara kwa Mara (FAQ)
+                </button>
+              </li>
+              <li>
                 <button onClick={() => handleNav('gallery')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
                   Photo Gallery
                 </button>
@@ -153,6 +169,12 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button onClick={() => handleNav('contact')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
                   Contact
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleNav('find-uomboni')} className="hover:text-[#C9A227] transition-colors cursor-pointer flex items-center gap-1.5 text-[#C9A227]">
+                  <MapPin className="w-3 h-3" />
+                  <span>Google Maps Location</span>
                 </button>
               </li>
             </ul>
@@ -298,7 +320,11 @@ export const Footer: React.FC<FooterProps> = ({
             &copy; 2026 Uomboni Secondary School. All Rights Reserved.
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 text-[#FFFFF0]/80">
+              <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span>Marangu, Moshi, Tanzania</span>
+            </span>
             <span>NECTA Registration: S0486</span>
             <button
               onClick={scrollToTop}
