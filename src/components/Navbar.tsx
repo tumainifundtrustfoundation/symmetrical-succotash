@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { SchoolLogo } from './SchoolLogo';
+import { UrgentNotificationBanner } from './UrgentNotificationBanner';
 import {
   Menu,
   X,
@@ -23,6 +24,7 @@ interface NavbarProps {
   onOpenStaffPortal?: () => void;
   onOpenAdmissions?: () => void;
   onOpenLogin?: () => void;
+  onOpenResults?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -32,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenStaffPortal,
   onOpenAdmissions,
   onOpenLogin,
+  onOpenResults,
 }) => {
   const { language, setLanguage } = useLanguage();
   const { user, userProfile, logout } = useAuth();
@@ -83,6 +86,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all">
+      {/* Top Animated News & Announcement Ticker */}
+      <UrgentNotificationBanner
+        onActionClick={(target) => {
+          if (target === 'admissions' || target === 'apply') {
+            if (onOpenAdmissions) onOpenAdmissions();
+          } else if (target === 'results' || target === 'necta') {
+            if (onOpenResults) onOpenResults();
+          } else if (onNavigate) {
+            onNavigate(target);
+          }
+        }}
+        onOpenAdmissions={onOpenAdmissions}
+        onOpenResults={onOpenResults}
+        onNavigate={onNavigate}
+      />
+
       {/* Top Institutional Header Bar */}
       <div className="bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/20 text-[12px] py-1.5 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -227,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-[88px] z-50 bg-[#102A43]/40 backdrop-blur-xs xl:hidden">
+        <div className="fixed inset-0 top-[126px] z-50 bg-[#102A43]/40 backdrop-blur-xs xl:hidden">
           <div className="bg-[#FFFFFF] border-b border-[#102A43]/15 max-h-[85vh] overflow-y-auto px-4 py-6 shadow-xl animate-in slide-in-from-top duration-200">
             <div className="flex flex-col space-y-1">
               {navLinks.map((link) => (

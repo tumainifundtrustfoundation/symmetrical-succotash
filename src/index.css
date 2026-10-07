@@ -289,6 +289,42 @@
   animation-play-state: paused;
 }
 
+/* School News & Announcement Ticker Animation */
+@keyframes ticker-slide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.news-ticker-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  animation: ticker-slide 55s linear infinite;
+}
+
+/* Pause animation on desktop hover */
+@media (hover: hover) and (pointer: fine) {
+  .news-ticker-container:hover .news-ticker-track,
+  .news-ticker-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 .animate-zoom-in-out {
   /* Kept static and calm for institutional feel */
 }

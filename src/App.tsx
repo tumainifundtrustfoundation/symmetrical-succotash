@@ -164,6 +164,7 @@ function MainSchoolApp() {
         onOpenStaffPortal={() => setIsTeacherStaffPortalOpen(true)}
         onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
         onOpenLogin={() => setActiveView('login')}
+        onOpenResults={() => setIsSchoolResultsOpen(true)}
       />
 
       <main className="flex-grow">
