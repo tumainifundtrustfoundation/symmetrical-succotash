@@ -217,8 +217,11 @@ function MainSchoolApp() {
           onOpenSchoolResults={() => setIsSchoolResultsOpen(true)}
         />
 
-        {/* 11. News & Events */}
-        <NewsEventsSection />
+        {/* 11. News & Events (Updates & Highlights) */}
+        <NewsEventsSection
+          onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
+          onNavigate={handleNavigate}
+        />
 
         {/* 12. Gallery */}
         <GallerySection />
