@@ -204,16 +204,6 @@ export async function saveTeacher(teacher: FirestoreTeacher): Promise<string | n
   }
 }
 
-export async function deleteTeacher(teacherId: string): Promise<boolean> {
-  try {
-    await deleteDoc(doc(db, 'teachers', teacherId));
-    return true;
-  } catch (err: any) {
-    handleFirestoreError(err, OperationType.DELETE, `teachers/${teacherId}`);
-    return false;
-  }
-}
-
 // ==========================================
 // 5. CLASSES (classes/{classId})
 // ==========================================
