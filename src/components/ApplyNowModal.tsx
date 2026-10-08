@@ -21,8 +21,6 @@ import {
 import { downloadJoiningInstructionsPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
 import { OnlineApplication } from '../types';
 import { SchoolLogo } from './SchoolLogo';
-import { CsrfTokenInput } from './CsrfTokenInput';
-import { useCsrfProtection } from '../hooks/useCsrfProtection';
 
 interface ApplyNowModalProps {
   isOpen: boolean;
@@ -32,7 +30,6 @@ interface ApplyNowModalProps {
 export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose }) => {
   const { language, t } = useLanguage();
   const { joiningDocs, submitOnlineApplication } = useData();
-  const { validateFormSubmit, refreshCsrfToken } = useCsrfProtection();
 
   const [studentName, setStudentName] = useState('');
   const [gender, setGender] = useState<'M' | 'F'>('M');
@@ -52,23 +49,10 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim() || !parentName.trim() || !parentPhone.trim()) {
       alert(language === 'sw' ? 'Tafadhali jaza taarifa zote muhimu' : 'Please fill all required fields');
-      return;
-    }
-
-    // CSRF Protection Token Validation for sensitive online admission application
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      alert(
-        csrfCheck.error ||
-          (language === 'sw'
-            ? 'Ulinzi wa CSRF: Hitilafu ya uthibitishaji wa token ya usalama. Tafadhali jaribu tena.'
-            : 'CSRF Protection: Security token verification failed. Please try again.')
-      );
-      await refreshCsrfToken();
       return;
     }
 
@@ -202,7 +186,6 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5 text-xs">
-              <CsrfTokenInput />
               {/* Top Announcement Alert */}
               <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200/80 space-y-2 text-slate-800">
                 <div className="flex items-start gap-2.5">

@@ -25,7 +25,6 @@ interface PublicResultsSearchSectionProps {
   setSearchQuery: (query: string) => void;
   onSelectStudent: (student: StudentResult) => void;
   activeResultId?: string;
-  onOpenParentPortal?: () => void;
 }
 
 export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProps> = ({
@@ -38,7 +37,6 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
   setSearchQuery,
   onSelectStudent,
   activeResultId,
-  onOpenParentPortal,
 }) => {
   const { language } = useLanguage();
   const [isSearching, setIsSearching] = useState(false);
@@ -266,35 +264,6 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
               );
             })}
           </div>
-        </div>
-
-        {/* Parent-Child Privacy Access Banner */}
-        <div className="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-500/10 p-4 rounded-2xl border border-amber-600/20 text-xs">
-          <div className="flex items-center gap-2.5 text-slate-800">
-            <div className="w-8 h-8 rounded-xl bg-[#704214] text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
-              ★
-            </div>
-            <div>
-              <strong className="block text-slate-900 font-bold">
-                {language === 'sw' ? 'Wazazi: Mzazi pia anaona matokeo ya mtoto wake pekee' : 'Parents: View only your own child’s confidential results'}
-              </strong>
-              <span className="text-slate-600">
-                {language === 'sw'
-                  ? 'Fungua Portal ya Mzazi kutazama alama za masomo, ripoti ya maendeleo, na kupakua Result Slip PDF ya mtoto wako kwa usalama na faragha.'
-                  : 'Open the Parent Portal to view subject scores, term progress report, and download your child’s official Result Slip PDF securely.'}
-              </span>
-            </div>
-          </div>
-
-          {onOpenParentPortal && (
-            <button
-              type="button"
-              onClick={onOpenParentPortal}
-              className="shrink-0 px-4 py-2 rounded-xl bg-[#704214] hover:bg-[#58330F] text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
-            >
-              {language === 'sw' ? 'Fungua Portal ya Mzazi →' : 'Open Parent Portal →'}
-            </button>
-          )}
         </div>
       </div>
     </div>

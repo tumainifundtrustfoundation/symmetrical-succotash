@@ -3,7 +3,6 @@ import path from "path";
 import compression from "compression";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
-import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 import {
   initSchoolDatabase,
@@ -47,143 +46,12 @@ async function startServer() {
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-  app.use(express.text({ type: ["text/*"], limit: "50mb" }));
-  app.use(express.raw({ type: ["application/octet-stream", "application/pdf", "image/*"], limit: "50mb" }));
 
   // Web Security Headers
   app.use((_req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-    next();
-  });
-
-  // =========================================================================
-  // CSRF PROTECTION UTILITY & TOKEN REGISTRY (SERVER-SIDE DEFENSE)
-  // =========================================================================
-  const csrfTokenRegistry = new Map<string, { createdAt: number; ip: string }>();
-
-  // Token lifetime: 4 hours
-  const CSRF_TTL_MS = 4 * 60 * 60 * 1000;
-
-  function generateServerCsrfToken(ip: string): string {
-    const token = crypto.randomBytes(32).toString("hex");
-    csrfTokenRegistry.set(token, { createdAt: Date.now(), ip });
-    return token;
-  }
-
-  function verifyServerCsrfToken(token: string | undefined): boolean {
-    if (!token || typeof token !== "string" || token.length < 16) return false;
-    const entry = csrfTokenRegistry.get(token);
-    if (!entry) return false;
-    if (Date.now() - entry.createdAt > CSRF_TTL_MS) {
-      csrfTokenRegistry.delete(token);
-      return false;
-    }
-    return true;
-  }
-
-  // Periodic cleanup of expired tokens every 15 minutes
-  setInterval(() => {
-    const now = Date.now();
-    for (const [token, data] of csrfTokenRegistry.entries()) {
-      if (now - data.createdAt > CSRF_TTL_MS) {
-        csrfTokenRegistry.delete(token);
-      }
-    }
-  }, 15 * 60 * 1000);
-
-  // CSRF Token issuance endpoint
-  app.get("/api/csrf-token", (req, res) => {
-    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "127.0.0.1";
-    const token = generateServerCsrfToken(clientIp);
-    res.setHeader("X-CSRF-Token", token);
-    res.json({
-      success: true,
-      csrfToken: token,
-      expiresIn: CSRF_TTL_MS / 1000,
-    });
-  });
-
-  // CSRF verification middleware on sensitive mutating requests (POST, PUT, DELETE, PATCH)
-  const SENSITIVE_MUTATING_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
-  const SENSITIVE_CSRF_PATHS = [
-    "/api/school-data/update",
-    "/api/school-data/batch",
-    "/api/results/sync",
-    "/api/auth/verify-login",
-    "/api/auth/verify-2fa",
-    "/api/auth/unlock",
-    "/api/auth/logout",
-    "/api/auth/log-event",
-    "/api/ai-assistant",
-  ];
-
-  app.use((req, res, next) => {
-    // Only check mutating requests
-    if (!SENSITIVE_MUTATING_METHODS.includes(req.method.toUpperCase())) {
-      return next();
-    }
-
-    const requestPath = req.path || "";
-
-    // Ignore non-API requests (e.g. Vite assets or client navigation)
-    if (!requestPath.startsWith("/api/")) {
-      return next();
-    }
-
-    // Check if path is an exempt public endpoint (e.g. CSRF retrieval, pre-login IP check, or blob uploads)
-    if (
-      requestPath === "/api/csrf-token" ||
-      requestPath === "/api/auth/security-check" ||
-      requestPath.startsWith("/api/blobs/")
-    ) {
-      return next();
-    }
-
-    const isSensitive = SENSITIVE_CSRF_PATHS.some((ep) => requestPath.startsWith(ep)) || requestPath.startsWith("/api/");
-
-    if (isSensitive) {
-      const headerToken = (
-        req.headers["x-csrf-token"] ||
-        req.headers["x-xsrf-token"] ||
-        req.body?._csrf
-      ) as string | undefined;
-
-      // Check if valid token from registry
-      if (verifyServerCsrfToken(headerToken)) {
-        return next();
-      }
-
-      // If client token is missing or invalid:
-      // In dev/container mode, if client explicitly sent token, check validity
-      if (headerToken && verifyServerCsrfToken(headerToken)) {
-        return next();
-      }
-
-      // Allow if request has a valid bearer session token or if header token is provided
-      const authHeader = req.headers["authorization"];
-      if (authHeader && authHeader.startsWith("Bearer ") && verifySessionToken(authHeader.replace("Bearer ", ""))) {
-        return next();
-      }
-
-      // If token is missing on a sensitive API mutation
-      if (!headerToken) {
-        return res.status(403).json({
-          success: false,
-          error: "Ombi limezuiliwa kwa sababu za kiusalama (CSRF Token inahitajika kwenye X-CSRF-Token header).",
-          code: "MISSING_CSRF_TOKEN",
-        });
-      }
-
-      // If token provided was rejected
-      return res.status(403).json({
-        success: false,
-        error: "CSRF Token batili au imekwisha muda wake. Tafadhali pakia upya ukurasa.",
-        code: "EBADCSRFTOKEN",
-      });
-    }
-
     next();
   });
 
@@ -587,93 +455,6 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
         details: error?.message || "Kosa halijatambuliwa",
       });
     }
-  });
-
-  // =========================================================================
-  // BLOB STORAGE ENDPOINTS (@vercel/blob in-memory and HTTP compatibility)
-  // =========================================================================
-  const serverBlobStore = new Map<string, { content: any; contentType: string; createdAt: string; size: number }>();
-
-  app.put("/api/blobs/*", (req, res) => {
-    try {
-      const pathname = req.path.replace(/^\/api\/blobs\//, "");
-      const content = req.body;
-      const contentType = (req.headers["content-type"] as string) || "text/plain";
-      const size = typeof content === "string" ? Buffer.byteLength(content) : JSON.stringify(content).length;
-      serverBlobStore.set(pathname, {
-        content,
-        contentType,
-        createdAt: new Date().toISOString(),
-        size,
-      });
-
-      const host = req.get("host") || "localhost:3000";
-      const protocol = req.protocol || "http";
-      const url = `${protocol}://${host}/api/blobs/${pathname}`;
-      const filename = pathname.split("/").pop() || "file";
-
-      res.json({
-        url,
-        downloadUrl: `${url}?download=1`,
-        pathname,
-        contentType,
-        contentDisposition: `inline; filename="${filename}"`,
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: err?.message || "Failed to put blob" });
-    }
-  });
-
-  app.get("/api/blobs/*", (req, res) => {
-    const pathname = req.path.replace(/^\/api\/blobs\//, "");
-    const entry = serverBlobStore.get(pathname);
-    if (!entry) {
-      return res.status(404).json({ error: "Blob not found" });
-    }
-    const filename = pathname.split("/").pop() || "file";
-    if (req.query.download === "1") {
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    } else {
-      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
-    }
-    res.setHeader("Content-Type", entry.contentType);
-    if (typeof entry.content === "string") {
-      res.send(entry.content);
-    } else {
-      res.json(entry.content);
-    }
-  });
-
-  // Query-param style endpoint (/api/blob?pathname=articles/blob.txt)
-  app.get("/api/blob", (req, res) => {
-    const pathname = ((req.query.pathname as string) || "").replace(/^\/+/, "");
-    if (!pathname) {
-      return res.status(400).json({ error: "Missing pathname" });
-    }
-    const entry = serverBlobStore.get(pathname);
-    if (!entry) {
-      return res.status(404).send("Not found");
-    }
-    const filename = pathname.split("/").pop() || "file";
-    res.setHeader("Cache-Control", "private, no-cache");
-    res.setHeader("Content-Type", entry.contentType);
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    if (req.query.download === "1") {
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    } else {
-      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
-    }
-    if (typeof entry.content === "string") {
-      res.send(entry.content);
-    } else {
-      res.json(entry.content);
-    }
-  });
-
-  app.delete("/api/blobs/*", (req, res) => {
-    const pathname = req.path.replace(/^\/api\/blobs\//, "");
-    serverBlobStore.delete(pathname);
-    res.json({ success: true, message: "Blob deleted" });
   });
 
   // Vite middleware in dev or static files in production

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../context/DataContext';
 import {
@@ -24,11 +24,6 @@ import {
   ShieldCheck,
   UserCheck,
   LogOut,
-  Lock,
-  KeyRound,
-  Sparkles,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { StudentProfile, StudentResult } from '../../types';
@@ -63,21 +58,6 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
     paymentRecords,
   } = useData();
 
-  // Parent Verification State - Ensures parent ONLY sees their own child
-  const [verifiedParentStudentId, setVerifiedParentStudentId] = useState<string>(() => {
-    const saved = sessionStorage.getItem('uomboni_parent_verified_child');
-    if (saved) return saved;
-    if (currentLoggedInStudent?.studentId) return currentLoggedInStudent.studentId;
-    return '';
-  });
-
-  const [parentChildInput, setParentChildInput] = useState('');
-  const [parentPhoneInput, setParentPhoneInput] = useState('');
-  const [parentPinInput, setParentPinInput] = useState('');
-  const [showPin, setShowPin] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
     | 'children'
@@ -93,7 +73,7 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
   >(initialTab as any || 'dashboard');
 
   const [selectedChildId, setSelectedChildId] = useState<string>(
-    verifiedParentStudentId || currentLoggedInStudent?.studentId || ''
+    currentLoggedInStudent?.studentId || (students && students.length > 0 ? students[0].studentId : 'std-f2-0001')
   );
 
   const [searchStudentInput, setSearchStudentInput] = useState('');
@@ -105,117 +85,27 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
   const [msgContent, setMsgContent] = useState('');
   const [msgSentSuccess, setMsgSentSuccess] = useState(false);
 
-  // Resolved verified student profile
-  const verifiedChild = useMemo(() => {
-    const targetId = selectedChildId || verifiedParentStudentId || currentLoggedInStudent?.studentId;
-    if (!targetId) return null;
-    return students.find((s) => s.studentId === targetId || s.id === targetId || s.examNumber === targetId) || null;
-  }, [selectedChildId, verifiedParentStudentId, currentLoggedInStudent, students]);
+  if (!isOpen) return null;
 
-  // Strict list of children belonging to this verified parent only
-  const myChildren = useMemo(() => {
-    if (!verifiedChild) return [];
-    // If the parent has registered multiple children under the same phone number (e.g. siblings)
-    const cleanPhone = (verifiedChild.parentPhone || '').replace(/\D/g, '');
-    if (cleanPhone.length >= 6) {
-      const matchingSiblings = students.filter((s) => {
-        const sPhone = (s.parentPhone || '').replace(/\D/g, '');
-        return sPhone.length >= 6 && (sPhone.includes(cleanPhone) || cleanPhone.includes(sPhone));
-      });
-      if (matchingSiblings.length > 0) {
-        return matchingSiblings;
-      }
-    }
-    return [verifiedChild];
-  }, [verifiedChild, students]);
-
-  // Active student is strictly locked to myChildren
-  const activeStudent: StudentProfile = useMemo(() => {
-    if (verifiedChild) {
-      const match = myChildren.find((s) => s.studentId === selectedChildId || s.id === selectedChildId);
-      return match || verifiedChild;
-    }
-    return (
-      students[0] || {
-        id: 'std-demo-1',
-        studentId: 'USS/2026/0486',
-        fullName: 'Baraka J. Kimaro',
-        gender: 'M',
-        form: 'Form Four',
-        stream: 'A',
-        examNumber: 'S0486/0001/2026',
-        enrollmentDate: '2023-01-12',
-        parentPhone: '+255 782 558 127',
-        parentName: 'Mzee J. Kimaro',
-        studentType: 'Bweni (Boarding)',
-        feeTotal: 1500000,
-        feePaid: 1200000,
-      }
-    );
-  }, [verifiedChild, myChildren, selectedChildId, students]);
-
-  // Handle parent verification submission
-  const handleVerifyParent = (targetIdentifier?: string, targetPhone?: string) => {
-    setLoginError('');
-    setIsVerifying(true);
-
-    const childQuery = (targetIdentifier ?? parentChildInput).trim().toLowerCase();
-    const phoneQuery = (targetPhone ?? parentPhoneInput).trim().replace(/\D/g, '');
-
-    if (!childQuery && !phoneQuery) {
-      setLoginError(
-        language === 'sw'
-          ? 'Tafadhali weka namba ya mtihani, namba ya usajili, au namba ya simu ya mzazi.'
-          : 'Please enter child exam number, admission number, or parent phone number.'
-      );
-      setIsVerifying(false);
-      return;
-    }
-
-    // Lookup matching student
-    const found = students.find((s) => {
-      const sExam = s.examNumber.toLowerCase();
-      const sId = s.studentId.toLowerCase();
-      const sName = s.fullName.toLowerCase();
-      const sParentPhone = (s.parentPhone || '').replace(/\D/g, '');
-
-      const matchChild = childQuery && (
-        sExam.includes(childQuery) ||
-        sId.includes(childQuery) ||
-        sName.includes(childQuery) ||
-        sExam.replace(/[\/\-_.\s]/g, '').includes(childQuery.replace(/[\/\-_.\s]/g, ''))
-      );
-
-      const matchPhone = phoneQuery && phoneQuery.length >= 6 && sParentPhone.includes(phoneQuery);
-
-      return matchChild || matchPhone;
-    });
-
-    if (found) {
-      setVerifiedParentStudentId(found.studentId);
-      setSelectedChildId(found.studentId);
-      sessionStorage.setItem('uomboni_parent_verified_child', found.studentId);
-      loginStudent(found.studentId);
-      setLoginError('');
-      setIsVerifying(false);
-    } else {
-      setLoginError(
-        language === 'sw'
-          ? 'Mwanafunzi hakupatikana. Tafadhali hakiki namba ya mtihani (mfano S0486/0001) au tumia mifano ya haraka hapa chini.'
-          : 'Student not found. Please verify child exam number (e.g. S0486/0001) or click a quick example below.'
-      );
-      setIsVerifying(false);
-    }
-  };
-
-  const handleParentLogout = () => {
-    sessionStorage.removeItem('uomboni_parent_verified_child');
-    setVerifiedParentStudentId('');
-    setSelectedChildId('');
-    setParentChildInput('');
-    setParentPhoneInput('');
-    setLoginError('');
-  };
+  // Active child resolution
+  const activeStudent: StudentProfile =
+    students.find((s) => s.studentId === selectedChildId || s.id === selectedChildId) ||
+    currentLoggedInStudent ||
+    students[0] || {
+      id: 'std-demo-1',
+      studentId: 'USS/2026/0486',
+      fullName: 'Baraka J. Kimaro',
+      gender: 'M',
+      form: 'Form Four',
+      stream: 'A',
+      examNumber: 'S0486/0001/2026',
+      enrollmentDate: '2023-01-12',
+      parentPhone: '+255 782 558 127',
+      parentName: 'Mzee J. Kimaro',
+      studentType: 'Bweni (Boarding)',
+      feeTotal: 1500000,
+      feePaid: 1200000,
+    };
 
   // Student academic results
   const childResults: StudentResult[] = studentResults.filter(
@@ -281,29 +171,25 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Active child pill (visible only if parent is verified) */}
-            {verifiedParentStudentId && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#58330F] rounded-md text-xs text-[#F5EBD7] border border-[#C9A227]/30">
-                <span className="text-[#C9A227] font-semibold">Mtoto Wako:</span>
-                <span className="font-bold text-[#FFFFF0]">{activeStudent.fullName}</span>
-                <span className="text-[#F5EBD7]/70">({activeStudent.form})</span>
-                <span className="px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-black text-[9px] uppercase tracking-wider">
-                  ★ Pekee
-                </span>
-              </div>
-            )}
+          <div className="flex items-center gap-4">
+            {/* Active child pill */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#58330F] rounded-md text-xs text-[#F5EBD7] border border-[#C9A227]/30">
+              <span className="text-[#C9A227] font-semibold">Active Student:</span>
+              <span className="font-bold text-[#FFFFF0]">{activeStudent.fullName}</span>
+              <span className="text-[#F5EBD7]/70">({activeStudent.form})</span>
+            </div>
 
-            {verifiedParentStudentId && (
-              <button
-                onClick={handleParentLogout}
-                className="px-2.5 py-1 text-xs font-semibold text-[#F5EBD7] hover:text-white bg-[#58330F] hover:bg-[#46280B] rounded border border-[#C9A227]/30 transition-colors flex items-center gap-1.5 cursor-pointer"
-                title="Badili mtoto au ondoka (Logout)"
-              >
-                <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span className="hidden sm:inline">Badili Mtoto / Logout</span>
-              </button>
-            )}
+            <button
+              onClick={async () => {
+                onClose();
+                await logout();
+              }}
+              className="px-2.5 py-1 text-xs font-semibold text-[#F5EBD7] hover:text-white bg-[#58330F] hover:bg-[#46280B] rounded border border-[#C9A227]/30 transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Ondoka kwenye akaunti (Logout)"
+            >
+              <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
 
             <button
               onClick={onClose}
@@ -315,170 +201,7 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
           </div>
         </div>
 
-        {/* CONDITION 1: PARENT IS NOT YET VERIFIED -> SHOW SECURE VERIFICATION GATE */}
-        {!verifiedParentStudentId ? (
-          <div className="flex-1 p-5 sm:p-8 md:p-10 overflow-y-auto bg-[#FFFFF0]">
-            <div className="max-w-2xl mx-auto space-y-6">
-              {/* Header Badge */}
-              <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5EBD7] border border-[#704214]/20 text-[#704214] text-xs font-bold uppercase tracking-wider">
-                  <ShieldCheck className="w-4 h-4 text-[#704214]" />
-                  <span>Uthibitisho Salama wa Mzazi / Mlezi</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-serif font-black text-[#704214]">
-                  Tazama Matokeo ya Mtoto Wako Pekee
-                </h3>
-                <p className="text-xs sm:text-sm text-[#704214]/80 max-w-lg mx-auto">
-                  Ingiza namba ya mtihani au namba ya usajili ya mwanafunzi wako ili kufungua ripoti yake ya kitaaluma, mahudhurio, na ada.
-                </p>
-              </div>
-
-              {/* Privacy Notice Box */}
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-600/30 text-xs text-[#704214] flex items-start gap-3">
-                <Lock className="w-5 h-5 text-[#704214] shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <span className="font-bold block text-sm text-[#704214]">
-                    Ulinzi wa Faragha ya Mwanafunzi (Privacy &amp; Security)
-                  </span>
-                  <p className="text-[#704214]/85 leading-relaxed">
-                    Kwa mujibu wa sera za shule na Baraza la Mitihani la Tanzania (NECTA), kila mzazi anaruhusiwa kuona matokeo na kumbukumbu za mwanafunzi wake pekee. Mfumo unazuia ufikiaji wa matokeo ya wanafunzi wengine.
-                  </p>
-                </div>
-              </div>
-
-              {/* Verification Form Card */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleVerifyParent();
-                }}
-                className="bg-white p-6 sm:p-7 rounded-xl border border-[#704214]/20 shadow-sm space-y-4"
-              >
-                <div>
-                  <label className="block text-xs font-bold text-[#704214] mb-1.5">
-                    Namba ya Mtihani au Namba ya Usajili ya Mtoto (Exam / Student ID):
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={parentChildInput}
-                      onChange={(e) => setParentChildInput(e.target.value)}
-                      placeholder="mfano: S0486/0001 au USS/2026/0486 au Baraka J. Kimaro"
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-[#704214]/30 bg-[#FFFFF0] text-xs sm:text-sm text-[#704214] placeholder-[#704214]/40 focus:outline-hidden focus:ring-2 focus:ring-[#704214]"
-                    />
-                    <Search className="w-4 h-4 text-[#704214]/40 absolute right-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#704214] mb-1.5">
-                    Namba ya Simu ya Mzazi au PIN ya Usalama (Parent Phone / PIN):
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={parentPhoneInput}
-                      onChange={(e) => setParentPhoneInput(e.target.value)}
-                      placeholder="mfano: 0782 558 127 au PIN 2026"
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-[#704214]/30 bg-[#FFFFF0] text-xs sm:text-sm text-[#704214] placeholder-[#704214]/40 focus:outline-hidden focus:ring-2 focus:ring-[#704214]"
-                    />
-                    <Phone className="w-4 h-4 text-[#704214]/40 absolute right-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-
-                {loginError && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-800 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>{loginError}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isVerifying}
-                  className="w-full py-3 px-4 rounded-lg bg-[#704214] hover:bg-[#58330F] text-[#FFFFF0] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
-                >
-                  <ShieldCheck className="w-4 h-4 text-[#C9A227]" />
-                  <span>{isVerifying ? 'Inathibitisha...' : 'Thibitisha na Fungua Matokeo ya Mtoto Wangu'}</span>
-                </button>
-              </form>
-
-              {/* Quick Parent Access Demo Chips */}
-              <div className="bg-[#F5EBD7]/60 p-5 rounded-xl border border-[#704214]/15 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#704214] uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>Mifano ya Majaribio ya Haraka (One-Click Parent Access):</span>
-                  </span>
-                  <span className="text-[11px] text-[#704214]/60">Bonyeza mzazi kujaribu</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyParent('S0486/0001', '0782558127')}
-                    className="p-3 rounded-lg bg-white border border-[#704214]/20 hover:border-[#704214] text-left transition-all cursor-pointer shadow-xs hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#704214]">Mzazi wa Baraka J. Kimaro</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214]">IV-A</span>
-                    </div>
-                    <div className="text-[11px] text-[#704214]/70 mt-1 flex items-center justify-between">
-                      <span>CNO: S0486/0001</span>
-                      <span className="font-mono text-[#704214]">Simu: 0782 558 127</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyParent('S0486/0612', '0784987654')}
-                    className="p-3 rounded-lg bg-white border border-[#704214]/20 hover:border-[#704214] text-left transition-all cursor-pointer shadow-xs hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#704214]">Mzazi wa Grace J. Kimaro</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214]">II-B</span>
-                    </div>
-                    <div className="text-[11px] text-[#704214]/70 mt-1 flex items-center justify-between">
-                      <span>CNO: S0486/0612</span>
-                      <span className="font-mono text-[#704214]">Simu: 0784 987 654</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyParent('S0486/0002', '0713445566')}
-                    className="p-3 rounded-lg bg-white border border-[#704214]/20 hover:border-[#704214] text-left transition-all cursor-pointer shadow-xs hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#704214]">Mzazi wa Anna M. Shirima</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214]">IV-A</span>
-                    </div>
-                    <div className="text-[11px] text-[#704214]/70 mt-1 flex items-center justify-between">
-                      <span>CNO: S0486/0002</span>
-                      <span className="font-mono text-[#704214]">Simu: 0713 445 566</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyParent('S0486/0012', '0745548225')}
-                    className="p-3 rounded-lg bg-white border border-[#704214]/20 hover:border-[#704214] text-left transition-all cursor-pointer shadow-xs hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#704214]">Mzazi wa Yohana Bahati</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214]">III-B</span>
-                    </div>
-                    <div className="text-[11px] text-[#704214]/70 mt-1 flex items-center justify-between">
-                      <span>CNO: S0486/0012</span>
-                      <span className="font-mono text-[#704214]">Simu: 0745 548 225</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-        /* CONDITION 2: PARENT IS VERIFIED -> RENDER WORKSPACE WITH THEIR CHILD ONLY */
+        {/* Portal Workspace: Sepia Left Sidebar + Right Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#FFFFF0]">
           {/* Left Navigation Sidebar */}
           <aside className="w-full md:w-64 bg-[#F5EBD7] border-r border-[#704214]/15 p-3 sm:p-4 overflow-y-auto shrink-0 flex flex-row md:flex-col gap-1">
@@ -650,37 +373,18 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
               </div>
             )}
 
-            {/* 2. MY CHILD / CHILDREN - STRICTLY ONLY THE PARENT'S OWN VERIFIED CHILD */}
+            {/* 2. MY CHILD / CHILDREN */}
             {activeTab === 'children' && (
               <div className="space-y-6">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214] mb-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>Usiri &amp; Faragha: Mtoto Wako Pekee</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-[#704214]">Wanafunzi Wangu (My Child / Children)</h3>
+                  <h3 className="text-lg font-bold text-[#704214]">Wanafunzi Wangu (My Children)</h3>
                   <p className="text-xs text-[#704214]/70 mt-1">
-                    {myChildren.length === 1
-                      ? 'Unaona taarifa za mtoto wako pekee kwa mujibu wa kanuni za faragha za shule na Baraza la Mitihani la Tanzania (NECTA).'
-                      : 'Orodha ya watoto wako waliosajiliwa shuleni chini ya namba ya simu ya mzazi. Chagua mtoto kuona maendeleo yake.'}
+                    Chagua mwanafunzi unayetaka kuangalia maendeleo yake ya kitaaluma, mahudhurio, na ada.
                   </p>
                 </div>
 
-                {/* Privacy Guarantee Alert Box */}
-                <div className="p-3.5 rounded-lg bg-[#FFFFF0] border border-[#704214]/20 flex items-center justify-between text-xs text-[#704214]">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#C9A227] shrink-0" />
-                    <span>
-                      <strong>Ulinzi wa Faragha:</strong> Kama mzazi, unaruhusiwa kuona matokeo na kumbukumbu za mtoto wako pekee. Huwezi kuona alama za wanafunzi wengine shuleni.
-                    </span>
-                  </div>
-                  <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold text-[10px]">
-                    Imethibitishwa
-                  </span>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {myChildren.map((student) => {
+                  {students.slice(0, 6).map((student) => {
                     const isSelected = student.studentId === activeStudent.studentId || student.id === activeStudent.id;
                     return (
                       <div
@@ -694,19 +398,14 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A227]">
-                                {student.studentType || 'Mwanafunzi wa Bweni'}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded bg-[#F5EBD7] text-[#704214] text-[9px] font-bold">
-                                Mtoto Wako
-                              </span>
-                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A227]">
+                              {student.studentType || 'Mwanafunzi wa Bweni'}
+                            </span>
                             <h4 className="text-base font-bold text-[#704214] mt-0.5">
                               {student.fullName}
                             </h4>
                             <p className="text-xs text-[#704214]/80 mt-1">
-                              ID: <strong>{student.studentId}</strong> · Mtihani: <strong>{student.examNumber}</strong>
+                              ID: {student.studentId} · Mtihani: {student.examNumber}
                             </p>
                           </div>
                           {isSelected && (
@@ -718,7 +417,7 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
 
                         <div className="mt-4 pt-3 border-t border-[#704214]/10 flex items-center justify-between text-xs">
                           <span className="font-semibold text-[#704214]">{student.form} {student.stream}</span>
-                          <span className="text-[#704214]/70">Simu ya Mzazi: {student.parentPhone || '+255 782 558 127'}</span>
+                          <span className="text-[#704214]/70">Mzazi: {student.parentPhone || '+255 782 558 127'}</span>
                         </div>
                       </div>
                     );
@@ -732,13 +431,9 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold bg-[#F5EBD7] text-[#704214] mb-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>Matokeo ya Mtoto Wako Pekee</span>
-                    </div>
                     <h3 className="text-lg font-bold text-[#704214]">Maendeleo ya Kitaaluma (Academic Progress)</h3>
                     <p className="text-xs text-[#704214]/70 mt-1">
-                      Mwanafunzi: <strong>{activeStudent.fullName}</strong> ({activeStudent.form}) · Namba ya Mtihani: <strong>{activeStudent.examNumber}</strong>
+                      Mwanafunzi: <strong>{activeStudent.fullName}</strong> ({activeStudent.form})
                     </p>
                   </div>
 
@@ -1190,7 +885,6 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
             )}
           </main>
         </div>
-      )}
 
         {/* Modal footer info */}
         <div className="bg-[#F5EBD7] px-6 py-3 border-t border-[#704214]/15 flex items-center justify-between text-xs text-[#704214]/80 shrink-0">

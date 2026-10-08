@@ -51,12 +51,9 @@ import {
   seedInstitutionSchemaFoundation,
   DEFAULT_SCHOOL_SETTINGS,
 } from '../../services/schoolFirestoreService';
-import { useCsrfProtection } from '../../hooks/useCsrfProtection';
-import { CsrfTokenInput } from '../CsrfTokenInput';
 
 export const AdminDashboard: React.FC = () => {
   const { user, userProfile, updateUserRoleByAdmin } = useAuth();
-  const { csrfToken, validateRequest, validateFormSubmit } = useCsrfProtection();
   const [activeAdminTab, setActiveAdminTab] = useState<
     'users' | 'students' | 'teachers' | 'academics' | 'exams' | 'announcements' | 'settings'
   >('users');
@@ -218,12 +215,6 @@ export const AdminDashboard: React.FC = () => {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setStatusMessage({ type: 'error', text: csrfCheck.error || 'CSRF token validation failed.' });
-      return;
-    }
-
     const ok = await updateSchoolSettings(schoolSettings);
     if (ok) {
       setStatusMessage({ type: 'success', text: 'School settings saved to settings/school successfully.' });
@@ -235,12 +226,6 @@ export const AdminDashboard: React.FC = () => {
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudent.admissionNumber || !newStudent.fullName) return;
-
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setStatusMessage({ type: 'error', text: csrfCheck.error || 'CSRF token validation failed.' });
-      return;
-    }
 
     const studentToSave: FirestoreStudent = {
       admissionNumber: newStudent.admissionNumber,
@@ -286,12 +271,6 @@ export const AdminDashboard: React.FC = () => {
   const handlePostAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAnn.title || !newAnn.message) return;
-
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setStatusMessage({ type: 'error', text: csrfCheck.error || 'CSRF token validation failed.' });
-      return;
-    }
 
     const announcement: FirestoreAnnouncement = {
       title: newAnn.title,
@@ -516,7 +495,6 @@ export const AdminDashboard: React.FC = () => {
               Schema: admissionNumber, fullName, gender, dateOfBirth, classId, stream, userId, parentName, parentPhone, photoURL, active, createdAt, updatedAt
             </p>
             <form onSubmit={handleAddStudent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              <CsrfTokenInput />
               <div>
                 <label className="block text-slate-300 font-bold mb-1">Admission Number *</label>
                 <input
@@ -793,7 +771,6 @@ export const AdminDashboard: React.FC = () => {
             </p>
 
             <form onSubmit={handlePostAnnouncement} className="space-y-3 text-xs">
-              <CsrfTokenInput />
               <div>
                 <label className="block font-bold text-slate-300 mb-1">Title *</label>
                 <input
@@ -887,7 +864,6 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveSettings} className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <CsrfTokenInput />
             <div>
               <label className="block font-bold text-slate-300 mb-1">School Name *</label>
               <input

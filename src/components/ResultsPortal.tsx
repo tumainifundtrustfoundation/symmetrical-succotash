@@ -674,7 +674,6 @@ export const ResultsPortal: React.FC<ResultsPortalProps> = ({
               setSearchQuery={setSearchQuery}
               onSelectStudent={(st) => setActiveResult(st)}
               activeResultId={activeResult?.id}
-              onOpenParentPortal={onOpenParentPortal}
             />
 
             {/* Active Student Academic Performance Report */}

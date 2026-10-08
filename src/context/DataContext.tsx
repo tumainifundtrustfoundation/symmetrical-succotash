@@ -26,7 +26,6 @@ import {
   SchoolProfile,
   AcademicDirective,
 } from '../types';
-import { secureFetch } from '../utils/csrfProtection';
 import {
   saveAcademicDirectiveToFirestore,
   getAcademicDirectivesFromFirestore,
@@ -956,7 +955,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     syncDebounceTimers.current[key] = setTimeout(async () => {
       try {
         setIsServerSyncing(true);
-        const res = await secureFetch('/api/school-data/update', {
+        const res = await fetch('/api/school-data/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, data }),
@@ -979,7 +978,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Retry once after 700ms
           setTimeout(async () => {
             try {
-              const retryRes = await secureFetch('/api/school-data/update', {
+              const retryRes = await fetch('/api/school-data/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, data }),
@@ -1172,7 +1171,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         schoolProfile,
         enrollmentStats,
       };
-      const res = await secureFetch('/api/school-data/batch', {
+      const res = await fetch('/api/school-data/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates }),

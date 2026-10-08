@@ -12,17 +12,14 @@ import {
   X,
 } from 'lucide-react';
 import { SchoolLogo } from '../SchoolLogo';
-import { CsrfTokenInput } from '../CsrfTokenInput';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { sendResetPassword, formatAuthError } from '../../lib/firebase';
 import { checkServerSecurityStatus } from '../../services/authSecurityClient';
-import { useCsrfProtection } from '../../hooks/useCsrfProtection';
 
 export const LoginPage: React.FC = () => {
   const { login, loginWithGoogleAuth, loading: authLoading, setActiveView, setActiveRoleDashboard } = useAuth();
   const { language } = useLanguage();
-  const { csrfToken, validateFormSubmit, refreshCsrfToken } = useCsrfProtection();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -63,19 +60,6 @@ export const LoginPage: React.FC = () => {
       }
     } catch {
       // Backend status precheck fallback
-    }
-
-    // CSRF Protection Token Validation for sensitive login submission
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setErrorMessage(
-        csrfCheck.error ||
-          (language === 'sw'
-            ? 'Ulinzi wa CSRF: Hitilafu ya uthibitishaji wa token ya usalama. Tafadhali jaribu tena.'
-            : 'CSRF Protection: Security token validation failed. Please try again.')
-      );
-      await refreshCsrfToken();
-      return;
     }
 
     setIsSubmitting(true);
@@ -138,16 +122,6 @@ export const LoginPage: React.FC = () => {
   const handlePasswordResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail.trim()) return;
-
-    // Validate CSRF token on password reset request
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setResetFeedback({
-        type: 'error',
-        message: csrfCheck.error || 'Ulinzi wa CSRF: Hitilafu ya uthibitishaji wa token ya usalama.',
-      });
-      return;
-    }
 
     setIsSendingReset(true);
     setResetFeedback(null);
@@ -292,8 +266,6 @@ export const LoginPage: React.FC = () => {
 
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <CsrfTokenInput />
-
                 {/* Field 1: Email / Username */}
                 <div>
                   <label className="block text-xs font-bold text-[#704214] mb-1.5">
@@ -470,7 +442,6 @@ export const LoginPage: React.FC = () => {
                 </div>
               ) : (
                 <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
-                  <CsrfTokenInput />
                   <p className="text-xs text-[#704214]/80 leading-relaxed">
                     Weka barua pepe iliyosajiliwa kwenye akaunti yako. Tutatuma kiungo rasmi cha kurejesha nenosiri lako.
                   </p>

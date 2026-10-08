@@ -164,7 +164,6 @@ function MainSchoolApp() {
         onOpenStaffPortal={() => setIsTeacherStaffPortalOpen(true)}
         onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
         onOpenLogin={() => setActiveView('login')}
-        onOpenResults={() => setIsSchoolResultsOpen(true)}
       />
 
       <main className="flex-grow">
@@ -217,11 +216,8 @@ function MainSchoolApp() {
           onOpenSchoolResults={() => setIsSchoolResultsOpen(true)}
         />
 
-        {/* 11. News & Events (Updates & Highlights) */}
-        <NewsEventsSection
-          onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
-          onNavigate={handleNavigate}
-        />
+        {/* 11. News & Events */}
+        <NewsEventsSection />
 
         {/* 12. Gallery */}
         <GallerySection />

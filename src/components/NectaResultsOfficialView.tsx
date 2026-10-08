@@ -48,7 +48,6 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
   const [parentChildQuery, setParentChildQuery] = useState<string>(initialExamNumber);
   const [showAllNamesAdminToggle, setShowAllNamesAdminToggle] = useState<boolean>(isAcademicMasterView);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<StudentResult | null>(null);
-  const [parentOnlyChildMode, setParentOnlyChildMode] = useState<boolean>(!isAcademicMasterView);
 
   // Available Forms & Exams from studentResults
   const availableForms = useMemo(() => {
@@ -82,14 +81,6 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
         r.id.toLowerCase() === q
     ) || null;
   }, [parentChildQuery, currentResults]);
-
-  // When a parent is viewing and their child is identified, isolate strictly to their child alone
-  const displayedResults = useMemo(() => {
-    if (!isAcademicMasterView && parentOnlyChildMode && matchedChildResult) {
-      return [matchedChildResult];
-    }
-    return currentResults;
-  }, [isAcademicMasterView, parentOnlyChildMode, matchedChildResult, currentResults]);
 
   // Division summary computed in NECTA / CSSC exact format
   const divisionSummary = useMemo(() => {
@@ -453,39 +444,12 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
         {/* 6. DETAILED RESULTS TABLE (EXACT NECTA / CSSC LAYOUT FROM SCREENSHOT) */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
-            <div>
-              <h4 className="text-sm font-serif font-black uppercase text-[#002244]">
-                ORODHA YA WATAHINIWA NA MATOKEO YA KINA (DETAILED RESULTS)
-              </h4>
-              {matchedChildResult && !isAcademicMasterView && parentOnlyChildMode && (
-                <p className="text-[11px] text-emerald-800 font-semibold mt-0.5">
-                  ★ Matokeo ya Mtoto Wako Pekee ({matchedChildResult.studentName}) · Faragha ya wanafunzi wengine imelindwa
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {matchedChildResult && !isAcademicMasterView && (
-                <button
-                  type="button"
-                  onClick={() => setParentOnlyChildMode(!parentOnlyChildMode)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
-                    parentOnlyChildMode
-                      ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-xs'
-                      : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
-                  }`}
-                  title="Badili muonekano wa mtoto pekee au orodha nzima"
-                >
-                  <span>★</span>
-                  <span>{parentOnlyChildMode ? 'Mtoto Wangu Pekee (Faragha: IMEWASHWA)' : 'Onyesha Mtoto Wangu Pekee'}</span>
-                </button>
-              )}
-              <span className="text-xs text-slate-500 font-mono">
-                {matchedChildResult && !isAcademicMasterView && parentOnlyChildMode
-                  ? 'Mtoto Wako Pekee'
-                  : `Watahiniwa: ${displayedResults.length}`}
-              </span>
-            </div>
+            <h4 className="text-sm font-serif font-black uppercase text-[#002244]">
+              ORODHA YA WATAHINIWA NA MATOKEO YA KINA (DETAILED RESULTS)
+            </h4>
+            <span className="text-xs text-slate-500 font-mono">
+              Watahiniwa: {currentResults.length}
+            </span>
           </div>
 
           <div className="overflow-x-auto border border-slate-400 rounded-lg">
@@ -500,8 +464,8 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-300 text-[11px] sm:text-xs">
-                {displayedResults.length > 0 ? (
-                  displayedResults.map((st) => {
+                {currentResults.length > 0 ? (
+                  currentResults.map((st) => {
                     const cnoFormatted = formatCno(st.examNumber);
                     const isMyChild =
                       matchedChildResult &&

@@ -30,36 +30,22 @@ import {
 
 import firebaseConfig from "../../firebase-applet-config.json";
 
-// Secure API Key resolution: Prioritizes environment variables, never exposes keys in logs or UI
-const activeFirebaseConfig = {
-  ...firebaseConfig,
-  apiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || firebaseConfig.apiKey,
-};
-
 // Initialize Firebase App
-export const app = getApps().length > 0 ? getApp() : initializeApp(activeFirebaseConfig);
+export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// Initialize Firestore with custom database ID (if provided) and resilient transport settings.
+// Initialize Firestore with custom database ID and resilient transport settings.
 // In iframe and proxy environments, WebChannel streaming gets buffered/blocked causing a 10s backend unreachable timeout.
 // Enabling experimentalForceLongPolling with useFetchStreams: false prevents stream buffering delays.
 try {
-  const customDbId = (firebaseConfig as any).firestoreDatabaseId?.trim();
-  if (customDbId) {
-    initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-      useFetchStreams: false,
-    } as any, customDbId);
-  } else {
-    initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-      useFetchStreams: false,
-    } as any);
-  }
+  initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    useFetchStreams: false,
+  } as any, firebaseConfig.firestoreDatabaseId);
 } catch {
   // Already initialized
 }
@@ -71,8 +57,7 @@ try {
   // Ignore
 }
 
-const customDbId = (firebaseConfig as any).firestoreDatabaseId?.trim();
-export const db = customDbId ? getFirestore(app, customDbId) : getFirestore(app); /* CRITICAL: The app will break without this line */
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
 
 // Firestore Error Handler Infrastructure as required by Firebase skill
 export enum OperationType {
