@@ -32,19 +32,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
       {/* Hero Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center animate-in fade-in duration-700">
         {/* Institutional Kicker */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/30 text-[#FFFFF0] text-xs font-semibold tracking-wider uppercase mb-6">
-          <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
-          <span>NECTA Centre S0486 · Moshi Rural, Kilimanjaro</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-xs font-semibold tracking-wider uppercase mb-6 backdrop-blur-xs">
+          <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" />
+          <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
         </div>
 
         {/* Headline */}
-        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto">
-          Building Knowledge, Character &amp; Excellence
-        </h1>
+        <div className="space-y-3 max-w-4xl mx-auto">
+          <p className="font-serif text-amber-300 text-lg sm:text-2xl font-black tracking-wide uppercase">
+            “ELIMU NI MAISHA”
+          </p>
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.15]">
+            Tujendelee Sisi Wenyewe: Prayer · Education · Work
+          </h1>
+        </div>
 
         {/* Subheading */}
-        <p className="mt-6 text-base sm:text-lg lg:text-xl text-[#FFFFF0]/90 max-w-3xl mx-auto font-normal leading-[1.7]">
-          Welcome to Uomboni Secondary School — a community committed to learning, discipline, character and academic growth.
+        <p className="mt-6 text-base sm:text-lg text-[#FFFFF0]/90 max-w-3xl mx-auto font-normal leading-[1.75]">
+          Shule ya Sekondari Uomboni (Pre-Form 1, Kidato cha 1–4 Bweni &amp; Kutwa) chini ya Jimbo Katoliki la Moshi, Marangu West kwenye mteremko wa Mlima Kilimanjaro. Udahili wa 2026/2027 umefunguliwa rasmi!
         </p>
 
         {/* Action Buttons */}
@@ -59,9 +64,9 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
 
           <button
             onClick={handleAdmissionsClick}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-md bg-transparent text-[#FFFFF0] border border-[#C9A227] font-semibold text-sm hover:bg-[#C9A227]/15 transition-colors cursor-pointer flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-md bg-[#C9A227] text-slate-950 font-bold text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
           >
-            <span>Admissions</span>
+            <span>Admissions &amp; Joining</span>
           </button>
         </div>
 

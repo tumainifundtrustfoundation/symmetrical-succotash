@@ -21,11 +21,21 @@ import {
   KeyRound,
   UserCheck,
   User,
+  Eye,
+  EyeOff,
+  Search,
+  Clock,
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { useLanguage } from '../context/LanguageContext';
 import { SAVED_TEACHERS } from '../data/savedSchoolMedia';
+import {
+  verifyTeacherIndividualLogin,
+  getTeacherLockoutStatus,
+  TEACHER_AUTH_DIRECTORY,
+  TeacherAuthProfile,
+} from '../services/teacherAuthDirectory';
 
 export type PortalLoginRole = 'admin' | 'bursar' | 'academic_master' | 'teacher';
 
@@ -41,7 +51,7 @@ interface WorldClassLoginViewProps {
   onClose?: () => void;
   isModal?: boolean;
   availableTeachers?: any[];
-  onDirectTeacherLogin?: (teacherInfo: { id?: string; name: string; email: string; role?: string }) => void;
+  onDirectTeacherLogin?: (teacherInfo: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => void;
   onDirectAcademicLogin?: (academicInfo: { name: string; email: string }) => void;
 }
 
@@ -72,38 +82,81 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
           t.subjects?.includes('Chemistry') ||
           t.subjects?.includes('Sayansi')
       ) || teachersList[0];
-    return defaultTeacher?.id || '';
+    return defaultTeacher?.id || 'tch-003';
   });
   const [loginMethod, setLoginMethod] = useState<'quick' | 'google'>('quick');
-  const [teacherPinInput, setTeacherPinInput] = useState('1234');
+  const [teacherPinInput, setTeacherPinInput] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
   const [pinError, setPinError] = useState('');
   const [isLoggingInDirectly, setIsLoggingInDirectly] = useState(false);
+  const [lockoutRemaining, setLockoutRemaining] = useState<number>(0);
+
+  // Check lockout on mount and when teacher selection changes
+  React.useEffect(() => {
+    const status = getTeacherLockoutStatus(selectedTeacherId);
+    if (status.isLocked) {
+      setLockoutRemaining(status.lockTimeRemainingSeconds);
+    } else {
+      setLockoutRemaining(0);
+    }
+  }, [selectedTeacherId]);
+
+  // Lockout countdown timer interval
+  React.useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutRemaining]);
 
   const handleExecuteDirectTeacherLogin = (customTeacher?: any) => {
     setPinError('');
     const targetTeacher =
       customTeacher || teachersList.find((t) => t.id === selectedTeacherId) || teachersList[0];
     if (!targetTeacher) {
-      setPinError('Tafadhali chagua mwalimu.');
+      setPinError(language === 'sw' ? 'Tafadhali chagua mwalimu.' : 'Please select a teacher.');
       return;
     }
 
-    const pin = teacherPinInput.trim().toLowerCase();
-    const validPins = [
-      '1234',
-      '0486',
-      'walimu',
-      'walimu2026',
-      'walimu-0486',
-      'uomboni2025',
-      '2026-teacher-pass',
-      'uomboni2026',
-    ];
-    if (pin.length < 3 && !validPins.includes(pin)) {
+    // Check if account is locked out
+    const lockoutStatus = getTeacherLockoutStatus(targetTeacher.id);
+    if (lockoutStatus.isLocked) {
+      setLockoutRemaining(lockoutStatus.lockTimeRemainingSeconds);
       setPinError(
         language === 'sw'
-          ? 'Weka nenosiri au PIN ya mwalimu (mfano: 1234 au walimu2026).'
-          : 'Enter teacher PIN or password (e.g., 1234 or walimu2026).'
+          ? `⚠️ Mfumo umefunga kwa usalama. Tafadhali subiri sekunde ${lockoutStatus.lockTimeRemainingSeconds} kabla ya kujaribu tena.`
+          : `⚠️ Account locked for security. Please wait ${lockoutStatus.lockTimeRemainingSeconds} seconds before trying again.`
+      );
+      return;
+    }
+
+    if (!teacherPinInput.trim()) {
+      setPinError(
+        language === 'sw'
+          ? 'Tafadhali weka nambari yako ya siri binafsi (PIN ya mwalimu).'
+          : 'Please enter your personal confidential teacher PIN.'
+      );
+      return;
+    }
+
+    // Strict Individual Teacher PIN Verification (prevents teacher impersonation)
+    const verification = verifyTeacherIndividualLogin(targetTeacher.id, teacherPinInput);
+    if (!verification.success) {
+      if (verification.locked && verification.lockTimeRemainingSeconds) {
+        setLockoutRemaining(verification.lockTimeRemainingSeconds);
+      }
+      setPinError(
+        language === 'sw'
+          ? (verification.errorSw || verification.error || 'PIN si sahihi.')
+          : (verification.error || 'Incorrect teacher PIN.')
       );
       return;
     }
@@ -115,6 +168,7 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
         name: targetTeacher.name,
         email: targetTeacher.email || 'walimu@uombonisec.ac.tz',
         role: 'teacher',
+        subjects: verification.teacher?.assignedSubjects || targetTeacher.subjects || ['Chemistry'],
       });
     } else if (onContinueToPortal) {
       onContinueToPortal();
@@ -124,22 +178,30 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
 
   const handleExecuteDirectAcademicLogin = () => {
     setPinError('');
-    const pin = teacherPinInput.trim().toLowerCase();
-    const validPins = [
-      '1234',
-      '0486',
-      'taaluma',
-      'taaluma2026',
-      'taaluma-0486',
-      'uomboni2025',
-      '2026-acad-pass',
-      'uomboni2026',
-    ];
-    if (pin.length < 3 && !validPins.includes(pin)) {
+    if (!teacherPinInput.trim()) {
       setPinError(
         language === 'sw'
-          ? 'Weka nenosiri au PIN ya taaluma (mfano: 1234 au taaluma2026).'
-          : 'Enter Academic Master PIN (e.g., 1234 or taaluma2026).'
+          ? 'Tafadhali weka PIN ya Mkuu wa Taaluma.'
+          : 'Please enter the Academic Master PIN.'
+      );
+      return;
+    }
+
+    const pin = teacherPinInput.trim().toLowerCase();
+    const validAcademicPins = [
+      '745225',
+      '745548',
+      'taaluma2026',
+      'taaluma-0486',
+      '0486',
+      'uomboni2026',
+    ];
+
+    if (!validAcademicPins.includes(pin)) {
+      setPinError(
+        language === 'sw'
+          ? 'PIN ya Taaluma si sahihi. Tafadhali thibitisha nenosiri lako la siri la uongozi wa taaluma.'
+          : 'Invalid Academic Master PIN. Please enter your confidential dean passkey.'
       );
       return;
     }
@@ -270,7 +332,7 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                   UOMBONI SECONDARY SCHOOL
                 </h1>
                 <p className="text-[10px] font-semibold text-amber-400 tracking-wider font-mono uppercase">
-                  NECTA CENTRE • S.1842
+                  NECTA CENTRE • S0486
                 </p>
               </div>
             </div>
@@ -278,30 +340,30 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
             {/* Live System Status Indicator */}
             <div
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-semibold"
-              title="Cloud Infrastructure & Firebase Auth Operational"
+              title="Mfumo wa Ndani wa Watumishi Upo Hewani"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="hidden sm:inline">Online</span>
-              <span className="font-mono text-[9px] text-emerald-400/80">SSO</span>
+              <span className="hidden sm:inline">Active</span>
+              <span className="font-mono text-[9px] text-emerald-400/80">INTRANET</span>
             </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{language === 'sw' ? 'Lango la Kidijitali la Watumishi' : 'Institutional Staff Portal'}</span>
+              <Lock className="w-3.5 h-3.5" />
+              <span>{language === 'sw' ? 'Lango la Ndani la Watumishi (Intranet)' : 'Restricted Staff Intranet'}</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
               {language === 'sw'
-                ? 'Usimamizi wa Shule Wenye Ubora wa Kimataifa'
-                : 'Next-Generation School Intelligence & Operations'}
+                ? 'Ofisi ya Ndani ya Walimu na Utawala'
+                : 'Staffroom & Administrative Gate'}
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
               {language === 'sw'
-                ? 'Mfumo rasmi uliounganishwa kwa ajili ya Utawala, Uhasibu, Taaluma na Walimu wa Shule ya Sekondari Uomboni, Marangu Kilimanjaro.'
-                : 'Unified cloud gateway powering executive governance, fee ledgers, automated NECTA broadsheets, and faculty gradebooks.'}
+                ? 'Mfumo wa siri na salama wa ndani kwa ajili ya Walimu, Idara ya Taaluma, Uhasibu na Uongozi Mkuu wa Shule ya Sekondari Uomboni.'
+                : 'Confidential staff gateway for faculty gradebooks, examination broadsheets, bursar ledgers, and institutional governance.'}
             </p>
           </div>
 
@@ -618,90 +680,200 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                 )}
               </div>
             ) : loginMethod === 'quick' && activeRole === 'teacher' ? (
-              /* QUICK TEACHER LOGIN / FACULTY SELECTOR + PIN */
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-amber-500/30 space-y-3.5 shadow-xl">
-                {/* Faculty profile list */}
-                <div>
-                  <label className="text-[11px] font-bold text-amber-300 uppercase tracking-wider block mb-1.5">
-                    {language === 'sw' ? 'Chagua Mwalimu:' : 'Select Faculty Member:'}
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                    {teachersList.slice(0, 8).map((tch) => {
-                      const isSelected = (tch.id === selectedTeacherId) || (!selectedTeacherId && tch.id === teachersList[0]?.id);
-                      return (
-                        <button
-                          key={tch.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedTeacherId(tch.id);
-                            setPinError('');
-                          }}
-                          className={`p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
-                            isSelected
-                              ? 'bg-amber-400/20 border-amber-400 text-white ring-1 ring-amber-400/40'
-                              : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/60'
-                          }`}
-                        >
-                          <img
-                            src={tch.imageUrl || '/media/media_1.webp'}
-                            alt={tch.name}
-                            className="w-9 h-9 rounded-lg object-cover border border-amber-400/50 shrink-0"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold truncate">{tch.name}</div>
-                            <div className="text-[10px] text-slate-400 truncate">
-                              {tch.subjects?.slice(0, 2).join(', ') || tch.department || 'Mwalimu'}
+              /* QUICK TEACHER LOGIN / INDIVIDUAL CREDENTIALS & ISOLATION GATE */
+              <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/95 border-2 border-emerald-500/40 space-y-4 shadow-2xl">
+                {/* Section Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                  <div>
+                    <h5 className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-emerald-400" />
+                      <span>{language === 'sw' ? 'Utambulisho wa Mwalimu wa Somo' : 'Teacher Identification & Subject Gate'}</span>
+                    </h5>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {language === 'sw'
+                        ? 'Chagua jina lako na uweke PIN yako binafsi ya siri kuingia kwenye somo lako.'
+                        : 'Select your faculty profile and enter your individual secret PIN.'}
+                    </p>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600/60 font-mono font-bold self-start sm:self-center">
+                    🔒 RBAC Protected
+                  </span>
+                </div>
+
+                {/* Faculty Search & Selection */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
+                      {language === 'sw' ? '1. Chagua Jina Lako:' : '1. Select Your Faculty Name:'}
+                    </label>
+                    <span className="text-[10px] text-slate-400">
+                      {teachersList.length} {language === 'sw' ? 'walimu wamesajiliwa' : 'registered faculty'}
+                    </span>
+                  </div>
+
+                  {/* Search box if searching through teachers */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={teacherSearchQuery}
+                      onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                      placeholder={language === 'sw' ? 'Tafuta mwalimu au somo...' : 'Search faculty or subject...'}
+                      className="w-full pl-8.5 pr-3 py-1.5 bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  {/* Teacher Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                    {teachersList
+                      .filter((tch) => {
+                        if (!teacherSearchQuery.trim()) return true;
+                        const q = teacherSearchQuery.toLowerCase();
+                        return (
+                          tch.name.toLowerCase().includes(q) ||
+                          (tch.subjects && tch.subjects.some((s: string) => s.toLowerCase().includes(q))) ||
+                          (tch.department && tch.department.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((tch) => {
+                        const isSelected = (tch.id === selectedTeacherId) || (!selectedTeacherId && tch.id === teachersList[0]?.id);
+                        const assignedList = tch.subjects && tch.subjects.length > 0 ? tch.subjects : ['Chemistry'];
+                        return (
+                          <button
+                            key={tch.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTeacherId(tch.id);
+                              setPinError('');
+                            }}
+                            className={`p-2.5 rounded-2xl border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
+                              isSelected
+                                ? 'bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border-emerald-400 text-white ring-2 ring-emerald-400/40 shadow-md'
+                                : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
+                            }`}
+                          >
+                            <img
+                              src={tch.imageUrl || '/media/media_1.webp'}
+                              alt={tch.name}
+                              className="w-10 h-10 rounded-xl object-cover border border-amber-400/50 shrink-0 mt-0.5"
+                            />
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-white truncate block">{tch.name}</span>
+                                {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-1" />}
+                              </div>
+                              <span className="text-[10px] text-slate-400 block truncate font-mono">
+                                {tch.department || 'Idara ya Masomo'}
+                              </span>
+                              {/* Prominent Assigned Subject Badge */}
+                              <div className="pt-0.5">
+                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                  isSelected
+                                    ? 'bg-amber-400 text-slate-950 shadow-xs'
+                                    : 'bg-emerald-950/90 text-emerald-300 border border-emerald-700/60'
+                                }`}>
+                                  ★ Somo: {assignedList.join(', ')}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />}
-                        </button>
-                      );
-                    })}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
 
-                {/* PIN Input with Quick Auto-fill Pills */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
+                {/* Selected Teacher Summary Banner */}
+                {(() => {
+                  const currentTeacherObj = teachersList.find((t) => t.id === selectedTeacherId) || teachersList[0];
+                  const currentSubjects = currentTeacherObj?.subjects || ['Chemistry'];
+                  return (
+                    <div className="p-3 rounded-2xl bg-slate-950 border border-emerald-500/40 flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 font-black flex items-center justify-center border border-emerald-500/30">
+                          {currentTeacherObj?.name.split(' ')[1]?.[0] || 'M'}
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-mono">Utaingia kama:</span>
+                          <span className="font-black text-white">{currentTeacherObj?.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-amber-400 block font-bold">Ruhusa ya Kuingiza Maksi:</span>
+                        <span className="text-xs font-black text-emerald-300">
+                          Somo la {currentSubjects.join(', ')} pekee
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Personal Secret PIN Input (Secured, No prefilled dummy values) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
                     <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                       <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{language === 'sw' ? 'Nenosiri / PIN ya Mwalimu:' : 'Teacher Password / PIN:'}</span>
+                      <span>{language === 'sw' ? '2. Nambari Yako Binafsi ya Siri (PIN ya Mwalimu):' : '2. Your Personal Confidential PIN:'}</span>
                     </label>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setTeacherPinInput('1234')}
-                        className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono border border-slate-700 cursor-pointer"
-                        title="Tumia PIN ya kawaida"
-                      >
-                        PIN: 1234
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setTeacherPinInput('WALIMU-0486')}
-                        className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-blue-300 font-mono border border-slate-700 cursor-pointer"
-                        title="Tumia Passkey ya walimu"
-                      >
-                        WALIMU-0486
-                      </button>
-                    </div>
+                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                      <Lock className="w-3 h-3" />
+                      {language === 'sw' ? 'Ulinzi wa Siri' : 'Strict Confidential'}
+                    </span>
                   </div>
-                  <input
-                    type="password"
-                    id="input-teacher-direct-pin"
-                    value={teacherPinInput}
-                    onChange={(e) => {
-                      setTeacherPinInput(e.target.value);
-                      if (pinError) setPinError('');
-                    }}
-                    placeholder="Weka 1234 au walimu2026"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl text-sm text-white font-mono placeholder-slate-500 focus:outline-hidden"
-                  />
+
+                  {lockoutRemaining > 0 && (
+                    <div className="p-3 rounded-xl bg-amber-950/90 border-2 border-amber-500 text-amber-200 text-xs font-bold flex items-center gap-2 animate-pulse">
+                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>
+                        {language === 'sw'
+                          ? `⚠️ Akaunti imefungwa kwa usalama baada ya majaribio 5. Subiri sekunde ${lockoutRemaining} kabla ya kujaribu tena.`
+                          : `⚠️ Account temporarily locked after 5 failed attempts. Please wait ${lockoutRemaining}s.`}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input
+                      type={showPin ? 'text' : 'password'}
+                      id="input-teacher-direct-pin"
+                      disabled={lockoutRemaining > 0}
+                      value={teacherPinInput}
+                      onChange={(e) => {
+                        setTeacherPinInput(e.target.value);
+                        if (pinError) setPinError('');
+                      }}
+                      placeholder={
+                        lockoutRemaining > 0
+                          ? (language === 'sw' ? `Imefungwa kwa muda (${lockoutRemaining}s)...` : `Locked (${lockoutRemaining}s)...`)
+                          : (language === 'sw' ? 'Weka PIN yako binafsi ya siri...' : 'Enter your personal confidential PIN...')
+                      }
+                      className="w-full pl-3.5 pr-10 py-3 bg-slate-950 border-2 border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 rounded-xl text-sm text-white font-mono placeholder-slate-500 focus:outline-hidden tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <button
+                      type="button"
+                      disabled={lockoutRemaining > 0}
+                      onClick={() => setShowPin(!showPin)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-1 disabled:opacity-30"
+                      title={showPin ? 'Ficha PIN' : 'Onyesha PIN'}
+                    >
+                      {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Security Isolation Notice */}
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      {language === 'sw'
+                        ? 'Ulinzi wa Utambulisho na Masomo: Kila mwalimu anayo PIN yake binafsi ya siri. Mwalimu mwingine hawezi kuingia kwa jina la mwenzake wala kuingiza alama za masomo yasiyomhusu.'
+                        : 'Strict Identity & Subject Isolation: Each faculty member has their own confidential PIN. Other teachers cannot enter marks or modify unauthorized subjects.'}
+                    </span>
+                  </div>
+
                   {pinError && (
-                    <p className="mt-1 text-[11px] text-rose-400 font-medium flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {pinError}
-                    </p>
+                    <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700 text-xs text-rose-300 font-semibold flex items-center gap-2 animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
                   )}
                 </div>
 
@@ -709,64 +881,72 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                 <button
                   type="button"
                   id="btn-teacher-direct-login"
-                  disabled={isLoggingInDirectly}
+                  disabled={isLoggingInDirectly || lockoutRemaining > 0}
                   onClick={() => handleExecuteDirectTeacherLogin()}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-sm shadow-xl shadow-emerald-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-500/40 group"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-sm shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/50 group"
                 >
                   <UserCheck className="w-4 h-4" />
                   <span>
-                    {language === 'sw'
-                      ? 'Thibitisha na Ingia Kwenye Jopo la Mwalimu'
-                      : 'Authenticate & Open Teacher Workspace'}
+                    {lockoutRemaining > 0
+                      ? (language === 'sw' ? `Imefungwa kwa Muda (${lockoutRemaining}s)` : `Temporarily Locked (${lockoutRemaining}s)`)
+                      : (language === 'sw' ? 'Thibitisha na Ingia Kwenye Somo Lako' : 'Authenticate & Open Your Subject Gradebook')}
                   </span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             ) : loginMethod === 'quick' && activeRole === 'academic_master' ? (
               /* QUICK ACADEMIC MASTER LOGIN */
-              <div className="p-4 rounded-2xl bg-slate-900/90 border border-amber-500/30 space-y-3.5 shadow-xl">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-bold text-lg">
+              <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/95 border-2 border-amber-500/40 space-y-4 shadow-2xl">
+                <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
+                  <div className="w-11 h-11 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-bold text-xl shadow-md">
                     📚
                   </div>
                   <div>
-                    <h5 className="text-xs font-bold text-white">Mwl. Yohana Bahati</h5>
-                    <p className="text-[10px] text-slate-400">
-                      Mtaaluma Mkuu wa Shule • yohana.bahati@uombonisec.ac.tz
+                    <h5 className="text-sm font-black text-white">Mwl. Yohana Bahati / Madam Adela Manyanga</h5>
+                    <p className="text-xs text-slate-400">
+                      Wakuu wa Idara ya Taaluma na Mitihani • yohana.bahati@uombonisec.ac.tz
                     </p>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{language === 'sw' ? 'Nenosiri / PIN ya Taaluma:' : 'Academic Master PIN:'}</span>
-                    </label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{language === 'sw' ? 'Nenosiri / PIN ya Siri ya Taaluma (Dean Passkey):' : 'Academic Master Secret PIN:'}</span>
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      type={showPin ? 'text' : 'password'}
+                      id="input-academic-direct-pin"
+                      value={teacherPinInput}
+                      onChange={(e) => {
+                        setTeacherPinInput(e.target.value);
+                        if (pinError) setPinError('');
+                      }}
+                      placeholder={language === 'sw' ? 'Weka PIN ya Mkuu wa Taaluma...' : 'Enter Academic Master PIN...'}
+                      className="w-full pl-3.5 pr-10 py-3 bg-slate-950 border-2 border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 rounded-xl text-sm text-white font-mono placeholder-slate-500 focus:outline-hidden tracking-wider"
+                    />
                     <button
                       type="button"
-                      onClick={() => setTeacherPinInput('1234')}
-                      className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-750 text-amber-300 font-mono border border-slate-700 cursor-pointer"
+                      onClick={() => setShowPin(!showPin)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-1"
+                      title={showPin ? 'Ficha PIN' : 'Onyesha PIN'}
                     >
-                      PIN: 1234
+                      {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <input
-                    type="password"
-                    id="input-academic-direct-pin"
-                    value={teacherPinInput}
-                    onChange={(e) => {
-                      setTeacherPinInput(e.target.value);
-                      if (pinError) setPinError('');
-                    }}
-                    placeholder="Weka 1234 au taaluma2026"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 rounded-xl text-sm text-white font-mono placeholder-slate-500 focus:outline-hidden"
-                  />
+
+                  <p className="text-[11px] text-slate-400 flex items-center gap-1.5 pt-0.5">
+                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Inahitaji nenosiri la siri la Mkuu wa Taaluma kuruhusu uidhinishaji wa matokeo ya shule.</span>
+                  </p>
+
                   {pinError && (
-                    <p className="mt-1 text-[11px] text-rose-400 font-medium flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {pinError}
-                    </p>
+                    <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700 text-xs text-rose-300 font-semibold flex items-center gap-2 animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
                   )}
                 </div>
 
@@ -775,7 +955,7 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                   id="btn-academic-direct-login"
                   disabled={isLoggingInDirectly}
                   onClick={handleExecuteDirectAcademicLogin}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-400/40 group"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm shadow-xl shadow-amber-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300/50 group"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>

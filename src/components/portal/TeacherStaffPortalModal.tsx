@@ -24,10 +24,26 @@ import {
   Clock,
   Printer,
   LogOut,
+  KeyRound,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Sparkles,
+  Sliders,
+  Check,
 } from 'lucide-react';
 import { StudentProfile } from '../../types';
 import { downloadClassBroadsheetPdf } from '../../utils/pdfService';
 import { SchoolLogo } from '../SchoolLogo';
+import {
+  verifyTeacherIndividualLogin,
+  changeTeacherPinWithVerification,
+  getTeacherLockoutStatus,
+  TEACHER_AUTH_DIRECTORY,
+  getActiveTeacherPin,
+  TeacherAuthProfile,
+} from '../../services/teacherAuthDirectory';
+import { TeacherSubjectScoreUploadForm } from '../TeacherSubjectScoreUploadForm';
 
 interface TeacherStaffPortalModalProps {
   isOpen: boolean;
@@ -61,15 +77,35 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
     | 'profile'
   >('dashboard');
 
-  // Teacher Identity State
+  // Teacher Identity State & Authentication Isolation
+  const [authenticatedTeacher, setAuthenticatedTeacher] = useState<any | null>(null);
+  const [selectedLoginTeacherId, setSelectedLoginTeacherId] = useState<string>(() => {
+    return teachers && teachers.length > 0 ? teachers[0].id : 'tch-002';
+  });
+  const [teacherPinInput, setTeacherPinInput] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [pinError, setPinError] = useState('');
+  const [facultySearch, setFacultySearch] = useState('');
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [currentPinInput, setCurrentPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
+  const [changePinSuccess, setChangePinSuccess] = useState('');
+  const [changePinError, setChangePinError] = useState('');
+  const [lockoutRemaining, setLockoutRemaining] = useState<number>(0);
+  const [resultsViewMode, setResultsViewMode] = useState<'quick_entry' | 'advanced_necta'>('quick_entry');
+
   const defaultTeacher = teachers && teachers.length > 0 ? teachers[0] : {
     id: 'tch-001',
-    name: 'Mwl. Yohana Bahati',
-    role: 'Mwalimu wa Taaluma / Physics & Mathematics',
-    department: 'Sayansi (Science)',
-    email: 'yohana.bahati@uombonisec.ac.tz',
-    phone: '+255 745 548 225',
+    name: 'Mwl. Wolter Temu',
+    role: 'Makamu Mkuu wa Shule / Kiswahili',
+    department: 'Lugha & Utawala',
+    email: 'wolter.temu@uombonisec.ac.tz',
+    phone: '+255 754 532 949',
+    subjects: ['Kiswahili'],
   };
+
+  const currentTeacher = authenticatedTeacher || defaultTeacher;
 
   // Student Attendance State
   const [selectedClass, setSelectedClass] = useState('Form 4A');
@@ -182,6 +218,138 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
     setTimeout(() => setAsgCreated(false), 3000);
   };
 
+  // Check lockout on teacher change
+  React.useEffect(() => {
+    if (selectedLoginTeacherId) {
+      const status = getTeacherLockoutStatus(selectedLoginTeacherId);
+      if (status.isLocked) {
+        setLockoutRemaining(status.lockTimeRemainingSeconds);
+      } else {
+        setLockoutRemaining(0);
+      }
+    }
+  }, [selectedLoginTeacherId]);
+
+  // Lockout countdown timer
+  React.useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutRemaining]);
+
+  const handleTeacherLogin = () => {
+    setPinError('');
+    const targetTeacher = teachers.find((t) => t.id === selectedLoginTeacherId) || teachers[0];
+    if (!targetTeacher) {
+      setPinError(language === 'sw' ? 'Tafadhali chagua mwalimu.' : 'Please select a teacher.');
+      return;
+    }
+
+    // Check account lockout
+    const lockout = getTeacherLockoutStatus(targetTeacher.id);
+    if (lockout.isLocked) {
+      setLockoutRemaining(lockout.lockTimeRemainingSeconds);
+      setPinError(
+        language === 'sw'
+          ? `⚠️ Mfumo umefunga kwa usalama. Tafadhali subiri sekunde ${lockout.lockTimeRemainingSeconds} kabla ya kujaribu tena.`
+          : `⚠️ Account locked. Please wait ${lockout.lockTimeRemainingSeconds} seconds before trying again.`
+      );
+      return;
+    }
+
+    if (!teacherPinInput.trim()) {
+      setPinError(
+        language === 'sw'
+          ? 'Tafadhali weka nambari yako binafsi ya siri (PIN ya mwalimu).'
+          : 'Please enter your personal confidential PIN.'
+      );
+      return;
+    }
+
+    // Strict individual teacher PIN validation - prevents teacher impersonation
+    const verification = verifyTeacherIndividualLogin(targetTeacher.id, teacherPinInput);
+    if (!verification.success) {
+      if (verification.locked && verification.lockTimeRemainingSeconds) {
+        setLockoutRemaining(verification.lockTimeRemainingSeconds);
+      }
+      setPinError(
+        language === 'sw'
+          ? (verification.errorSw || 'PIN si sahihi kwa mwalimu huyu.')
+          : (verification.error || 'Incorrect PIN for this teacher.')
+      );
+      return;
+    }
+
+    const authProfile = verification.teacher;
+    const assigned = authProfile?.assignedSubjects || targetTeacher.subjects || ['Kiswahili'];
+    setAuthenticatedTeacher({
+      ...targetTeacher,
+      subjects: assigned,
+    });
+    if (assigned && assigned.length > 0) {
+      setSelectedSubject(assigned[0]);
+      setNewSubject(assigned[0]);
+    }
+    setTeacherPinInput('');
+  };
+
+  const handleSaveCustomPin = () => {
+    setChangePinError('');
+    setChangePinSuccess('');
+    if (!currentPinInput.trim()) {
+      setChangePinError(
+        language === 'sw'
+          ? 'Tafadhali weka PIN yako ya sasa ili kuthibitisha utambulisho wako.'
+          : 'Please enter your current PIN to verify identity.'
+      );
+      return;
+    }
+    if (!newPinInput.trim() || newPinInput.trim().length < 4) {
+      setChangePinError(
+        language === 'sw'
+          ? 'PIN mpya lazima iwe na angalau nambari 4 au zaidi.'
+          : 'New PIN must be at least 4 digits.'
+      );
+      return;
+    }
+    if (newPinInput.trim() !== confirmPinInput.trim()) {
+      setChangePinError(
+        language === 'sw'
+          ? 'PIN mpya na marudio yake hazilingani.'
+          : 'New PIN and confirmation do not match.'
+      );
+      return;
+    }
+
+    const res = changeTeacherPinWithVerification(
+      selectedLoginTeacherId,
+      currentPinInput.trim(),
+      newPinInput.trim()
+    );
+
+    if (res.success) {
+      setChangePinSuccess(language === 'sw' ? res.messageSw : res.message);
+      setTeacherPinInput(newPinInput.trim());
+      setCurrentPinInput('');
+      setNewPinInput('');
+      setConfirmPinInput('');
+      setTimeout(() => {
+        setChangePinSuccess('');
+        setShowChangePinModal(false);
+      }, 1800);
+    } else {
+      setChangePinError(language === 'sw' ? res.messageSw : res.message);
+    }
+  };
+
   const filteredStudents = students.filter((s) => {
     const matchesForm = recordFormFilter === 'ALL' || s.form === recordFormFilter;
     const matchesSearch =
@@ -208,7 +376,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#704214]/65 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200">
       <div className="bg-[#FFFFF0] rounded-xl shadow-2xl w-full max-w-7xl max-h-[94vh] flex flex-col border border-[#704214]/30 overflow-hidden text-[#704214]">
-        {/* Top Header Bar - Sepia Identity */}
+        {/* Top Header Bar - Discreet Identity */}
         <div className="bg-[#704214] text-[#FFFFF0] px-5 py-4 flex items-center justify-between border-b border-[#C9A227]/40 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-1 rounded-lg bg-white/10 border border-[#C9A227]/40 shadow-xs">
@@ -217,47 +385,359 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-serif text-base sm:text-xl font-bold tracking-tight text-[#FFFFF0]">
-                  Uomboni Secondary School — Teachers &amp; Staff Portal
+                  Uomboni Secondary School — Chumba cha Walimu
                 </h2>
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F5EBD7] text-[#704214]">
-                  Portal ya Walimu &amp; Watumishi
+                  Idara ya Ndani (Staffroom)
                 </span>
               </div>
               <p className="text-xs text-[#F5EBD7]/90 mt-0.5">
-                NECTA S0486 · Academic Records, Attendance &amp; Classroom Management
+                NECTA S0486 · Lango la Ndani la Watumishi wa Masomo &amp; Taaluma
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#58330F] rounded-md text-xs text-[#F5EBD7] border border-[#C9A227]/30">
-              <span className="text-[#C9A227] font-semibold">Teacher:</span>
-              <span className="font-bold text-[#FFFFF0]">{defaultTeacher.name}</span>
-            </div>
+            {authenticatedTeacher && (
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#58330F] rounded-md text-xs text-[#F5EBD7] border border-[#C9A227]/30">
+                <span className="text-[#C9A227] font-semibold">Mwalimu:</span>
+                <span className="font-bold text-[#FFFFF0]">{authenticatedTeacher.name}</span>
+                <span className="text-[10px] bg-[#C9A227] text-slate-950 px-1.5 py-0.2 rounded font-black ml-1">
+                  ★ Somo: {authenticatedTeacher.subjects.join(', ')}
+                </span>
+              </div>
+            )}
 
-            <button
-              onClick={async () => {
-                onClose();
-                await logout();
-              }}
-              className="px-2.5 py-1 text-xs font-semibold text-[#F5EBD7] hover:text-white bg-[#58330F] hover:bg-[#46280B] rounded border border-[#C9A227]/30 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Ondoka kwenye mfumo (Logout)"
-            >
-              <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            {authenticatedTeacher ? (
+              <button
+                onClick={() => setAuthenticatedTeacher(null)}
+                className="px-2.5 py-1 text-xs font-semibold text-[#F5EBD7] hover:text-white bg-[#58330F] hover:bg-[#46280B] rounded border border-[#C9A227]/30 transition-colors flex items-center gap-1.5 cursor-pointer"
+                title="Toka kwenye akaunti ya mwalimu"
+              >
+                <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span className="hidden sm:inline">Toka</span>
+              </button>
+            ) : null}
 
             <button
               onClick={onClose}
               className="p-1.5 text-[#F5EBD7] hover:text-[#FFFFF0] rounded-md hover:bg-[#58330F] transition-colors cursor-pointer"
-              aria-label="Close portal"
+              aria-label="Funga Chumba cha Walimu"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Workspace: Left Sepia Navigation + Main Content */}
+        {/* If not authenticated: render world-class organized Swahili teacher login gate */}
+        {!authenticatedTeacher ? (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#FFFFF0] flex items-center justify-center">
+            <div className="w-full max-w-2xl bg-white rounded-2xl border-2 border-[#704214]/25 shadow-xl p-5 sm:p-7 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#704214]/15">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#F5EBD7] border border-[#704214]/30 flex items-center justify-center text-[#704214]">
+                    <KeyRound className="w-6 h-6 text-[#704214]" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#704214]">
+                      Chumba cha Walimu — Lango la Ndani
+                    </h3>
+                    <p className="text-xs text-[#704214]/75">
+                      Ingia kwenye somo lako pekee na mfumo wa ndani wa watumishi (NECTA S0486)
+                    </p>
+                  </div>
+                </div>
+                <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-[#F5EBD7] text-[#704214] text-[10px] font-black border border-[#704214]/20">
+                  🔒 RBAC Protected
+                </span>
+              </div>
+
+              {/* Step 1: Faculty Selection with Search */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#704214] uppercase tracking-wide">
+                    1. Chagua Jina Lako la Ualimu:
+                  </label>
+                  <span className="text-[11px] text-[#704214]/70">
+                    {teachers.length} Walimu Wamesajiliwa
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#704214]/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={facultySearch}
+                    onChange={(e) => setFacultySearch(e.target.value)}
+                    placeholder="Tafuta mwalimu au somo..."
+                    className="w-full pl-9 pr-3 py-2 bg-[#FFFFF0] border border-[#704214]/25 rounded-xl text-xs text-[#704214] focus:outline-none focus:border-[#704214]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
+                  {teachers
+                    .filter((tch) => {
+                      if (!facultySearch.trim()) return true;
+                      const q = facultySearch.toLowerCase();
+                      return (
+                        tch.name.toLowerCase().includes(q) ||
+                        tch.role.toLowerCase().includes(q) ||
+                        (tch.subjects && tch.subjects.some((s) => s.toLowerCase().includes(q)))
+                      );
+                    })
+                    .map((tch) => {
+                      const isSelected = tch.id === selectedLoginTeacherId;
+                      const assigned = tch.subjects || ['Kiswahili'];
+                      return (
+                        <button
+                          key={tch.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedLoginTeacherId(tch.id);
+                            setPinError('');
+                          }}
+                          className={`p-2.5 rounded-xl border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#F5EBD7] border-[#704214] ring-2 ring-[#704214]/30 shadow-xs'
+                              : 'bg-white border-[#704214]/15 hover:bg-[#FFFFF0]'
+                          }`}
+                        >
+                          <img
+                            src={tch.imageUrl || '/media/media_1.webp'}
+                            alt={tch.name}
+                            className="w-10 h-10 rounded-lg object-cover border border-[#704214]/30 shrink-0 mt-0.5"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-[#704214] truncate block">
+                                {tch.name}
+                              </span>
+                              {isSelected && <Check className="w-4 h-4 text-[#704214] shrink-0" />}
+                            </div>
+                            <span className="text-[10px] text-[#704214]/70 block truncate">
+                              {tch.department || 'Idara ya Shule'}
+                            </span>
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-black bg-[#704214] text-white mt-1">
+                              ★ Somo: {assigned.join(', ')}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Step 2: Selected Teacher Confirmation Card */}
+              {(() => {
+                const sel = teachers.find((t) => t.id === selectedLoginTeacherId) || teachers[0];
+                return (
+                  <div className="p-3 bg-[#FFFFF0] rounded-xl border border-[#704214]/25 flex items-center justify-between gap-3 text-xs">
+                    <div>
+                      <span className="text-[10px] text-[#704214]/70 uppercase block font-semibold">
+                        Utaingia kama:
+                      </span>
+                      <span className="font-bold text-[#704214] text-sm">{sel?.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-[#704214]/70 uppercase block font-semibold">
+                        Somo Lako Pekee:
+                      </span>
+                      <span className="font-black text-[#704214] text-xs">
+                        {sel?.subjects?.join(', ') || 'Somo Lako'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Step 3: Confidential Secret PIN Input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#704214] uppercase tracking-wide flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
+                    <span>2. Nambari Yako Binafsi ya Siri (PIN ya Mwalimu):</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowChangePinModal(true)}
+                    className="text-[11px] text-[#704214] underline font-bold hover:text-[#58330F] cursor-pointer"
+                  >
+                    Badili PIN Yangu
+                  </button>
+                </div>
+
+                {/* Lockout countdown notice */}
+                {lockoutRemaining > 0 && (
+                  <div className="p-3 rounded-xl bg-amber-50 border-2 border-amber-500/80 text-xs text-amber-950 font-bold flex items-center gap-2 animate-pulse">
+                    <Clock className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>
+                      {language === 'sw'
+                        ? `Ulinzi wa Usalama: Akaunti imefungwa kwa muda kutokana na majaribio 5 yasiyo sahihi. Subiri sekunde ${lockoutRemaining} kabla ya kujaribu tena.`
+                        : `Security Cooldown: Account temporarily locked. Please wait ${lockoutRemaining}s.`}
+                    </span>
+                  </div>
+                )}
+
+                <div className="relative">
+                  <input
+                    type={showPin ? 'text' : 'password'}
+                    value={teacherPinInput}
+                    disabled={lockoutRemaining > 0}
+                    onChange={(e) => {
+                      setTeacherPinInput(e.target.value);
+                      if (pinError) setPinError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleTeacherLogin();
+                    }}
+                    placeholder={
+                      lockoutRemaining > 0
+                        ? `Akaunti imefungwa (${lockoutRemaining}s)...`
+                        : "Weka PIN yako binafsi ya siri ya mwalimu..."
+                    }
+                    className="w-full px-3.5 pr-10 py-2.5 bg-[#FFFFF0] border-2 border-[#704214]/30 focus:border-[#704214] rounded-xl text-sm font-mono text-[#704214] focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#704214]/60 hover:text-[#704214] cursor-pointer"
+                  >
+                    {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-[#704214]/70 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>
+                    Ulinzi wa Utambulisho: Kila mwalimu ana PIN yake binafsi. Mwalimu mwingine hawezi kuingia wala kubadili alama za somo lako.
+                  </span>
+                </p>
+
+                {pinError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-xs text-rose-800 font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{pinError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="button"
+                disabled={lockoutRemaining > 0}
+                onClick={handleTeacherLogin}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#704214] hover:bg-[#58330F] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>{lockoutRemaining > 0 ? `Tafadhali Subiri (${lockoutRemaining}s)` : 'Thibitisha & Ingia Chumba cha Walimu'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Secure Change PIN Modal */}
+              {showChangePinModal && (
+                <div className="p-4.5 bg-[#F5EBD7] rounded-2xl border-2 border-[#704214]/40 space-y-3.5 shadow-md animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#704214]/20">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-[#704214]" />
+                      <h4 className="text-xs font-black text-[#704214] uppercase tracking-wide">
+                        Badilisha PIN Yako ya Siri (Mwalimu):
+                      </h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowChangePinModal(false);
+                        setChangePinError('');
+                        setChangePinSuccess('');
+                      }}
+                      className="text-xs text-[#704214] font-bold p-1 rounded hover:bg-[#704214]/10 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <p className="text-[11px] text-[#704214]/80">
+                    Kumbuka: Lazima uthibitishe PIN yako ya sasa kabla ya kuweka PIN mpya.
+                  </p>
+
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-[#704214] block mb-1">
+                        PIN ya Sasa:
+                      </label>
+                      <input
+                        type="password"
+                        value={currentPinInput}
+                        onChange={(e) => setCurrentPinInput(e.target.value)}
+                        placeholder="Weka PIN yako ya sasa..."
+                        className="w-full px-3 py-2 bg-white border border-[#704214]/30 rounded-lg text-xs font-mono text-[#704214] focus:outline-none focus:border-[#704214]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-[#704214] block mb-1">
+                          PIN Mpya (Tarakimu 4+):
+                        </label>
+                        <input
+                          type="password"
+                          value={newPinInput}
+                          onChange={(e) => setNewPinInput(e.target.value)}
+                          placeholder="PIN mpya..."
+                          className="w-full px-3 py-2 bg-white border border-[#704214]/30 rounded-lg text-xs font-mono text-[#704214] focus:outline-none focus:border-[#704214]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-[#704214] block mb-1">
+                          Rudia PIN Mpya:
+                        </label>
+                        <input
+                          type="password"
+                          value={confirmPinInput}
+                          onChange={(e) => setConfirmPinInput(e.target.value)}
+                          placeholder="Rudia PIN mpya..."
+                          className="w-full px-3 py-2 bg-white border border-[#704214]/30 rounded-lg text-xs font-mono text-[#704214] focus:outline-none focus:border-[#704214]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {changePinError && (
+                    <div className="p-2.5 rounded-lg bg-rose-100 border border-rose-300 text-[11px] font-bold text-rose-800 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>{changePinError}</span>
+                    </div>
+                  )}
+
+                  {changePinSuccess && (
+                    <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-400 text-[11px] font-bold text-emerald-900 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                      <span>{changePinSuccess}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowChangePinModal(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold text-[#704214] hover:bg-[#704214]/10 cursor-pointer"
+                    >
+                      Ghairi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveCustomPin}
+                      className="px-4 py-1.5 bg-[#704214] hover:bg-[#58330F] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                    >
+                      Thibitisha & Hifadhi PIN
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Workspace: Left Sepia Navigation + Main Content */
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[#FFFFF0]">
           {/* Left Navigation Sidebar */}
           <aside className="w-full md:w-64 bg-[#F5EBD7] border-r border-[#704214]/15 p-3 sm:p-4 overflow-y-auto shrink-0 flex flex-row md:flex-col gap-1">
@@ -561,69 +1041,106 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-bold text-[#704214]">Kuingiza Alama za Mitihani (Academic Results)</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-[#704214]">Kuingiza Alama za Mitihani (Academic Results)</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-[#F5EBD7] text-[#704214] text-[10px] font-black border border-[#704214]/20">
+                        🔒 Somo Lako Pekee
+                      </span>
+                    </div>
                     <p className="text-xs text-[#704214]/70 mt-1">
-                      Weka alama za majaribio, mtihani wa robo muhula, na mitihani ya majaribio (Mock).
+                      Mwalimu {currentTeacher.name}: Umeidhinishwa kuingiza alama kwa somo la <strong>{currentTeacher.subjects.join(', ')}</strong> pekee.
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <select
-                      value={selectedSubject}
-                      onChange={(e) => setSelectedSubject(e.target.value)}
-                      className="px-3 py-1.5 text-xs border border-[#704214]/20 rounded-md bg-white text-[#704214]"
-                    >
-                      <option value="Basic Mathematics">Basic Mathematics</option>
-                      <option value="Physics">Physics</option>
-                      <option value="Chemistry">Chemistry</option>
-                      <option value="Biology">Biology</option>
-                    </select>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Only show teacher's assigned subject(s) */}
+                    {currentTeacher.subjects && currentTeacher.subjects.length === 1 ? (
+                      <div className="px-3 py-1.5 rounded-md bg-[#F5EBD7] border-2 border-[#704214] text-[#704214] font-bold text-xs flex items-center gap-2 shadow-xs">
+                        <span>{currentTeacher.subjects[0]}</span>
+                        <span className="text-[10px] bg-[#704214] text-white px-2 py-0.5 rounded uppercase font-black">
+                          ★ Somo Lako Pekee
+                        </span>
+                      </div>
+                    ) : (
+                      <select
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="px-3 py-1.5 text-xs border-2 border-[#704214] rounded-md bg-white text-[#704214] font-bold"
+                      >
+                        {(currentTeacher.subjects || ['Kiswahili']).map((sub: string) => (
+                          <option key={sub} value={sub}>
+                            {sub} — Somo Lako
+                          </option>
+                        ))}
+                      </select>
+                    )}
 
                     <button
-                      onClick={handleSaveScores}
-                      className="px-4 py-1.5 bg-[#704214] hover:bg-[#58330F] text-white text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      type="button"
+                      onClick={() => setResultsViewMode(resultsViewMode === 'quick_entry' ? 'advanced_necta' : 'quick_entry')}
+                      className="px-3 py-1.5 bg-[#F5EBD7] hover:bg-white text-[#704214] border border-[#704214]/30 rounded-md text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                      <Save className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>{scoresSaved ? 'Zimehifadhiwa!' : 'Hifadhi Alama'}</span>
+                      <Sliders className="w-3.5 h-3.5 text-[#C9A227]" />
+                      <span>{resultsViewMode === 'quick_entry' ? 'Daftari Rasmi la NECTA (Upload & Broadsheet) ↗' : 'Orodha Rahisi'}</span>
                     </button>
+
+                    {resultsViewMode === 'quick_entry' && (
+                      <button
+                        onClick={handleSaveScores}
+                        className="px-4 py-1.5 bg-[#704214] hover:bg-[#58330F] text-white text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save className="w-3.5 h-3.5 text-[#C9A227]" />
+                        <span>{scoresSaved ? 'Zimehifadhiwa!' : 'Hifadhi Alama'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg border border-[#704214]/20 overflow-hidden shadow-xs">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F5EBD7] border-b border-[#704214]/15 text-[#704214]">
-                      <tr>
-                        <th className="px-4 py-3 font-bold">Namba ya Mtihani</th>
-                        <th className="px-4 py-3 font-bold">Jina la Mwanafunzi</th>
-                        <th className="px-4 py-3 font-bold text-center">Alama (%)</th>
-                        <th className="px-4 py-3 font-bold text-center">Daraja (Grade)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#704214]/10">
-                      {scoreList.map((st) => (
-                        <tr key={st.id} className="hover:bg-[#FFFFF0]/80">
-                          <td className="px-4 py-2.5 font-mono text-[#704214]/80">{st.id}</td>
-                          <td className="px-4 py-2.5 font-bold text-[#704214]">{st.name}</td>
-                          <td className="px-4 py-2.5 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={st.score}
-                              onChange={(e) => handleScoreChange(st.id, parseInt(e.target.value) || 0)}
-                              className="w-16 text-center font-bold px-2 py-1 border border-[#704214]/25 rounded bg-[#FFFFF0] text-[#704214]"
-                            />
-                          </td>
-                          <td className="px-4 py-2.5 text-center">
-                            <span className="inline-block px-2.5 py-0.5 rounded text-xs font-bold bg-[#F5EBD7] text-[#704214] border border-[#704214]/20">
-                              {st.grade}
-                            </span>
-                          </td>
+                {resultsViewMode === 'advanced_necta' ? (
+                  <div className="bg-white p-4 rounded-xl border border-[#704214]/20 shadow-xs">
+                    <TeacherSubjectScoreUploadForm
+                      currentTeacherName={currentTeacher.name}
+                      assignedSubjects={currentTeacher.subjects}
+                      isAcademicMaster={false}
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg border border-[#704214]/20 overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#F5EBD7] border-b border-[#704214]/15 text-[#704214]">
+                        <tr>
+                          <th className="px-4 py-3 font-bold">Namba ya Mtihani</th>
+                          <th className="px-4 py-3 font-bold">Jina la Mwanafunzi</th>
+                          <th className="px-4 py-3 font-bold text-center">Alama (%) — {selectedSubject}</th>
+                          <th className="px-4 py-3 font-bold text-center">Daraja (Grade)</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-[#704214]/10">
+                        {scoreList.map((st) => (
+                          <tr key={st.id} className="hover:bg-[#FFFFF0]/80">
+                            <td className="px-4 py-2.5 font-mono text-[#704214]/80">{st.id}</td>
+                            <td className="px-4 py-2.5 font-bold text-[#704214]">{st.name}</td>
+                            <td className="px-4 py-2.5 text-center">
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={st.score}
+                                onChange={(e) => handleScoreChange(st.id, parseInt(e.target.value) || 0)}
+                                className="w-16 text-center font-bold px-2 py-1 border border-[#704214]/25 rounded bg-[#FFFFF0] text-[#704214]"
+                              />
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <span className="inline-block px-2.5 py-0.5 rounded text-xs font-bold bg-[#F5EBD7] text-[#704214] border border-[#704214]/20">
+                                {st.grade}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 
@@ -633,7 +1150,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                 <div>
                   <h3 className="text-lg font-bold text-[#704214]">Ratiba ya Kufundisha (Teaching Timetable)</h3>
                   <p className="text-xs text-[#704214]/70 mt-1">
-                    Vipindi vya kila wiki vya somo la {defaultTeacher.role}.
+                    Vipindi vya kila wiki vya somo la {currentTeacher.name} ({currentTeacher.subjects?.join(', ')}).
                   </p>
                 </div>
 
@@ -751,9 +1268,11 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                           onChange={(e) => setNewSubject(e.target.value)}
                           className="w-full px-3 py-2 border border-[#704214]/25 rounded bg-white text-[#704214]"
                         >
-                          <option value="Basic Mathematics">Basic Mathematics</option>
-                          <option value="Physics">Physics</option>
-                          <option value="Chemistry">Chemistry</option>
+                          {(currentTeacher.subjects || ['Kiswahili']).map((sub: string) => (
+                            <option key={sub} value={sub}>
+                              {sub} — Somo Lako
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -913,22 +1432,22 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 bg-[#FFFFF0] rounded border border-[#704214]/15">
                       <span className="text-[#704214]/70 block">Jina Kamili:</span>
-                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{defaultTeacher.name}</span>
+                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{currentTeacher.name}</span>
                     </div>
 
                     <div className="p-4 bg-[#FFFFF0] rounded border border-[#704214]/15">
                       <span className="text-[#704214]/70 block">Nafasi / Wadhifa:</span>
-                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{defaultTeacher.role}</span>
+                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{currentTeacher.role}</span>
                     </div>
 
                     <div className="p-4 bg-[#FFFFF0] rounded border border-[#704214]/15">
-                      <span className="text-[#704214]/70 block">Idara:</span>
-                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{defaultTeacher.department}</span>
+                      <span className="text-[#704214]/70 block">Idara &amp; Masomo:</span>
+                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{currentTeacher.department} · {currentTeacher.subjects?.join(', ')}</span>
                     </div>
 
                     <div className="p-4 bg-[#FFFFF0] rounded border border-[#704214]/15">
                       <span className="text-[#704214]/70 block">Namba ya Simu:</span>
-                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{defaultTeacher.phone}</span>
+                      <span className="font-bold text-sm text-[#704214] block mt-0.5">{currentTeacher.phone}</span>
                     </div>
                   </div>
 
@@ -952,6 +1471,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
             )}
           </main>
         </div>
+      )}
 
         {/* Modal footer info */}
         <div className="bg-[#F5EBD7] px-6 py-3 border-t border-[#704214]/15 flex items-center justify-between text-xs text-[#704214]/80 shrink-0">

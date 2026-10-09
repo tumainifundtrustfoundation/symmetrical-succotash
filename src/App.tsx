@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -21,24 +21,24 @@ import { StaffRole } from './services/staffSecurityService';
 import { AcademicRole } from './components/AcademicPortalModal';
 import { Loader2 } from 'lucide-react';
 
-// Modals lazy-loaded for snappy initial page load
-const StaffSecurityGateModal = lazy(() => import('./components/StaffSecurityGateModal').then(m => ({ default: m.StaffSecurityGateModal })));
-const StudentPortalModal = lazy(() => import('./components/StudentPortalModal').then(m => ({ default: m.StudentPortalModal })));
-const ApplyNowModal = lazy(() => import('./components/ApplyNowModal').then(m => ({ default: m.ApplyNowModal })));
-const AdminPortalModal = lazy(() => import('./components/AdminPortalModal').then(m => ({ default: m.AdminPortalModal })));
-const BursarPortalModal = lazy(() => import('./components/BursarPortalModal').then(m => ({ default: m.BursarPortalModal })));
-const AcademicPortalModal = lazy(() => import('./components/AcademicPortalModal').then(m => ({ default: m.AcademicPortalModal })));
-const TeacherStaffPortalModal = lazy(() => import('./components/portal/TeacherStaffPortalModal').then(m => ({ default: m.TeacherStaffPortalModal })));
-const NectaResultsModal = lazy(() => import('./components/results/NectaResultsModal').then(m => ({ default: m.NectaResultsModal })));
-const SchoolResultsModal = lazy(() => import('./components/results/SchoolResultsModal').then(m => ({ default: m.SchoolResultsModal })));
-const SystemArchitectureModal = lazy(() => import('./components/SystemArchitectureModal').then(m => ({ default: m.SystemArchitectureModal })));
+// Modals statically imported for guaranteed availability and zero dynamic import fetch failures
+import { StaffSecurityGateModal } from './components/StaffSecurityGateModal';
+import { StudentPortalModal } from './components/StudentPortalModal';
+import { ApplyNowModal } from './components/ApplyNowModal';
+import { AdminPortalModal } from './components/AdminPortalModal';
+import { BursarPortalModal } from './components/BursarPortalModal';
+import { AcademicPortalModal } from './components/AcademicPortalModal';
+import { TeacherStaffPortalModal } from './components/portal/TeacherStaffPortalModal';
+import { NectaResultsModal } from './components/results/NectaResultsModal';
+import { SchoolResultsModal } from './components/results/SchoolResultsModal';
+import { SystemArchitectureModal } from './components/SystemArchitectureModal';
 
 // Auth Views
-const LoginPage = lazy(() => import('./components/auth/LoginPage').then(m => ({ default: m.LoginPage })));
-const SignUpPage = lazy(() => import('./components/auth/SignUpPage').then(m => ({ default: m.SignUpPage })));
-const ForgotPasswordPage = lazy(() => import('./components/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
-const VerifyEmailPage = lazy(() => import('./components/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
-const PortalContainer = lazy(() => import('./components/portal/PortalContainer').then(m => ({ default: m.PortalContainer })));
+import { LoginPage } from './components/auth/LoginPage';
+import { SignUpPage } from './components/auth/SignUpPage';
+import { ForgotPasswordPage } from './components/auth/ForgotPasswordPage';
+import { VerifyEmailPage } from './components/auth/VerifyEmailPage';
+import { PortalContainer } from './components/portal/PortalContainer';
 
 const ModalFallback = () => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102A43]/75 backdrop-blur-xs">

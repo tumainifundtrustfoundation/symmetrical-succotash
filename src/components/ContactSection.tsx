@@ -53,7 +53,7 @@ export const ContactSection: React.FC = () => {
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">
                     Marangu West, Moshi Rural District<br />
                     Mount Kilimanjaro Slopes, Kilimanjaro Region<br />
-                    P.O. Box 273, Moshi, Tanzania
+                    P.O. Box 361, Marangu - Moshi, Tanzania
                   </p>
                 </div>
               </div>
@@ -64,8 +64,9 @@ export const ContactSection: React.FC = () => {
                   <Phone className="w-4 h-4 text-[#102A43]" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#102A43] block">Telephone Lines</span>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1">
+                  <span className="text-xs font-bold text-[#102A43] block">Telephone Hotlines</span>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1 font-mono font-medium">
+                    <span className="block">+255 752 000 939 (Admissions Desk)</span>
                     <span className="block">+255 782 558 127 (Headmaster)</span>
                     <span className="block">+255 754 532 949 (Second Master)</span>
                     <span className="block">+255 745 548 225 (Academic Master)</span>
@@ -79,10 +80,11 @@ export const ContactSection: React.FC = () => {
                   <Mail className="w-4 h-4 text-[#102A43]" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#102A43] block">Official Email</span>
+                  <span className="text-xs font-bold text-[#102A43] block">Official Email &amp; Web</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                    info@uomboniss.ac.tz<br />
                     uombonisec@gmail.com<br />
-                    info@uombonisec.ac.tz
+                    <span className="font-mono text-xs text-[#102A43] font-semibold">www.uomboniss.ac.tz</span>
                   </p>
                 </div>
               </div>

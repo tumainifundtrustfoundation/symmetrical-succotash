@@ -367,16 +367,6 @@ export const SAVED_GALLERY: GalleryPhoto[] = [
     "imageUrl": "/media/media_17.webp",
     "fallbackUrl": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80",
     "date": "2026-08-24"
-  },
-  {
-    "id": "gal-flyer-2026",
-    "filename": "uomboni_flyer_2026.jpg",
-    "titleSw": "Tangazo Rasmi la Udahili na Kujiunga 2026/2027 (Pre-Form One, Kidato cha 1 & 3)",
-    "titleEn": "Official 2026/2027 Admission & Joining Flyer (Pre-Form 1, Form 1 & 3)",
-    "category": "Taaluma na Maktaba",
-    "imageUrl": "/uomboni_flyer_2026.jpg",
-    "fallbackUrl": "/uomboni_flyer_2026.jpg",
-    "date": "2026-09-15"
   }
 ];
 
@@ -3201,14 +3191,13 @@ export const SAVED_STUDENTS: StudentProfile[] = [
 export const SAVED_JOINING_DOCS: JoiningDocument[] = [
   {
     "id": "doc-flyer-2026",
-    "titleSw": "Tangazo Rasmi la Udahili 2026/2027 (Pre-Form One, Kidato cha 1 & 3)",
-    "titleEn": "Official Admission Announcement Flyer 2026/2027 (Pre-Form 1, Form 1 & 3)",
+    "titleSw": "Muhtasari Rasmi wa Udahili 2026/2027 (Pre-Form One, Kidato cha 1 & 3)",
+    "titleEn": "Official Admission Announcement 2026/2027 (Pre-Form 1, Form 1 & 3)",
     "descriptionSw": "Tangazo rasmi linaloainisha tarehe ya kuanza Pre-Form One (21/09/2026), fomu za kujiunga na mawasiliano ya ofisi Marangu, Moshi na Ngarenaro.",
-    "descriptionEn": "Official admissions flyer detailing Pre-Form One opening date (21/09/2026), registration forms and contact channels in Marangu, Moshi and Ngarenaro.",
-    "fileSize": "885 KB (JPG Flyer)",
+    "descriptionEn": "Official admissions announcement detailing Pre-Form One opening date (21/09/2026), registration forms and contact channels in Marangu, Moshi and Ngarenaro.",
+    "fileSize": "195 KB (PDF Document)",
     "targetGroup": "Wanafunzi Wote",
     "downloadCount": 2350,
-    "imageUrl": "/uomboni_flyer_2026.jpg",
     "pdfContentPreview": {
       "header": "SHULE YA SEKONDARI UOMBONI - TANGAZO RASMI LA UDAHILI 2026/2027\nS.L.P 361 MARANGU, MOSHI (NECTA S0486)",
       "requirements": [
@@ -3311,7 +3300,7 @@ export const SAVED_SCHOOL_PROFILE = {
   "firstNectaYear": 1988,
   "yearsOfService": "40+",
   "postalAddress": "P.O. BOX 361, MARANGU",
-  "email": "uombonisecondary@gmail.com",
+  "altEmail": "uombonisecondary@gmail.com",
   "phones": [
     "0752 000 939",
     "0782 558 127",
@@ -3325,9 +3314,12 @@ export const SAVED_SCHOOL_PROFILE = {
     "+255 754 532 949"
   ],
   "location": "Marangu, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
-  "motto": "PRAYER, EDUCATION AND WORK",
-  "mottoSw": "SALA, ELIMU NA KAZI",
-  "slogan": "TUJIENDELEZE SISI WENYEWE",
+  "motto": "“ELIMU NI MAISHA” — PRAYER, EDUCATION AND WORK",
+  "mottoSw": "“ELIMU NI MAISHA” — SALA, ELIMU NA KAZI",
+  "slogan": "TUJIENDELEZE SISI WENYEWE (TUJENDELEE SISI WENYEWE)",
+  "diocese": "Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)",
+  "website": "www.uomboniss.ac.tz",
+  "email": "info@uomboniss.ac.tz",
   "vision": "To provide quality education and impressive academic performance",
   "visionSw": "Kutoa elimu bora na ufaulu wa kuvutia kitaaluma",
   "mission": "To educate boys and girls to their full potential so that they become independent and disciplined persons who can face contemporary and future challenges through the cooperation with parents and relevant community.",

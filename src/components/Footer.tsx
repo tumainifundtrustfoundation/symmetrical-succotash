@@ -5,6 +5,7 @@ import {
   Phone,
   Mail,
   Lock,
+  KeyRound,
   Users,
   Award,
   ArrowUp,
@@ -63,22 +64,28 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
             </div>
 
+            <p className="text-xs text-amber-300 font-bold tracking-wide">
+              Motto: “ELIMU NI MAISHA” — Tujendelee Sisi Wenyewe
+            </p>
             <p className="text-xs text-[#FFFFF0]/80 leading-relaxed max-w-sm">
               A registered Catholic Ordinary Level (Forms 1–4) day and boarding secondary school under the Catholic Diocese of Moshi. Dedicated to academic excellence, discipline, and moral integrity.
             </p>
 
-            <div className="pt-2 text-xs space-y-2 text-[#FFFFF0]/80">
+            <div className="pt-2 text-xs space-y-2.5 text-[#FFFFF0]/80">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
-                <span>Marangu West, Moshi Rural, Kilimanjaro, Tanzania</span>
+                <div className="leading-snug">
+                  <span className="block font-semibold text-white">Uomboni Secondary School</span>
+                  <span className="text-[#FFFFF0]/85">Marangu, Moshi, Tanzania</span>
+                </div>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <span>+255 782 558 127 / +255 754 532 949</span>
+                <a href="tel:+255782558127" className="hover:text-[#C9A227] transition-colors">+255 782 558 127 / +255 754 532 949</a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <span>uombonisec@gmail.com</span>
+                <a href="mailto:info@uomboniss.ac.tz" className="hover:text-[#C9A227] transition-colors">info@uomboniss.ac.tz</a>
               </div>
             </div>
 
@@ -152,7 +159,7 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button onClick={() => handleNav('contact')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Contact
+                  Contact &amp; Campus Map
                 </button>
               </li>
             </ul>
@@ -278,9 +285,10 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 onClick={onOpenStaffPortal}
                 className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                title="Chumba cha Walimu (Private Staffroom) — Lango la Ndani la Watumishi"
               >
-                <span>Staff Portal</span>
-                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Chumba cha Walimu (Staffroom)</span>
+                <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
               </button>
             </div>
 

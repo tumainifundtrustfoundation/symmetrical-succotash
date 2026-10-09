@@ -732,14 +732,14 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                       <h4 className="font-bold text-xs sm:text-sm text-[#704214]">Joining Instructions 2026 (PDF)</h4>
                       <p className="text-[11px] text-[#704214]/70 mt-0.5">Fomu kamili ya maelekezo ya kujiunga kidato cha 1 na uhamisho.</p>
                     </div>
-                    <a
-                      href="/images/uomboni_flyer_2026.jpg"
-                      download
-                      className="px-3 py-1.5 bg-[#704214] text-white text-xs font-semibold rounded hover:bg-[#58330F] transition-colors shrink-0 flex items-center gap-1.5"
+                    <button
+                      type="button"
+                      onClick={() => downloadJoiningInstructionsPdf()}
+                      className="px-3 py-1.5 bg-[#704214] text-white text-xs font-semibold rounded hover:bg-[#58330F] transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Download className="w-3.5 h-3.5 text-[#C9A227]" />
                       <span>Pakua</span>
-                    </a>
+                    </button>
                   </div>
 
                   <div className="bg-white p-5 rounded-lg border border-[#704214]/15 flex items-center justify-between shadow-xs">

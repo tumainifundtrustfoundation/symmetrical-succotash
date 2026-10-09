@@ -17,77 +17,105 @@ export const AdmissionsSection: React.FC<AdmissionsSectionProps> = ({ onOpenAdmi
   ];
 
   const dates = [
-    { event: 'Application Window Opens', date: 'October 1, 2025' },
-    { event: 'Entrance Assessments & Interviews', date: 'November – December 2025' },
-    { event: 'Form One Reporting & Orientation', date: 'Early January 2026' },
-    { event: 'Form 2 & 3 Transfer Admissions Deadline', date: 'January 15, 2026' },
+    { event: 'Pre-Form One Program Commences (Special Notice)', date: '21 Septemba 2026' },
+    { event: 'Form One Admissions & Registration (2026/2027)', date: 'Inaendelea (Open Now)' },
+    { event: 'Form 2 & 3 Transfer Applications Window', date: 'Inaendelea (Open Now)' },
+    { event: 'Kuripoti Shuleni & Maandalizi ya Muhula', date: 'Januari 2026' },
   ];
 
   return (
     <section id="admissions" className="py-20 sm:py-24 bg-[#FFFFF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
-          <span className="text-xs font-semibold text-[#C9A227] tracking-wider block mb-2 uppercase">
-            Enrollment 2026
-          </span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase mb-2 border border-amber-300">
+            <span>TANGAZO RASMI LA UDAHILI 2026 - 2027</span>
+          </div>
           <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#102A43] tracking-tight leading-[1.2]">
-            Admissions
+            Admissions &amp; Pre-Form One 2026/2027
           </h2>
           <p className="mt-4 text-sm sm:text-base text-slate-700 leading-[1.75] font-normal">
-            We welcome applications for Form One entry and selective transfer placements into Form Two and Form Three for boys and girls seeking day or boarding education.
+            Nafasi za kujiunga na Pre-Form One, Kidato cha Kwanza na Kidato cha Tatu kwa wavulana na wasichana (Bweni na Kutwa) zipo wazi. Shule ya Kikatoliki yenye malezi thabiti, maabara za kisasa, maktaba kubwa, na mazingira tulivu ya Marangu, Kilimanjaro.
           </p>
         </div>
 
-        {/* 2 Main Entry Routes: Form One & Transfers */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* 3 Main Entry Routes: Pre-Form 1, Form 1 & Transfers */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Pre-Form One - Direct from Flyer Special Notice */}
+          <div className="bg-white p-6 rounded-2xl border-2 border-amber-400/80 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden">
+            <div className="space-y-2">
+              <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
+                SPECIAL NOTICE
+              </span>
+              <h3 className="text-lg font-bold text-[#102A43]">
+                Pre-Form One Program
+              </h3>
+              <p className="text-xs font-bold text-amber-700">
+                🗓️ Inaanza: 21 Septemba 2026
+              </p>
+              <p className="text-xs text-slate-600 leading-[1.6]">
+                Mpango maalum wa kuwajengea msingi imara wanafunzi waliomaliza darasa la saba katika lugha ya Kiingereza, hisabati (Mathematics) na stadi za sayansi kabla ya kuanza rasmi kidato cha kwanza.
+              </p>
+            </div>
+            <ul className="space-y-1.5 text-xs text-slate-700 border-t border-slate-100 pt-3">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Kiingereza cha kina &amp; Sayansi</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Nafasi za Bweni na Kutwa zipo</span>
+              </li>
+            </ul>
+          </div>
+
           {/* Form One */}
-          <div className="bg-white p-7 rounded-lg border border-[#102A43]/15 border-t-4 border-t-[#102A43] shadow-xs flex flex-col justify-between">
-            <div>
+          <div className="bg-white p-6 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#102A43] shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
               <span className="text-xs font-semibold text-[#C9A227] tracking-wider uppercase">
                 Direct Entry
               </span>
-              <h3 className="text-xl font-semibold text-[#102A43] mt-1">
+              <h3 className="text-lg font-bold text-[#102A43]">
                 Form One Admissions
               </h3>
-              <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-[1.7] font-normal">
-                Open to Standard Seven primary school graduates who have passed the National Primary School Leaving Examination (PSLE). Candidates must exhibit good character, willingness to learn, and readiness for a disciplined academic life.
+              <p className="text-xs text-slate-600 leading-[1.6]">
+                Wanafunzi waliohitimu Darasa la Saba (PSLE) wanakaribishwa kujiunga na Shule ya Sekondari Uomboni. Mazingira yenye utulivu wa kipekee na walimu waliojitolea.
               </p>
-              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-slate-700">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
-                  <span>Day &amp; Boarding placements available</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
-                  <span>Comprehensive pastoral and academic orientation</span>
-                </li>
-              </ul>
             </div>
+            <ul className="space-y-1.5 text-xs text-slate-700 border-t border-slate-100 pt-3">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
+                <span>Bweni na Kutwa (Wavulana &amp; Wasichana)</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
+                <span>Ada nafuu inayolipwa kwa awamu</span>
+              </li>
+            </ul>
           </div>
 
-          {/* Transfers */}
-          <div className="bg-white p-7 rounded-lg border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs flex flex-col justify-between">
-            <div>
+          {/* Transfers Form 2 & 3 */}
+          <div className="bg-white p-6 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
               <span className="text-xs font-semibold text-[#102A43] tracking-wider uppercase">
                 Continuing Students
               </span>
-              <h3 className="text-xl font-semibold text-[#102A43] mt-1">
-                Student Transfers (Forms 2 &amp; 3)
+              <h3 className="text-lg font-bold text-[#102A43]">
+                Kidato cha 2 &amp; 3 (Transfers)
               </h3>
-              <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-[1.7] font-normal">
-                Transfers from other registered secondary schools are considered based on vacancies, past term examination broadsheets, continuous assessment records, and a formal recommendation letter from the previous head of school.
+              <p className="text-xs text-slate-600 leading-[1.6]">
+                Uhamisho kwa wanafunzi wa Kidato cha Pili na Tatu wenye maendeleo mazuri ya kitaaluma na tabia njema kutoka shule zilizosajiliwa.
               </p>
-              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-slate-700">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
-                  <span>Subject credit evaluation &amp; interview</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
-                  <span>Smooth curriculum continuity and boarding integration</span>
-                </li>
-              </ul>
             </div>
+            <ul className="space-y-1.5 text-xs text-slate-700 border-t border-slate-100 pt-3">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
+                <span>Kipimo cha alama za mitihani ya awali</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
+                <span>Mwendelezo mzuri wa masomo</span>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -130,11 +158,14 @@ export const AdmissionsSection: React.FC<AdmissionsSectionProps> = ({ onOpenAdmi
 
             <div className="mt-6 pt-4 border-t border-slate-100">
               <h5 className="text-xs font-bold text-[#102A43] uppercase tracking-wider mb-1">
-                Application Information
+                Upatikanaji wa Fomu (Kwenye Tangazo la Shule)
               </h5>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Forms are available online or at the Headmaster&apos;s Office in Marangu West, Moshi.
+                Fomu za kujiunga zinapatikana: <strong>Ofisi ya Shule Marangu</strong>, <strong>Moshi Bookshop</strong>, na <strong>Ngarenaro</strong>. Pia unaweza kupakua mtandaoni hapa.
               </p>
+              <div className="mt-2 text-[11px] text-slate-700 font-mono font-bold">
+                Mawasiliano: 0752 000 939 | 0782 558 127 | 0745 548 225 | 0754 532 949
+              </div>
             </div>
           </div>
         </div>

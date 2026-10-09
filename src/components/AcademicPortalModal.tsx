@@ -71,6 +71,11 @@ import {
 import { InlineReportCardPdfViewer } from './InlineReportCardPdfViewer';
 import { NectaResultsOfficialView } from './NectaResultsOfficialView';
 import { AcademicSubjectEntryModule } from './AcademicSubjectEntryModule';
+import {
+  changeTeacherPinWithVerification,
+  getTeacherAuthProfile,
+  isTeacherAuthorizedForSubject,
+} from '../services/teacherAuthDirectory';
 
 export type AcademicRole = 'parent' | 'teacher' | 'academic_master' | 'student';
 
@@ -147,7 +152,14 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   const [teacherSelectedExam, setTeacherSelectedExam] = useState<string>('NECTA Mock 2025');
   const [teacherMarksDraft, setTeacherMarksDraft] = useState<{ [examNumber: string]: { score: number; remarks: string } }>({});
   const [teacherSaveSuccess, setTeacherSaveSuccess] = useState(false);
-  const [teacherActiveTab, setTeacherActiveTab] = useState<'excel_upload' | 'subject_entry' | 'master_grid' | 'single_add' | 'broadcast'>('excel_upload');
+  const [teacherActiveTab, setTeacherActiveTab] = useState<'subject_entry' | 'master_grid' | 'single_add' | 'broadcast'>('subject_entry');
+
+  // Teacher Change PIN Modal State (Inside Authenticated Portal)
+  const [isTeacherChangePinOpen, setIsTeacherChangePinOpen] = useState(false);
+  const [currentPinInput, setCurrentPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
+  const [pinChangeFeedback, setPinChangeFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Excel / CSV File Upload State for Teachers
   const [isParsingExcel, setIsParsingExcel] = useState(false);
@@ -366,8 +378,36 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
           return;
         }
 
+        // Match verified teacher faculty profile and assigned subjects
+        const matchedFaculty =
+          teachers.find((t) => t.email?.toLowerCase() === email.toLowerCase()) ||
+          getTeacherAuthProfile(email);
+
+        if (matchedFaculty) {
+          const assignedList =
+            ('assignedSubjects' in matchedFaculty
+              ? (matchedFaculty as any).assignedSubjects
+              : (matchedFaculty as any).subjects) || ['Chemistry'];
+          setSelectedTeacher({
+            id: matchedFaculty.id,
+            name: matchedFaculty.name,
+            email: matchedFaculty.email || email,
+            phone: (matchedFaculty as any).phone || '+255 700 000 000',
+            role: (matchedFaculty as any).role || 'Mwalimu wa Somo',
+            roleSw: (matchedFaculty as any).roleSw || (matchedFaculty as any).role || 'Mwalimu wa Somo',
+            roleEn: (matchedFaculty as any).roleEn || 'Subject Teacher',
+            department: matchedFaculty.department || 'Sayansi (Science)',
+            subjects: assignedList,
+            imageUrl: matchedFaculty.imageUrl || '/media/media_1.webp',
+          });
+          if (assignedList.length > 0) {
+            setTeacherSelectedSubject(assignedList[0]);
+          }
+        }
+
         setTeacherGoogleUser(res.user);
         if (res.user.email) setTeacherEmailInput(res.user.email);
+        setTeacherActiveTab('subject_entry');
         setIsAuthenticated(true);
       } else {
         setTeacherAuthError(true);
@@ -442,7 +482,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   };
 
   // Handle Teacher Direct / PIN / Faculty Selection Sign-In
-  const handleTeacherDirectLogin = (teacher: { id?: string; name: string; email: string; role?: string }) => {
+  const handleTeacherDirectLogin = (teacher: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => {
     const found =
       teachers.find(
         (t) =>
@@ -451,16 +491,21 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
           t.name.toLowerCase().includes(teacher.name.toLowerCase())
       ) || teachers[0];
 
-    setSelectedTeacher(found);
+    const teacherAssignedSubjects = teacher.subjects || found.subjects || ['Chemistry'];
+    setSelectedTeacher({
+      ...found,
+      subjects: teacherAssignedSubjects,
+    });
     setTeacherEmailInput(found.email || teacher.email || 'walimu@uombonisec.ac.tz');
-    if (found.subjects && found.subjects.length > 0) {
-      setTeacherSelectedSubject(found.subjects[0]);
+    if (teacherAssignedSubjects && teacherAssignedSubjects.length > 0) {
+      setTeacherSelectedSubject(teacherAssignedSubjects[0]);
     }
     setTeacherGoogleUser({
       email: found.email || teacher.email,
       displayName: found.name,
       photoURL: found.imageUrl,
     });
+    setTeacherActiveTab('subject_entry');
     setTeacherAuthError(false);
     setTeacherEmailError('');
     setIsAuthenticated(true);
@@ -728,50 +773,115 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
       return;
     }
 
-    const subjectsList: SubjectResult[] = STANDARD_SUBJECTS.map((sub) => {
-      const score = teacherSingleStudentDraft.subjectScores[sub.code] || 65;
-      const { grade, points, remarks } = calculateGradeAndPoints(score);
-      return {
-        code: sub.code,
-        name: sub.name,
-        nameEn: sub.nameEn,
-        score,
-        grade,
-        points,
-        remarks,
-      };
-    });
-
-    const totalMarks = subjectsList.reduce((sum, s) => sum + s.score, 0);
-    const averageMarks = parseFloat((totalMarks / subjectsList.length).toFixed(1));
-    const { division, totalPoints } = calculateDivision(subjectsList);
+    const assignedSubjects = selectedTeacher?.subjects || ['Chemistry'];
+    const assignedSubjectObjs = STANDARD_SUBJECTS.filter((sub) =>
+      assignedSubjects.some(
+        (a) =>
+          a.toLowerCase() === sub.name.toLowerCase() ||
+          sub.name.toLowerCase().includes(a.toLowerCase()) ||
+          a.toLowerCase().includes(sub.name.toLowerCase())
+      )
+    );
 
     const generatedExamNo =
       teacherSingleStudentDraft.examNumber.trim() ||
       `S0486/${String(studentResults.length + 1).padStart(4, '0')}/2025`;
 
-    const newResult: StudentResult = {
-      id: `tch-res-${Date.now()}`,
-      examNumber: generatedExamNo.toUpperCase(),
-      studentName: teacherSingleStudentDraft.studentName.toUpperCase().trim(),
-      gender: teacherSingleStudentDraft.gender,
-      form: teacherSingleStudentDraft.form,
-      stream: teacherSingleStudentDraft.stream,
-      examType: teacherSingleStudentDraft.examType as any,
-      year: 2025,
-      subjects: subjectsList,
-      totalMarks,
-      averageMarks,
-      division,
-      points: totalPoints,
-      classPosition: studentResults.filter((s) => s.form === teacherSingleStudentDraft.form).length + 1,
-      totalStudentsInClass: studentResults.filter((s) => s.form === teacherSingleStudentDraft.form).length + 1,
-      conduct: teacherSingleStudentDraft.conduct as any,
-      headmasterRemarks: teacherSingleStudentDraft.headmasterRemarks,
-      publishDate: new Date().toISOString().split('T')[0],
-    };
+    // Check if student already exists in student results
+    const existingStudent = studentResults.find(
+      (s) =>
+        s.examNumber.toLowerCase() === generatedExamNo.toLowerCase() ||
+        (s.studentName.toLowerCase() === teacherSingleStudentDraft.studentName.trim().toLowerCase() &&
+          s.form === teacherSingleStudentDraft.form &&
+          s.examType === teacherSingleStudentDraft.examType)
+    );
 
-    addStudentResult(newResult);
+    let finalDivision: StudentResult['division'] = 'Division 0';
+
+    if (existingStudent) {
+      // ONLY update or append teacher's assigned subject(s)! DO NOT touch other teachers' subjects!
+      const updatedSubjects = [...existingStudent.subjects];
+      assignedSubjectObjs.forEach((sub) => {
+        const score = teacherSingleStudentDraft.subjectScores[sub.code] ?? 70;
+        const { grade, points, remarks } = calculateGradeAndPoints(score);
+        const idx = updatedSubjects.findIndex(
+          (s) => s.code === sub.code || s.name.toLowerCase() === sub.name.toLowerCase()
+        );
+        const newSubObj: SubjectResult = {
+          code: sub.code,
+          name: sub.name,
+          nameEn: sub.nameEn,
+          score,
+          grade,
+          points,
+          remarks: remarks || 'Nzuri',
+        };
+        if (idx >= 0) {
+          updatedSubjects[idx] = newSubObj;
+        } else {
+          updatedSubjects.push(newSubObj);
+        }
+      });
+
+      const totalMarks = updatedSubjects.reduce((sum, s) => sum + s.score, 0);
+      const averageMarks = parseFloat((totalMarks / (updatedSubjects.length || 1)).toFixed(1));
+      const { division, totalPoints } = calculateDivision(updatedSubjects);
+      finalDivision = division;
+
+      const updatedStudent: StudentResult = {
+        ...existingStudent,
+        subjects: updatedSubjects,
+        totalMarks,
+        averageMarks,
+        division,
+        points: totalPoints,
+      };
+
+      updateStudentResult(updatedStudent);
+    } else {
+      // New student: strictly populate only the teacher's assigned subjects
+      const subjectsList: SubjectResult[] = assignedSubjectObjs.map((sub) => {
+        const score = teacherSingleStudentDraft.subjectScores[sub.code] ?? 70;
+        const { grade, points, remarks } = calculateGradeAndPoints(score);
+        return {
+          code: sub.code,
+          name: sub.name,
+          nameEn: sub.nameEn,
+          score,
+          grade,
+          points,
+          remarks: remarks || 'Nzuri',
+        };
+      });
+
+      const totalMarks = subjectsList.reduce((sum, s) => sum + s.score, 0);
+      const averageMarks = parseFloat((totalMarks / (subjectsList.length || 1)).toFixed(1));
+      const { division, totalPoints } = calculateDivision(subjectsList);
+      finalDivision = division;
+
+      const newResult: StudentResult = {
+        id: `tch-res-${Date.now()}`,
+        examNumber: generatedExamNo.toUpperCase(),
+        studentName: teacherSingleStudentDraft.studentName.toUpperCase().trim(),
+        gender: teacherSingleStudentDraft.gender,
+        form: teacherSingleStudentDraft.form,
+        stream: teacherSingleStudentDraft.stream,
+        examType: teacherSingleStudentDraft.examType as any,
+        year: 2025,
+        subjects: subjectsList,
+        totalMarks,
+        averageMarks,
+        division,
+        points: totalPoints,
+        classPosition: studentResults.filter((s) => s.form === teacherSingleStudentDraft.form).length + 1,
+        totalStudentsInClass: studentResults.filter((s) => s.form === teacherSingleStudentDraft.form).length + 1,
+        conduct: teacherSingleStudentDraft.conduct as any,
+        headmasterRemarks: teacherSingleStudentDraft.headmasterRemarks,
+        publishDate: new Date().toISOString().split('T')[0],
+      };
+
+      addStudentResult(newResult);
+    }
 
     const nowStr = new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date().toLocaleDateString('sw-TZ');
     setLastPublishedAudit({
@@ -781,7 +891,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
       form: teacherSingleStudentDraft.form,
       teacherName: selectedTeacher?.name || 'Mwalimu wa Uomboni',
       divisionStats: {
-        [division]: 1,
+        [finalDivision]: 1,
       },
     });
 
@@ -921,16 +1031,16 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                  {language === 'sw' ? 'Portal Kuu ya Taaluma na Matokeo' : 'Academic Management & Results Portal'}
+                  {language === 'sw' ? 'Mfumo wa Ndani wa Kiutawala na Taaluma' : 'Internal Academic & Faculty Gate'}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
-                  RBAC 2026
+                  🔒 {language === 'sw' ? 'Lango la Ndani' : 'Restricted'}
                 </span>
               </div>
               <p className="text-xs text-emerald-300/90 font-medium">
                 {language === 'sw'
-                  ? 'Mfumo Rasmi wa Shule ya Sekondari Uomboni (Kituo cha NECTA S0486) • Marangu, Moshi'
-                  : 'Official Uomboni Secondary School Academic System • NECTA Centre S0486'}
+                  ? 'Mfumo Rasmi wa Ndani wa Shule ya Sekondari Uomboni (Kituo cha NECTA S0486) • Marangu, Moshi'
+                  : 'Official Uomboni Secondary School Staff Intranet (NECTA S0486) • Marangu, Moshi'}
               </p>
             </div>
           </div>
@@ -1426,6 +1536,20 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setIsTeacherChangePinOpen(true);
+                          setCurrentPinInput('');
+                          setNewPinInput('');
+                          setConfirmPinInput('');
+                          setPinChangeFeedback(null);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-sm"
+                        title={language === 'sw' ? 'Badili nambari yako ya siri ya mwalimu' : 'Change your confidential teacher PIN'}
+                      >
+                        <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{language === 'sw' ? '🔑 Badili PIN' : '🔑 Change PIN'}</span>
+                      </button>
                       {onOpenInstallApp && (
                         <button
                           onClick={onOpenInstallApp}
@@ -1446,30 +1570,164 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Secure Teacher PIN Change Modal (Inside Authenticated Session) */}
+                  {isTeacherChangePinOpen && (
+                    <div className="p-4 sm:p-5 rounded-3xl bg-slate-950 border-2 border-amber-400/60 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-bold">
+                            <KeyRound className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h5 className="text-sm font-black text-white">
+                              {language === 'sw' ? 'Badilisha Nambari Yako Binafsi ya Siri (PIN ya Mwalimu)' : 'Update Your Confidential Faculty PIN'}
+                            </h5>
+                            <p className="text-xs text-slate-400">
+                              {language === 'sw'
+                                ? `Mwalimu: ${selectedTeacher?.name} • PIN hii inalinda akaunti yako na masomo yako (${selectedTeacher?.subjects.join(', ')}).`
+                                : `Teacher: ${selectedTeacher?.name} • Secures your account and assigned subjects.`}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsTeacherChangePinOpen(false)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                            {language === 'sw' ? 'PIN ya Sasa *' : 'Current PIN *'}
+                          </label>
+                          <input
+                            type="password"
+                            value={currentPinInput}
+                            onChange={(e) => setCurrentPinInput(e.target.value)}
+                            placeholder="Weka PIN ya sasa..."
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                            {language === 'sw' ? 'PIN Mpya (Tarakimu 4+) *' : 'New PIN (4+ digits) *'}
+                          </label>
+                          <input
+                            type="password"
+                            value={newPinInput}
+                            onChange={(e) => setNewPinInput(e.target.value)}
+                            placeholder="PIN mpya..."
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                            {language === 'sw' ? 'Rudia PIN Mpya *' : 'Confirm New PIN *'}
+                          </label>
+                          <input
+                            type="password"
+                            value={confirmPinInput}
+                            onChange={(e) => setConfirmPinInput(e.target.value)}
+                            placeholder="Rudia PIN mpya..."
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                          />
+                        </div>
+                      </div>
+
+                      {pinChangeFeedback && (
+                        <div
+                          className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                            pinChangeFeedback.type === 'success'
+                              ? 'bg-emerald-950/90 border border-emerald-600 text-emerald-300'
+                              : 'bg-rose-950/90 border border-rose-700 text-rose-300'
+                          }`}
+                        >
+                          {pinChangeFeedback.type === 'success' ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                          )}
+                          <span>{pinChangeFeedback.message}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setIsTeacherChangePinOpen(false)}
+                          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
+                        >
+                          {language === 'sw' ? 'Ghairi' : 'Cancel'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPinChangeFeedback(null);
+                            if (!currentPinInput.trim()) {
+                              setPinChangeFeedback({
+                                type: 'error',
+                                message: language === 'sw' ? 'Tafadhali weka PIN yako ya sasa.' : 'Please enter your current PIN.',
+                              });
+                              return;
+                            }
+                            if (!newPinInput.trim() || newPinInput.trim().length < 4) {
+                              setPinChangeFeedback({
+                                type: 'error',
+                                message: language === 'sw' ? 'PIN mpya lazima iwe na angalau tarakimu 4.' : 'New PIN must be at least 4 digits.',
+                              });
+                              return;
+                            }
+                            if (newPinInput.trim() !== confirmPinInput.trim()) {
+                              setPinChangeFeedback({
+                                type: 'error',
+                                message: language === 'sw' ? 'PIN mpya na marudio yake hazilingani.' : 'New PIN and confirmation do not match.',
+                              });
+                              return;
+                            }
+                            const res = changeTeacherPinWithVerification(
+                              selectedTeacher?.id || '',
+                              currentPinInput.trim(),
+                              newPinInput.trim()
+                            );
+                            if (res.success) {
+                              setPinChangeFeedback({
+                                type: 'success',
+                                message: language === 'sw' ? res.messageSw : res.message,
+                              });
+                              setTimeout(() => {
+                                setIsTeacherChangePinOpen(false);
+                                setPinChangeFeedback(null);
+                              }, 2000);
+                            } else {
+                              setPinChangeFeedback({
+                                type: 'error',
+                                message: language === 'sw' ? res.messageSw : res.message,
+                              });
+                            }
+                          }}
+                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-xs font-black cursor-pointer shadow-md"
+                        >
+                          {language === 'sw' ? 'Hifadhi PIN Mpya' : 'Save New PIN'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Teacher Publishing Hub Navigation Tabs */}
                   <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner">
-                    <button
-                      onClick={() => setTeacherActiveTab('excel_upload')}
-                      className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        teacherActiveTab === 'excel_upload'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                      }`}
-                    >
-                      <FileSpreadsheet className="w-4 h-4 text-amber-400" />
-                      <span>{language === 'sw' ? '📁 Pakia Excel & Sakinisha' : '📁 Upload Excel & Publish'}</span>
-                    </button>
-
                     <button
                       onClick={() => setTeacherActiveTab('subject_entry')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'subject_entry'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
+                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black ring-2 ring-amber-400/50'
                           : 'text-slate-400 hover:text-white hover:bg-slate-900'
                       }`}
                     >
                       <BookOpen className="w-4 h-4 text-amber-400" />
-                      <span>{language === 'sw' ? '✍️ Pakia & Ingiza kwa Somo (Pending)' : '✍️ Upload Subject Scores (Pending)'}</span>
+                      <span>{language === 'sw' ? '✍️ Ingiza Alama za Somo Lako Pekee' : '✍️ My Assigned Subject Marks'}</span>
                     </button>
 
                     <button
@@ -1481,7 +1739,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       }`}
                     >
                       <Table className="w-4 h-4 text-amber-400" />
-                      <span>{language === 'sw' ? '📑 Daftari la Masomo Yote' : '📑 All-Subjects Matrix'}</span>
+                      <span>{language === 'sw' ? '📑 Daftari la Masomo Yote (Kuangalia)' : '📑 All-Subjects Matrix (View)'}</span>
                     </button>
 
                     <button
@@ -1493,7 +1751,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       }`}
                     >
                       <Plus className="w-4 h-4 text-amber-400" />
-                      <span>{language === 'sw' ? '➕ Ongeza Mwanafunzi' : '➕ Add Single Student'}</span>
+                      <span>{language === 'sw' ? '➕ Ongeza Mwanafunzi (Somo Lako)' : '➕ Add Single Student (My Subject)'}</span>
                     </button>
 
                     <button
@@ -1579,173 +1837,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   )}
 
                   {/* ========================================================================= */}
-                  {/* TAB 1: EXCEL / CSV UPLOAD & 1-CLICK INSTANT SELF-INSTALLATION */}
-                  {/* ========================================================================= */}
-                  {teacherActiveTab === 'excel_upload' && (
-                    <div className="space-y-5">
-                      {/* Guidance and Template Download Bar */}
-                      <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <h5 className="text-sm font-black text-white flex items-center gap-2">
-                            <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-                            <span>{language === 'sw' ? 'Pakia Faili la Matokeo ya Excel / CSV' : 'Bulk Results Spreadsheet Uploader'}</span>
-                          </h5>
-                          <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
-                            {language === 'sw'
-                              ? 'Pakia faili lolote la Excel (.xlsx, .xls) au CSV lenye namba za mitihani na alama za masomo. Mfumo utakokotoa Madaraja, Division I-0, Pointi 7 Bora, na Wastani kiotomatiki kisha kujisakinisha mtandaoni.'
-                              : 'Upload an Excel or CSV file. The system will automatically compute grades, divisions, best 7 points, and publish live to the portal.'}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={downloadExcelTemplate}
-                            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/40 text-xs font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-                          >
-                            <FileDown className="w-4 h-4 text-amber-400" />
-                            <span>{language === 'sw' ? 'Pakua Kiolezo cha Excel' : 'Download Template (.xlsx)'}</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={handleLoadDemoBatch}
-                            className="px-4 py-2.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-                          >
-                            <Sparkles className="w-4 h-4 text-emerald-400" />
-                            <span>{language === 'sw' ? 'Weka Data ya Mfano (Demo)' : 'Load Demo Batch (10 Students)'}</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Drag and Drop / File Input Box */}
-                      <div className="relative p-8 rounded-3xl bg-slate-950/90 border-2 border-dashed border-emerald-700/60 hover:border-amber-400 transition-all text-center space-y-4">
-                        <input
-                          type="file"
-                          accept=".xlsx, .xls, .csv"
-                          onChange={handleExcelFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          id="teacher-excel-upload-input"
-                        />
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-900/60 text-amber-300 border border-emerald-600/50 flex items-center justify-center mx-auto shadow-lg">
-                          <Upload className="w-8 h-8 text-amber-400" />
-                        </div>
-                        <div>
-                          <h6 className="text-sm font-bold text-white">
-                            {uploadFileName ? (
-                              <span className="text-amber-300 font-mono font-black">{uploadFileName}</span>
-                            ) : language === 'sw' ? (
-                              'Buruta na uachie faili la Excel/CSV hapa, au Bonyeza Kuteua'
-                            ) : (
-                              'Drag & drop your Excel/CSV spreadsheet here, or Click to Browse'
-                            )}
-                          </h6>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {language === 'sw'
-                              ? 'Inasaidia safu za: EXAM_NO, STUDENT_NAME, GENDER, FORM, CIV, HIST, GEO, KISW, ENG, PHY, CHEM, BIO, BAM, RE'
-                              : 'Supports columns: EXAM_NO, STUDENT_NAME, GENDER, FORM, CIV, HIST, GEO, KISW, ENG, PHY, CHEM, BIO, BAM, RE'}
-                          </p>
-                        </div>
-
-                        {isParsingExcel && (
-                          <div className="flex items-center justify-center gap-2 text-xs text-amber-400 font-bold">
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>{language === 'sw' ? 'Inakagua na kuhesabu madaraja...' : 'Parsing spreadsheet and computing grades...'}</span>
-                          </div>
-                        )}
-
-                        {excelParseError && (
-                          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700 text-rose-300 text-xs font-semibold flex items-center justify-center gap-2 max-w-xl mx-auto">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            <span>{excelParseError}</span>
-                          </div>
-                        )}
-
-                        {excelParseSuccess && (
-                          <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 max-w-xl mx-auto">
-                            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                            <span>{excelParseSuccess}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Live Preview & Instant Installation Action Button */}
-                      {parsedExcelStudents.length > 0 && (
-                        <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-2xl space-y-4 p-5">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-                            <div>
-                              <h5 className="text-sm font-black text-white flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-amber-400" />
-                                <span>{language === 'sw' ? 'Muhtasari wa Matokeo Yaliyohakikiwa (Tayari Kusakinishwa)' : 'Validated Results Preview (Ready for Live Install)'}</span>
-                              </h5>
-                              <p className="text-xs text-slate-400">
-                                Wanafunzi {parsedExcelStudents.length} • {parsedExcelStudents[0]?.examType} • {parsedExcelStudents[0]?.form}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2.5">
-                              <button
-                                onClick={() => handleInstantPublishExcel('merge')}
-                                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition-all hover:scale-102 flex items-center gap-2.5 cursor-pointer border border-emerald-400/50"
-                              >
-                                <CheckCheck className="w-5 h-5 text-slate-950" />
-                                <span>{language === 'sw' ? '🚀 SAKINISHA & CHAPISHA MATOKEO MOJA KWA MOJA' : '🚀 INSTANT 1-CLICK PUBLISH TO SYSTEM'}</span>
-                              </button>
-
-                              <button
-                                onClick={() => handleInstantPublishExcel('replace')}
-                                className="px-3.5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                                title="Futa ya zamani na uweke haya mapya"
-                              >
-                                <span>{language === 'sw' ? 'Badilisha Yote' : 'Replace All'}</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Preview Data Table */}
-                          <div className="overflow-x-auto max-h-96">
-                            <table className="w-full text-left text-xs">
-                              <thead className="bg-slate-950/90 text-slate-400 uppercase text-[10px] font-bold sticky top-0 border-b border-slate-800">
-                                <tr>
-                                  <th className="py-2.5 px-3">#</th>
-                                  <th className="py-2.5 px-3">Namba ya Mtihani</th>
-                                  <th className="py-2.5 px-4">Jina la Mwanafunzi</th>
-                                  <th className="py-2.5 px-2 text-center">Jinsia</th>
-                                  <th className="py-2.5 px-3 text-center">Wastani</th>
-                                  <th className="py-2.5 px-3 text-center">Daraja (Div)</th>
-                                  <th className="py-2.5 px-3 text-center">Pointi</th>
-                                  <th className="py-2.5 px-4">Masomo na Alama</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-800/60 font-medium">
-                                {parsedExcelStudents.map((st, idx) => (
-                                  <tr key={st.id || idx} className="hover:bg-slate-800/40 transition-colors">
-                                    <td className="py-2.5 px-3 text-slate-500 font-mono">{idx + 1}</td>
-                                    <td className="py-2.5 px-3 font-mono text-amber-300 font-bold">{st.examNumber}</td>
-                                    <td className="py-2.5 px-4 font-bold text-white">{st.studentName}</td>
-                                    <td className="py-2.5 px-2 text-center text-slate-400">{st.gender}</td>
-                                    <td className="py-2.5 px-3 text-center font-black text-emerald-400">{st.averageMarks}%</td>
-                                    <td className="py-2.5 px-3 text-center">
-                                      <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-black ${getDivisionBadge(st.division)}`}>
-                                        {st.division}
-                                      </span>
-                                    </td>
-                                    <td className="py-2.5 px-3 text-center font-mono font-bold text-white">{st.points}</td>
-                                    <td className="py-2.5 px-4 text-[11px] text-slate-300">
-                                      {st.subjects.map(s => `${s.name.substring(0, 4)}:${s.score}(${s.grade})`).join(' | ')}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ========================================================================= */}
-                  {/* TAB 2: SINGLE SUBJECT MARK ENTRY GRADEBOOK (NECTA / CSSC WORKFLOW) */}
+                  {/* TAB 1: SINGLE SUBJECT MARK ENTRY GRADEBOOK (NECTA / CSSC WORKFLOW) */}
                   {/* ========================================================================= */}
                   {teacherActiveTab === 'subject_entry' && (
                     <AcademicSubjectEntryModule
@@ -1772,8 +1864,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </h5>
                           <p className="text-xs text-slate-400">
                             {language === 'sw'
-                              ? 'Tazama na uhariri alama za masomo yote 10 kwa wakati mmoja. Mfumo unaonyesha Division na Pointi mara moja.'
-                              : 'View and edit all 10 subjects simultaneously. Real-time updates of Division, points, and average.'}
+                              ? `Mwalimu ${selectedTeacher?.name}: Masomo yako pekee ya kuingiza maksi ni: ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'}. Masomo mengine yanalindwa kwa usalama.`
+                              : `Teacher ${selectedTeacher?.name}: Your assigned subjects are: ${selectedTeacher?.subjects?.join(', ')}. Other subjects are securely locked.`}
                           </p>
                         </div>
 
@@ -1786,6 +1878,21 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             <span>{language === 'sw' ? 'Pakua Excel' : 'Export Excel'}</span>
                           </button>
                         </div>
+                      </div>
+
+                      {/* Teacher assigned subject reminder badge */}
+                      <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-600/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-emerald-200">
+                          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>
+                            {language === 'sw'
+                              ? `Uthibitisho wa Ulinzi: Umeidhinishwa kuingiza alama kwa somo la ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'} pekee.`
+                              : `Access Controlled: You may only input scores for your assigned subjects (${selectedTeacher?.subjects?.join(', ')}).`}
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider self-start sm:self-center">
+                          ★ Somo Lako Pekee
+                        </span>
                       </div>
 
                       <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
@@ -1949,41 +2056,76 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </div>
                         </div>
 
-                        {/* Subject Marks Entry Grid */}
+                        {/* Subject Marks Entry Grid - Filtered Strictly to Teacher's Assigned Subject(s) */}
                         <div className="pt-3">
-                          <label className="text-xs font-bold text-amber-300 block mb-2">Alama za Masomo (/100):</label>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {STANDARD_SUBJECTS.map((sub) => {
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="text-xs font-bold text-amber-300 block">
+                              {language === 'sw'
+                                ? `Alama za Somo Lako Pekee (${selectedTeacher?.subjects.join(', ')}):`
+                                : `Assigned Subject Mark Entry (${selectedTeacher?.subjects.join(', ')}):`}
+                            </label>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold">
+                              🔒 Somo Lako Pekee
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {STANDARD_SUBJECTS.filter((sub) => {
+                              const assigned = selectedTeacher?.subjects || [];
+                              return assigned.some(
+                                (a) =>
+                                  a.toLowerCase() === sub.name.toLowerCase() ||
+                                  sub.name.toLowerCase().includes(a.toLowerCase()) ||
+                                  a.toLowerCase().includes(sub.name.toLowerCase())
+                              );
+                            }).map((sub) => {
                               const score = teacherSingleStudentDraft.subjectScores[sub.code] ?? 70;
                               const { grade } = calculateGradeAndPoints(score);
                               return (
-                                <div key={sub.code} className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                                  <div className="flex items-center justify-between text-[11px]">
-                                    <span className="font-bold text-white">{sub.name}</span>
-                                    <span className={`px-1.5 py-0.2 rounded text-[10px] font-black ${getGradeBadge(grade)}`}>
+                                <div key={sub.code} className="p-3.5 rounded-2xl bg-slate-950 border-2 border-emerald-500/60 space-y-2 shadow-md">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-black text-white">{sub.name} ({sub.code})</span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
+                                      ★ Somo Lako
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      value={score}
+                                      onChange={(e) => {
+                                        const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                        setTeacherSingleStudentDraft((prev) => ({
+                                          ...prev,
+                                          subjectScores: {
+                                            ...prev.subjectScores,
+                                            [sub.code]: val,
+                                          },
+                                        }));
+                                      }}
+                                      className="flex-1 p-2 text-center font-black text-lg rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-hidden focus:border-amber-400"
+                                    />
+                                    <span className={`px-2.5 py-1.5 rounded-xl text-xs font-black border ${getGradeBadge(grade)}`}>
                                       {grade}
                                     </span>
                                   </div>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    value={score}
-                                    onChange={(e) => {
-                                      const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                      setTeacherSingleStudentDraft((prev) => ({
-                                        ...prev,
-                                        subjectScores: {
-                                          ...prev.subjectScores,
-                                          [sub.code]: val,
-                                        },
-                                      }));
-                                    }}
-                                    className="w-full p-1.5 text-center font-black text-base rounded-lg bg-slate-900 border border-slate-700 text-amber-300 focus:outline-hidden focus:border-amber-400"
-                                  />
+                                  <p className="text-[10px] text-emerald-400 font-medium">
+                                    ✓ Umeidhinishwa kuingiza alama za somo hili
+                                  </p>
                                 </div>
                               );
                             })}
+                          </div>
+
+                          {/* Subject Isolation Security Notice */}
+                          <div className="mt-3 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                            <span>
+                              {language === 'sw'
+                                ? 'Ulinzi wa Masomo: Masomo yasiyokuhusu yamelindwa kikamilifu. Huwezi kuingiza wala kubadilisha alama za masomo ya walimu wenzako.'
+                                : 'Subject Isolation Security: Subjects outside your faculty assignment are securely locked and cannot be edited by other teachers.'}
+                            </span>
                           </div>
                         </div>
 

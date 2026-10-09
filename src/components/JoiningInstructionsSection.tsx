@@ -4,6 +4,7 @@ import { useData } from '../context/DataContext';
 import { JoiningDocument } from '../types';
 import { OfficialInvitationLetterViewer } from './OfficialInvitationLetterViewer';
 import { StudentEnrollmentProgressBar } from './StudentEnrollmentProgressBar';
+import { SchoolLogo } from './SchoolLogo';
 import { downloadJoiningInstructionsPdf } from '../utils/pdfService';
 import {
   FileDown,
@@ -18,16 +19,11 @@ import {
   X,
   ScrollText,
   Compass,
-  Image as ImageIcon,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  RotateCcw,
-  RefreshCw,
   PhoneCall,
   ExternalLink,
   School,
-  BookOpen
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 
 interface JoiningInstructionsSectionProps {
@@ -40,38 +36,9 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
   const { language, t } = useLanguage();
   const { joiningDocs, incrementDocDownload } = useData();
 
-  const [activeAdmissionsTab, setActiveAdmissionsTab] = useState<'flyer' | 'letter' | 'documents'>('flyer');
+  const [activeAdmissionsTab, setActiveAdmissionsTab] = useState<'overview' | 'letter' | 'documents'>('letter');
   const [previewDoc, setPreviewDoc] = useState<JoiningDocument | null>(null);
-  const [isFlyerZoomed, setIsFlyerZoomed] = useState(false);
   const [downloadSuccessMsg, setDownloadSuccessMsg] = useState<string | null>(null);
-  const [flyerRotation, setFlyerRotation] = useState<number>(0);
-  const [flyerZoomScale, setFlyerZoomScale] = useState<number>(1);
-
-  const handleRotateFlyerCw = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFlyerRotation((prev) => (prev + 90) % 360);
-  };
-
-  const handleRotateFlyerCcw = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFlyerRotation((prev) => (prev - 90 + 360) % 360);
-  };
-
-  const handleZoomInFlyer = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFlyerZoomScale((prev) => Math.min(Number((prev + 0.25).toFixed(2)), 3.0));
-  };
-
-  const handleZoomOutFlyer = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFlyerZoomScale((prev) => Math.max(Number((prev - 0.25).toFixed(2)), 0.5));
-  };
-
-  const handleResetFlyerTransform = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFlyerRotation(0);
-    setFlyerZoomScale(1);
-  };
 
   const handleDownload = (doc: JoiningDocument) => {
     incrementDocDownload(doc.id);
@@ -144,18 +111,6 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
 
             <div className="inline-flex flex-wrap justify-center items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner gap-1">
               <button
-                id="btn-tab-flyer-2026"
-                onClick={() => setActiveAdmissionsTab('flyer')}
-                className={`px-4 py-2 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
-                  activeAdmissionsTab === 'flyer'
-                    ? 'bg-[#0b2545] text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-950'
-                }`}
-              >
-                <ImageIcon className="w-4 h-4" />
-                <span>{language === 'sw' ? 'Tangazo Rasmi (Flyer 2026)' : 'Official Admissions Flyer'}</span>
-              </button>
-              <button
                 id="btn-tab-letter-viewer"
                 onClick={() => setActiveAdmissionsTab('letter')}
                 className={`px-4 py-2 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
@@ -166,6 +121,18 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
               >
                 <ScrollText className="w-4 h-4" />
                 <span>{language === 'sw' ? 'Barua Rasmi ya Mwaliko (PDF)' : 'Official Invitation Letter'}</span>
+              </button>
+              <button
+                id="btn-tab-admissions-overview"
+                onClick={() => setActiveAdmissionsTab('overview')}
+                className={`px-4 py-2 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
+                  activeAdmissionsTab === 'overview'
+                    ? 'bg-[#0b2545] text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-950'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4" />
+                <span>{language === 'sw' ? 'Muhtasari wa Udahili 2026' : 'Admissions Overview'}</span>
               </button>
               <button
                 id="btn-tab-documents-pack"
@@ -182,87 +149,58 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
             </div>
           </div>
 
-          {/* Tab 0: Admissions Flyer 2026 Showcase */}
-          {activeAdmissionsTab === 'flyer' && (
+          {/* Tab 0: Admissions Overview Showcase */}
+          {activeAdmissionsTab === 'overview' && (
             <div className="space-y-8 animate-in fade-in duration-300">
               <div className="bg-[#0b2545] text-white rounded-xl p-6 sm:p-10 border border-blue-900 shadow-xs overflow-hidden">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                  {/* Left Column: Visual Flyer Card */}
-                  <div className="lg:col-span-5 flex flex-col items-center">
-                    <div 
-                      onClick={() => setIsFlyerZoomed(true)}
-                      className="group relative cursor-pointer rounded-xl overflow-hidden border border-blue-400/40 shadow-md hover:border-amber-400 transition-all max-w-sm bg-black min-h-[300px] flex items-center justify-center p-2"
-                    >
-                      <img
-                        src="/uomboni_flyer_2026.jpg"
-                        alt="Tangazo Rasmi la Udahili Shule ya Sekondari Uomboni 2026/2027"
-                        style={{
-                          transform: `rotate(${flyerRotation}deg)`,
-                          transition: 'transform 0.3s ease-in-out',
-                        }}
-                        className="w-full max-h-[460px] object-contain group-hover:scale-103 transition-transform duration-300 origin-center"
-                        loading="eager"
-                      />
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white p-4 text-center pointer-events-none">
-                        <div className="w-12 h-12 rounded-full bg-white text-[#0b2545] flex items-center justify-center shadow-lg">
-                          <ZoomIn className="w-6 h-6" />
-                        </div>
-                        <span className="text-xs font-bold bg-[#0b2545]/90 px-3 py-1 rounded-full border border-blue-300">
-                          {language === 'sw' ? 'Bonyeza Kukuza Picha (Zoom)' : 'Click to View Full Image'}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                  {/* Left Column: Official School Identity & Values */}
+                  <div className="lg:col-span-5 bg-gradient-to-br from-blue-950 to-[#06182c] border border-blue-700/60 rounded-2xl p-6 sm:p-7 shadow-lg flex flex-col justify-between space-y-5">
+                    <div className="flex items-center gap-3.5 pb-4 border-b border-blue-800/80">
+                      <SchoolLogo size="md" />
+                      <div>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block">
+                          NECTA REG: S0486
                         </span>
+                        <h4 className="font-serif text-lg font-bold text-white leading-tight">
+                          Uomboni Secondary School
+                        </h4>
+                        <p className="text-xs text-blue-200">
+                          Catholic Diocese of Moshi
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-                      {/* Rotate Buttons */}
-                      <div className="inline-flex items-center rounded-lg bg-blue-950/90 border border-blue-700/80 p-0.5">
-                        <button
-                          type="button"
-                          onClick={handleRotateFlyerCcw}
-                          title={language === 'sw' ? 'Zungusha Kushoto (-90°)' : 'Rotate Counter-Clockwise (-90°)'}
-                          className="p-1.5 rounded-md hover:bg-blue-800 text-blue-200 hover:text-white transition-colors"
-                        >
-                          <RotateCcw className="w-4 h-4 text-amber-400" />
-                        </button>
-                        <span className="px-1.5 text-[11px] font-mono font-bold text-amber-300 select-none">
-                          {flyerRotation}°
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleRotateFlyerCw}
-                          title={language === 'sw' ? 'Zungusha Kulia (+90°)' : 'Rotate Clockwise (+90°)'}
-                          className="p-1.5 rounded-md hover:bg-blue-800 text-blue-200 hover:text-white transition-colors"
-                        >
-                          <RotateCw className="w-4 h-4 text-amber-400" />
-                        </button>
+                    <div className="space-y-3 text-xs text-blue-100">
+                      <div className="p-3.5 rounded-xl bg-blue-900/40 border border-blue-700/50">
+                        <span className="text-[10px] font-mono uppercase text-amber-300 font-bold block">Kaulimbiu Kuu:</span>
+                        <p className="font-serif text-lg font-bold text-amber-300 mt-0.5">“ELIMU NI MAISHA”</p>
+                        <p className="text-[11px] text-blue-200">Tujendelee Sisi Wenyewe: Prayer · Education · Work</p>
                       </div>
 
-                      {flyerRotation !== 0 && (
-                        <button
-                          type="button"
-                          onClick={handleResetFlyerTransform}
-                          title={language === 'sw' ? 'Rudisha mkao wa kawaida (0°)' : 'Reset rotation (0°)'}
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold flex items-center gap-1 border border-slate-600 transition-colors"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          <span>0°</span>
-                        </button>
-                      )}
+                      <div className="space-y-2 pt-1 text-[11px]">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>Kidato cha 1 hadi 4 (Wavulana na Wasichana · Bweni &amp; Kutwa)</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>Pre-Form One Program kuanzia tarehe 21 Septemba 2026</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>Mazingira tulivu na salama ya kusomea Marangu, Kilimanjaro</span>
+                        </div>
+                      </div>
+                    </div>
 
-                      <a
-                        href="/uomboni_flyer_2026.jpg"
-                        download="Tangazo_Udahili_Uomboni_Secondary_2026.jpg"
-                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-[#0b2545] text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>{language === 'sw' ? 'Pakua' : 'Download'}</span>
-                      </a>
+                    <div className="pt-2">
                       <button
-                        onClick={() => setIsFlyerZoomed(true)}
-                        className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+                        onClick={() => setActiveAdmissionsTab('letter')}
+                        className="w-full py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>{language === 'sw' ? 'Kuza' : 'Enlarge'}</span>
+                        <ScrollText className="w-4 h-4" />
+                        <span>{language === 'sw' ? 'Fungua Barua Rasmi ya Mwaliko (PDF)' : 'Open Official Invitation Letter'}</span>
                       </button>
                     </div>
                   </div>
@@ -334,19 +272,38 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
 
                     <div className="p-4 rounded-xl bg-blue-900/60 border border-blue-700/60 space-y-2">
                       <span className="text-[11px] font-mono font-bold text-blue-100 block uppercase">
-                        {language === 'sw' ? '📞 Mawasiliano ya Haraka ya Udahili' : '📞 Direct Admission Hotlines'}
+                        {language === 'sw' ? '📞 Mawasiliano Rasmi ya Udahili & Shuleni' : '📞 Official Admissions & Campus Contacts'}
                       </span>
-                      <div className="flex flex-wrap items-center gap-3">
-                        {['0752 000 939', '0782 558 127', '0745 548 225', '0754 532 949'].map((ph, idx) => (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {['+255 802 2000', '+255 000 0000', '0752 000 939', '0782 558 127', '0745 548 225', '0754 532 949'].map((ph, idx) => (
                           <a
                             key={idx}
                             href={`tel:${ph.replace(/\s+/g, '')}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0b2545] hover:bg-blue-950 text-white text-xs font-mono font-bold border border-blue-600 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0b2545] hover:bg-blue-950 text-white text-xs font-mono font-bold border border-blue-600 transition-colors"
                           >
                             <PhoneCall className="w-3.5 h-3.5 text-amber-400" />
                             <span>{ph}</span>
                           </a>
                         ))}
+                      </div>
+                      <p className="text-[11px] text-blue-200 font-mono mt-1">
+                        P.O. Box 90000 Marangu - Moshi · info@uomboniss.ac.tz · www.uomboniss.ac.tz
+                      </p>
+                    </div>
+
+                    {/* Sifa 7 za Ubora wa Shule */}
+                    <div className="p-4 rounded-xl bg-blue-950/70 border border-blue-800 space-y-2 text-xs">
+                      <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block">
+                        {language === 'sw' ? '✨ VIGEZO 7 VYA UBORA WA TAALUMA NA MALEZI (OUR FEATURES):' : '✨ 7 HALLMARK INSTITUTIONAL FEATURES:'}
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-blue-100">
+                        <span className="flex items-center gap-1.5">✓ Experienced &amp; Committed Teachers</span>
+                        <span className="flex items-center gap-1.5">✓ Conducive Learning Environment</span>
+                        <span className="flex items-center gap-1.5">✓ Modern Library &amp; Science Labs</span>
+                        <span className="flex items-center gap-1.5">✓ High Academic Excellence</span>
+                        <span className="flex items-center gap-1.5">✓ Spiritual &amp; Moral Guidance</span>
+                        <span className="flex items-center gap-1.5">✓ Sports &amp; Extracurricular Activities</span>
+                        <span className="flex items-center gap-1.5 col-span-full">✓ Computer &amp; ICT Studies</span>
                       </div>
                     </div>
 
@@ -557,119 +514,6 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                 <Download className="w-3.5 h-3.5 text-amber-400" />
                 <span>{language === 'sw' ? 'Pakua Fomu Sasa (PDF)' : 'Download PDF Now'}</span>
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Flyer High-Res Zoom Modal */}
-      {isFlyerZoomed && (
-        <div 
-          onClick={() => setIsFlyerZoomed(false)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-200"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-5xl w-full max-h-[96vh] flex flex-col items-center bg-slate-950 rounded-3xl overflow-hidden border border-amber-400/50 shadow-2xl p-4 sm:p-6 space-y-3"
-          >
-            {/* Header with Title & Action Controls */}
-            <div className="w-full flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800 text-white">
-              <div className="flex items-center gap-2">
-                <span className="text-amber-400 font-bold text-sm sm:text-base">
-                  {language === 'sw' ? 'Tangazo Rasmi la Udahili - Shule ya Sekondari Uomboni (2026/2027)' : 'Official Admissions Announcement - Uomboni Secondary School'}
-                </span>
-              </div>
-
-              {/* Toolbar: Rotate & Zoom Controls */}
-              <div className="flex items-center flex-wrap gap-2">
-                {/* Rotate Controls */}
-                <div className="inline-flex items-center rounded-lg bg-slate-900 border border-slate-700 p-0.5">
-                  <button
-                    type="button"
-                    onClick={handleRotateFlyerCcw}
-                    title={language === 'sw' ? 'Zungusha Kushoto (-90°)' : 'Rotate Counter-Clockwise (-90°)'}
-                    className="p-1.5 rounded-md hover:bg-slate-800 text-slate-200 hover:text-amber-300 transition-colors"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                  <span className="px-2 text-xs font-mono font-bold text-amber-400 select-none">
-                    {flyerRotation}°
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleRotateFlyerCw}
-                    title={language === 'sw' ? 'Zungusha Kulia (+90°)' : 'Rotate Clockwise (+90°)'}
-                    className="p-1.5 rounded-md hover:bg-slate-800 text-slate-200 hover:text-amber-300 transition-colors"
-                  >
-                    <RotateCw className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Zoom Controls */}
-                <div className="inline-flex items-center rounded-lg bg-slate-900 border border-slate-700 p-0.5">
-                  <button
-                    type="button"
-                    onClick={handleZoomOutFlyer}
-                    title={language === 'sw' ? 'Punguza Ukubwa' : 'Zoom Out'}
-                    className="p-1.5 rounded-md hover:bg-slate-800 text-slate-200 hover:text-white transition-colors"
-                  >
-                    <ZoomOut className="w-4 h-4" />
-                  </button>
-                  <span className="px-2 text-xs font-mono font-bold text-slate-200 select-none">
-                    {Math.round(flyerZoomScale * 100)}%
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleZoomInFlyer}
-                    title={language === 'sw' ? 'Ongeza Ukubwa' : 'Zoom In'}
-                    className="p-1.5 rounded-md hover:bg-slate-800 text-slate-200 hover:text-white transition-colors"
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {(flyerRotation !== 0 || flyerZoomScale !== 1) && (
-                  <button
-                    type="button"
-                    onClick={handleResetFlyerTransform}
-                    title={language === 'sw' ? 'Rudisha Mwanzo (0°)' : 'Reset View (0°)'}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold flex items-center gap-1 border border-slate-600 transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{language === 'sw' ? 'Rudisha' : 'Reset'}</span>
-                  </button>
-                )}
-
-                <a
-                  href="/uomboni_flyer_2026.jpg"
-                  download="Tangazo_Udahili_Uomboni_2026.jpg"
-                  className="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:bg-amber-300 transition-all"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{language === 'sw' ? 'Pakua' : 'Download'}</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => setIsFlyerZoomed(false)}
-                  className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors ml-1"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Stage Container */}
-            <div className="overflow-auto max-h-[78vh] flex items-center justify-center rounded-2xl bg-black w-full p-4 sm:p-8 min-h-[380px]">
-              <img
-                src="/uomboni_flyer_2026.jpg"
-                alt="Tangazo Kamili la Udahili Uomboni 2026"
-                style={{
-                  transform: `rotate(${flyerRotation}deg) scale(${flyerZoomScale})`,
-                  transition: 'transform 0.3s ease-in-out',
-                }}
-                className="max-h-[70vh] w-auto max-w-full object-contain rounded-lg shadow-2xl origin-center"
-              />
             </div>
           </div>
         </div>
