@@ -20,6 +20,7 @@ import { Footer } from './components/Footer';
 import { StaffRole } from './services/staffSecurityService';
 import { AcademicRole } from './components/AcademicPortalModal';
 import { Loader2 } from 'lucide-react';
+import { useDynamicMetaTags } from './hooks/useDynamicMetaTags';
 
 // Modals statically imported for guaranteed availability and zero dynamic import fetch failures
 import { StaffSecurityGateModal } from './components/StaffSecurityGateModal';
@@ -52,6 +53,7 @@ const ModalFallback = () => (
 function MainSchoolApp() {
   const { activeView, setActiveView, loading } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
+  const [currentHash, setCurrentHash] = useState(() => window.location.hash);
 
   // Modals state
   const [isStaffGateOpen, setIsStaffGateOpen] = useState(false);
@@ -64,6 +66,22 @@ function MainSchoolApp() {
   const [isBursarModalOpen, setIsBursarModalOpen] = useState(false);
   const [isAcademicPortalOpen, setIsAcademicPortalOpen] = useState(false);
   const [isArchitectureModalOpen, setIsArchitectureModalOpen] = useState(false);
+
+  // Dynamic Meta-Tag Generator: updates title, description, OG tags & canonical in document head
+  useDynamicMetaTags({
+    activeSection,
+    activeView,
+    hash: currentHash,
+    isNectaOpen: isNectaResultsOpen,
+    isParentPortalOpen,
+    isStaffPortalOpen: isTeacherStaffPortalOpen,
+    isAdminOpen: isAdminModalOpen,
+    isBursarOpen: isBursarModalOpen,
+    isAcademicOpen: isAcademicPortalOpen,
+    isAdmissionsOpen: isAdmissionsModalOpen,
+    isArchitectureOpen: isArchitectureModalOpen,
+    isSchoolResultsOpen,
+  });
 
   const [staffGateInitialRole, setStaffGateInitialRole] = useState<StaffRole>('admin');
   const [academicInitialRole, setAcademicInitialRole] = useState<AcademicRole>('academic_master');
@@ -90,36 +108,31 @@ function MainSchoolApp() {
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash.toLowerCase();
+      setCurrentHash(hash);
       if (hash === '#login' || hash === '#ingia') {
         setActiveView('login');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#signup' || hash === '#register') {
         setActiveView('signup');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#portal' || hash === '#dashboard') {
         setActiveView('portal');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#admin' || hash === '#uomboni' || hash === '#s0486') {
         handleOpenStaffGate('admin');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#staff' || hash === '#teacher' || hash === '#walimu' || hash === '#staffportal') {
         setIsTeacherStaffPortalOpen(true);
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#bursar' || hash === '#mhasibu') {
         handleOpenStaffGate('bursar');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#academic' || hash === '#taaluma') {
         handleOpenStaffGate('academic_master');
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#parent' || hash === '#wazazi') {
         setIsParentPortalOpen(true);
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#necta') {
         setIsNectaResultsOpen(true);
-        history.replaceState(null, '', window.location.pathname);
       } else if (hash === '#architecture' || hash === '#tech') {
         setIsArchitectureModalOpen(true);
-        history.replaceState(null, '', window.location.pathname);
+      } else if (hash === '#admissions' || hash === '#kujiunga') {
+        setIsAdmissionsModalOpen(true);
+      } else if (hash === '#results' || hash === '#matokeo') {
+        setIsSchoolResultsOpen(true);
       }
     };
 
@@ -127,6 +140,45 @@ function MainSchoolApp() {
     window.addEventListener('hashchange', checkHash);
     return () => window.removeEventListener('hashchange', checkHash);
   }, [setActiveView]);
+
+  // Section Observer for Dynamic SEO on Scroll
+  useEffect(() => {
+    const sectionIds = [
+      'about',
+      'academics',
+      'teachers',
+      'parents',
+      'students',
+      'management',
+      'admissions',
+      'results',
+      'news',
+      'gallery',
+      'contact',
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '0px 0px -40% 0px',
+        threshold: [0.3, 0.6],
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   if (loading) {
     return (
