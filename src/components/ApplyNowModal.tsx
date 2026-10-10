@@ -21,8 +21,6 @@ import {
 import { downloadJoiningInstructionsPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
 import { OnlineApplication } from '../types';
 import { SchoolLogo } from './SchoolLogo';
-import { CsrfTokenInput } from './CsrfTokenInput';
-import { useCsrfProtection } from '../hooks/useCsrfProtection';
 
 interface ApplyNowModalProps {
   isOpen: boolean;
@@ -32,7 +30,6 @@ interface ApplyNowModalProps {
 export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose }) => {
   const { language, t } = useLanguage();
   const { joiningDocs, submitOnlineApplication } = useData();
-  const { validateFormSubmit, refreshCsrfToken } = useCsrfProtection();
 
   const [studentName, setStudentName] = useState('');
   const [gender, setGender] = useState<'M' | 'F'>('M');
@@ -58,19 +55,6 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
     setFormError(null);
     if (!studentName.trim() || !parentName.trim() || !parentPhone.trim()) {
       setFormError(language === 'sw' ? 'Tafadhali jaza taarifa zote muhimu zenye alama ya (*).' : 'Please fill all required fields marked with (*).');
-      return;
-    }
-
-    // CSRF Protection Token Validation for sensitive online admission application
-    const csrfCheck = await validateFormSubmit();
-    if (!csrfCheck.valid) {
-      setFormError(
-        csrfCheck.error ||
-          (language === 'sw'
-            ? 'Ulinzi wa CSRF: Hitilafu ya uthibitishaji wa token ya usalama. Tafadhali jaribu tena.'
-            : 'CSRF Protection: Security token verification failed. Please try again.')
-      );
-      await refreshCsrfToken();
       return;
     }
 
@@ -204,8 +188,6 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5 text-xs">
-              <CsrfTokenInput />
-
               {formError && (
                 <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 flex items-start gap-2.5 animate-in fade-in duration-200">
                   <X className="w-4 h-4 text-rose-600 shrink-0 mt-0.5 cursor-pointer" onClick={() => setFormError(null)} />
