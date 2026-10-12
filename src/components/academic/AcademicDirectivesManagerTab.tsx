@@ -157,28 +157,28 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
 
   return (
     <div className="space-y-6" id="academic-directives-container">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl border border-indigo-500/30 shadow-xl">
+      {/* Header Banner - Ivory Primary with Red Accents */}
+      <div className="bg-[#FFFDF8] p-6 rounded-3xl border-2 border-red-200/80 shadow-md">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-3 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-xl">
+            <div className="p-3 bg-red-100/80 text-red-700 border border-red-200 rounded-2xl">
               <Megaphone className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-700 text-[#FFFFF0]">
                   {language === 'sw' ? 'Idara ya Taaluma' : 'Academic Office'}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-800 border border-red-200">
                   {language === 'sw' ? 'Udhibiti wa Walimu' : 'Teacher Authority'}
                 </span>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-white mt-1">
+              <h2 className="text-xl md:text-2xl font-black text-stone-900 mt-1">
                 {language === 'sw'
                   ? '📢 Maelekezo & Ruhusa za Kuingiza Matokeo kwa Walimu'
                   : '📢 Teacher Directives & Mark Entry Permissions'}
               </h2>
-              <p className="text-sm text-slate-300 max-w-3xl mt-1">
+              <p className="text-sm text-stone-600 max-w-3xl mt-1 leading-relaxed">
                 {language === 'sw'
                   ? 'Mkuu wa Taaluma ndiye mamlaka ya mwisho inayoidhinisha ufunguzi au kufungwa kwa dirisha la kuingiza alama za masomo, kutoa tarehe ya mwisho (deadline), na kutuma waraka rasmi kwa walimu wote.'
                   : 'The Academic Master has sole authority to open or lock score entry windows, set deadlines, and dispatch official circulars to all subject teachers.'}
@@ -186,11 +186,11 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-800 text-xs text-slate-300">
-            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+          <div className="flex items-center gap-2 bg-[#FAF7EE] px-4 py-2.5 rounded-2xl border border-red-200/70 text-xs text-stone-700 shadow-sm">
+            <ShieldCheck className="w-5 h-5 text-red-700 shrink-0" />
             <div>
-              <div className="font-bold text-white">Mwl. Yohana Bahati / Madam Adela</div>
-              <div className="text-slate-400 text-[11px]">Mamlaka ya Usimamizi wa Mitihani</div>
+              <div className="font-bold text-stone-900">Mwl. Yohana Bahati / Madam Adela</div>
+              <div className="text-stone-500 text-[11px]">Mamlaka ya Usimamizi wa Mitihani</div>
             </div>
           </div>
         </div>
@@ -199,11 +199,11 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
       {/* MATRIX: Current Class Entry Status Cards */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-black text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-amber-400" />
+          <h3 className="text-sm font-black text-stone-900 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-red-700" />
             {language === 'sw' ? 'Hadhi ya Sasa ya Uingizaji Alama kwa Kila Kidato' : 'Current Mark Entry Authorization by Form'}
           </h3>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-stone-500 font-medium">
             {language === 'sw' ? 'Bofya kitufe cha kufuli kugeuza hadhi papo hapo' : 'Click lock button to toggle status instantly'}
           </span>
         </div>
@@ -223,36 +223,36 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
             return (
               <div
                 key={formName}
-                className={`p-4 rounded-2xl border transition-all ${
+                className={`p-4 rounded-3xl border-2 transition-all ${
                   isOpen
-                    ? 'bg-gradient-to-b from-emerald-950/30 to-slate-900 border-emerald-500/40 shadow-emerald-950/20'
-                    : 'bg-gradient-to-b from-rose-950/30 to-slate-900 border-rose-500/40 shadow-rose-950/20'
-                } shadow-lg`}
+                    ? 'bg-[#FFFDF8] border-red-300 shadow-sm'
+                    : 'bg-[#FAF7EE] border-red-200/80 opacity-90'
+                }`}
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{exam}</span>
-                    <h4 className="text-lg font-black text-white">{formName}</h4>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">{exam}</span>
+                    <h4 className="text-lg font-black text-stone-900">{formName}</h4>
                   </div>
                   <div
-                    className={`p-2 rounded-xl border ${
+                    className={`p-2 rounded-2xl border ${
                       isOpen
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                        : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                        ? 'bg-red-700 text-[#FFFFF0] border-red-700 shadow-sm'
+                        : 'bg-red-100 text-red-800 border-red-200'
                     }`}
                   >
                     {isOpen ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-800 space-y-1.5 text-xs">
+                <div className="mt-3 pt-3 border-t border-red-100 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400">{language === 'sw' ? 'Ruhusa ya Walimu:' : 'Teacher Status:'}</span>
+                    <span className="text-stone-600 font-medium">{language === 'sw' ? 'Ruhusa ya Walimu:' : 'Teacher Status:'}</span>
                     <span
-                      className={`font-black px-2 py-0.5 rounded-md ${
+                      className={`font-black px-2 py-0.5 rounded-lg text-[10px] tracking-wide ${
                         isOpen
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          ? 'bg-red-700 text-[#FFFFF0]'
+                          : 'bg-stone-200 text-stone-700'
                       }`}
                     >
                       {isOpen
@@ -261,12 +261,12 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-slate-300">
-                    <span className="text-slate-400 flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
+                  <div className="flex items-center justify-between text-stone-700">
+                    <span className="text-stone-500 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-red-700" />
                       {language === 'sw' ? 'Mwisho:' : 'Deadline:'}
                     </span>
-                    <span className="font-semibold text-slate-200">{deadline}</span>
+                    <span className="font-bold text-stone-900">{deadline}</span>
                   </div>
                 </div>
 
@@ -284,15 +284,15 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                           : `Dirisha la kuingiza alama za ${formName} limefungwa na Mkuu wa Taaluma kwa ajili ya ukaguzi wa matokeo.`
                       )
                     }
-                    className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`w-full py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm ${
                       isOpen
-                        ? 'bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700/50'
-                        : 'bg-emerald-700 hover:bg-emerald-600 text-white shadow-md'
+                        ? 'bg-[#FAF7EE] hover:bg-red-50 text-red-800 border-2 border-red-300'
+                        : 'bg-red-700 hover:bg-red-800 text-[#FFFFF0]'
                     }`}
                   >
                     {isOpen ? (
                       <>
-                        <Lock className="w-3.5 h-3.5" />
+                        <Lock className="w-3.5 h-3.5 text-red-700" />
                         {language === 'sw' ? 'Funga Dirisha la Alama' : 'Lock Mark Entry'}
                       </>
                     ) : (
@@ -312,17 +312,17 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
       {/* Main Action Grid: Form to Send Directive + Feed of Sent Directives */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT COLUMN: Create and Dispatch New Directive */}
-        <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="lg:col-span-7 bg-[#FFFDF8] border-2 border-red-200/80 rounded-3xl p-6 shadow-md">
+          <div className="flex items-center justify-between pb-3 border-b border-red-100 mb-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-amber-400/20 text-amber-400 rounded-lg">
+              <div className="p-2 bg-red-100 text-red-700 rounded-xl border border-red-200">
                 <Send className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-black text-stone-900">
                   {language === 'sw' ? 'Tuma Taarifa Rasmi & Weka Ruhusa kwa Walimu' : 'Dispatch Directive & Set Permissions'}
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-stone-500">
                   {language === 'sw' ? 'Waraka huu utaonekana kwenye paneli ya kila mwalimu anapoingiza alama' : 'This circular appears on every teacher mark entry screen'}
                 </p>
               </div>
@@ -331,40 +331,40 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
 
           {/* Quick Presets */}
           <div className="mb-4">
-            <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
+            <label className="block text-[11px] font-black text-stone-600 mb-1.5 uppercase tracking-wider">
               {language === 'sw' ? '⚡ Miongozo ya Haraka (Quick Templates):' : '⚡ Quick Templates:'}
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => loadPreset('open')}
-                className="px-2.5 py-1 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/50 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                className="px-3 py-1.5 bg-[#FAF7EE] hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
               >
-                <Unlock className="w-3 h-3" />
+                <Unlock className="w-3 h-3 text-red-700" />
                 {language === 'sw' ? 'Ufunguzi wa Dirisha' : 'Open Window'}
               </button>
               <button
                 type="button"
                 onClick={() => loadPreset('reminder')}
-                className="px-2.5 py-1 bg-amber-950/60 hover:bg-amber-900 text-amber-300 border border-amber-700/50 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                className="px-3 py-1.5 bg-[#FAF7EE] hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
               >
-                <Clock className="w-3 h-3" />
-                {language === 'sw' ? 'Kumbusho la Mwisho (Deadline)' : 'Deadline Reminder'}
+                <Clock className="w-3 h-3 text-red-700" />
+                {language === 'sw' ? 'Kumbusho la Mwisho' : 'Deadline Reminder'}
               </button>
               <button
                 type="button"
                 onClick={() => loadPreset('guideline')}
-                className="px-2.5 py-1 bg-blue-950/60 hover:bg-blue-900 text-blue-300 border border-blue-700/50 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                className="px-3 py-1.5 bg-[#FAF7EE] hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
               >
-                <Info className="w-3 h-3" />
+                <Info className="w-3 h-3 text-red-700" />
                 {language === 'sw' ? 'Mwongozo wa NECTA' : 'Grading Guide'}
               </button>
               <button
                 type="button"
                 onClick={() => loadPreset('close')}
-                className="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-700/50 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-all"
+                className="px-3 py-1.5 bg-[#FAF7EE] hover:bg-red-50 text-red-800 border border-red-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
               >
-                <Lock className="w-3 h-3" />
+                <Lock className="w-3 h-3 text-red-700" />
                 {language === 'sw' ? 'Kufunga Dirisha' : 'Lock Window'}
               </button>
             </div>
@@ -373,23 +373,23 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
           <form onSubmit={handleSubmit} className="space-y-4">
             {feedbackMessage && (
               <div
-                className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                className={`p-3.5 rounded-2xl text-xs font-bold flex items-center gap-2 border ${
                   feedbackMessage.type === 'success'
-                    ? 'bg-emerald-950 text-emerald-200 border border-emerald-700'
-                    : 'bg-rose-950 text-rose-200 border border-rose-700'
+                    ? 'bg-red-50 text-red-800 border-red-200'
+                    : 'bg-red-100 text-red-900 border-red-300'
                 }`}
               >
                 {feedbackMessage.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-red-700" />
                 ) : (
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-700" />
                 )}
                 <span>{feedbackMessage.text}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-black text-stone-700 mb-1">
                 {language === 'sw' ? 'Kichwa cha Taarifa au Waraka *' : 'Directive / Circular Title *'}
               </label>
               <input
@@ -401,20 +401,20 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                     ? 'k.m. Ufunguzi wa Dirisha la Kuingiza Alama za NECTA Mock 2025'
                     : 'e.g. Opening of Form 4 NECTA Mock 2025 Score Entry Window'
                 }
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl px-3.5 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8]"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-black text-stone-700 mb-1">
                   {language === 'sw' ? 'Kidato Walengwa (Target Form) *' : 'Target Form *'}
                 </label>
                 <select
                   value={targetForm}
                   onChange={(e) => setTargetForm(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl px-3.5 py-2.5 text-sm text-stone-900 font-bold focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8]"
                 >
                   <option value="ALL">{language === 'sw' ? 'Madarasa Yote (Form 1 - Form 4)' : 'All Forms (Form 1 - 4)'}</option>
                   <option value="Form 1">Kidato cha Kwanza (Form 1)</option>
@@ -425,13 +425,13 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-black text-stone-700 mb-1">
                   {language === 'sw' ? 'Aina ya Mtihani (Exam Type) *' : 'Exam Sitting *'}
                 </label>
                 <select
                   value={examType}
                   onChange={(e) => setExamType(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl px-3.5 py-2.5 text-sm text-stone-900 font-bold focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8]"
                 >
                   <option value="NECTA Mock 2025">NECTA Mock 2025</option>
                   <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
@@ -445,19 +445,19 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
             </div>
 
             {/* Permission Switch + Deadline Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#FAF7EE] rounded-2xl border-2 border-red-200/80">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                <label className="block text-xs font-black text-stone-700 mb-1.5">
                   {language === 'sw' ? 'Ruhusa ya Kuingiza Alama:' : 'Permission State:'}
                 </label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setIsOpenForEntry(true)}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                    className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                       isOpenForEntry
-                        ? 'bg-emerald-600 text-white shadow'
-                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-red-700 text-[#FFFFF0] shadow-sm'
+                        : 'bg-[#FFFDF8] text-stone-600 border border-stone-200 hover:border-red-300'
                     }`}
                   >
                     <Unlock className="w-3.5 h-3.5" />
@@ -466,10 +466,10 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                   <button
                     type="button"
                     onClick={() => setIsOpenForEntry(false)}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                    className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                       !isOpenForEntry
-                        ? 'bg-rose-700 text-white shadow'
-                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                        ? 'bg-red-900 text-[#FFFFF0] shadow-sm'
+                        : 'bg-[#FFFDF8] text-stone-600 border border-stone-200 hover:border-red-300'
                     }`}
                   >
                     <Lock className="w-3.5 h-3.5" />
@@ -479,14 +479,14 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-black text-stone-700 mb-1">
                   {language === 'sw' ? 'Tarehe ya Mwisho (Deadline) *' : 'Submission Deadline *'}
                 </label>
                 <input
                   type="date"
                   value={deadlineDate}
                   onChange={(e) => setDeadlineDate(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#FFFDF8] border-2 border-red-200 rounded-xl px-3 py-2 text-xs font-bold text-stone-900 focus:outline-none focus:border-red-600"
                   required
                 />
               </div>
@@ -494,13 +494,13 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-black text-stone-700 mb-1">
                   {language === 'sw' ? 'Kiwango cha Umuhimu (Priority)' : 'Priority Level'}
                 </label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl px-3.5 py-2.5 text-sm text-stone-900 font-bold focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8]"
                 >
                   <option value="urgent">{language === 'sw' ? '🔥 Haraka Sana (Urgent)' : '🔥 Urgent'}</option>
                   <option value="high">{language === 'sw' ? '⚡ Muhimu (High Priority)' : '⚡ High Priority'}</option>
@@ -509,23 +509,23 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-black text-stone-700 mb-1">
                   {language === 'sw' ? 'Jina la Mtoa Taarifa (Sender)' : 'Official Sender'}
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                  <User className="w-4 h-4 absolute left-3 top-3 text-red-700" />
                   <input
                     type="text"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl pl-9 pr-3 py-2 text-sm text-stone-900 font-bold focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8]"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-black text-stone-700 mb-1">
                 {language === 'sw' ? 'Maelezo / Waraka Kamili kwa Walimu *' : 'Directive Message / Instructions *'}
               </label>
               <textarea
@@ -537,7 +537,7 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                     ? 'Andika maelekezo ya kitaaluma, viwango vya ufaulu, maelezo ya masomo, na tarehe za uwasilishaji...'
                     : 'Detail instructions on marking, grading, subject coverage, and submission expectations...'
                 }
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 resize-none"
+                className="w-full bg-[#FAF7EE] border-2 border-red-200 rounded-2xl p-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-red-600 focus:bg-[#FFFDF8] resize-none"
                 required
               />
             </div>
@@ -545,7 +545,7 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3 bg-red-700 hover:bg-red-800 text-[#FFFFF0] font-black rounded-2xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               <span>
@@ -559,19 +559,19 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
 
         {/* RIGHT COLUMN: History of Sent Directives */}
         <div className="lg:col-span-5 flex flex-col space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <BellRing className="w-4 h-4 text-indigo-400" />
+          <div className="flex items-center justify-between pb-2 border-b border-red-200">
+            <h3 className="text-sm font-black text-stone-900 flex items-center gap-2">
+              <BellRing className="w-4 h-4 text-red-700" />
               {language === 'sw' ? `Taarifa Zilizotumwa (${academicDirectives.length})` : `Directives History (${academicDirectives.length})`}
             </h3>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-stone-500 font-medium">
               {language === 'sw' ? 'Zinahifadhiwa kwenye wingu la shule' : 'Stored in School Cloud'}
             </span>
           </div>
 
           <div className="space-y-3 max-h-[620px] overflow-y-auto pr-1">
             {academicDirectives.length === 0 ? (
-              <div className="p-8 text-center bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-xs">
+              <div className="p-8 text-center bg-[#FFFDF8] rounded-3xl border-2 border-red-200 text-stone-500 text-xs">
                 {language === 'sw' ? 'Bado hakuna taarifa iliyotumwa kwa walimu.' : 'No directives have been sent yet.'}
               </div>
             ) : (
@@ -580,58 +580,58 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                 return (
                   <div
                     key={directive.id}
-                    className="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all space-y-2.5"
+                    className="p-4 rounded-3xl bg-[#FFFDF8] border-2 border-red-200/80 hover:border-red-300 transition-all space-y-2.5 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
                               isOpen
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                ? 'bg-red-700 text-[#FFFFF0]'
+                                : 'bg-red-100 text-red-800 border border-red-200'
                             }`}
                           >
                             {isOpen ? (language === 'sw' ? 'Wazi' : 'Open') : (language === 'sw' ? 'Imefungwa' : 'Locked')}
                           </span>
 
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF7EE] text-stone-700 border border-red-200">
                             {directive.targetForm}
                           </span>
 
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-800 border border-red-200">
                             {directive.examType}
                           </span>
                         </div>
-                        <h4 className="text-sm font-black text-white leading-snug">{directive.title}</h4>
+                        <h4 className="text-sm font-black text-stone-900 leading-snug">{directive.title}</h4>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => deleteAcademicDirective(directive.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-950/40 transition-all cursor-pointer shrink-0"
+                        className="p-1.5 text-stone-400 hover:text-red-700 rounded-lg hover:bg-red-50 transition-all cursor-pointer shrink-0"
                         title={language === 'sw' ? 'Futa taarifa' : 'Delete directive'}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/80">
+                    <p className="text-xs text-stone-700 line-clamp-3 leading-relaxed bg-[#FAF7EE] p-3 rounded-2xl border border-red-100">
                       {directive.message}
                     </p>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                      <div className="flex items-center gap-1.5 text-slate-300">
-                        <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Mwisho: <strong>{directive.deadlineDate}</strong></span>
+                    <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+                      <div className="flex items-center gap-1.5 text-stone-700">
+                        <Calendar className="w-3.5 h-3.5 text-red-700" />
+                        <span>Mwisho: <strong className="text-stone-900">{directive.deadlineDate}</strong></span>
                       </div>
-                      <div className="text-slate-400 truncate max-w-[150px]">
+                      <div className="text-stone-600 font-bold truncate max-w-[150px]">
                         {directive.senderName}
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                      <span className="text-[10px] text-slate-500">
+                    <div className="pt-2 border-t border-red-100 flex items-center justify-between">
+                      <span className="text-[10px] text-stone-400">
                         {new Date(directive.timestamp).toLocaleDateString()} {new Date(directive.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
 
@@ -643,13 +643,13 @@ export const AcademicDirectivesManagerTab: React.FC<AcademicDirectivesManagerTab
                             status: !isOpen ? 'active' : 'closed',
                           })
                         }
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all ${
+                        className={`px-3 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer transition-all ${
                           isOpen
-                            ? 'bg-rose-950 text-rose-300 hover:bg-rose-900 border border-rose-800/50'
-                            : 'bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-800/50'
+                            ? 'bg-red-100 text-red-800 hover:bg-red-200 border border-red-200'
+                            : 'bg-red-700 text-[#FFFFF0] hover:bg-red-800 shadow-sm'
                         }`}
                       >
-                        {isOpen ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {isOpen ? <Lock className="w-3 h-3 text-red-700" /> : <Unlock className="w-3 h-3" />}
                         <span>{isOpen ? (language === 'sw' ? 'Funga Ruhusa' : 'Lock') : (language === 'sw' ? 'Fungua Ruhusa' : 'Unlock')}</span>
                       </button>
                     </div>

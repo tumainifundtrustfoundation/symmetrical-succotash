@@ -125,6 +125,16 @@ export async function savePendingSubjectScoresToFirestore(params: {
   // Always save local backup first
   backupToLocalStorage(pendingSubmission);
 
+  // If user is not signed in via Firebase Auth, keep local backup safely
+  if (!auth.currentUser) {
+    return {
+      success: true,
+      submissionId,
+      count: studentScores.length,
+      firestoreSaved: false,
+    };
+  }
+
   let firestoreSaved = false;
   let firestoreError: string | undefined;
 
@@ -221,6 +231,27 @@ export async function approvePendingSubjectSubmissionInFirestore(
   notes: string = 'Matokeo yamekaguliwa na kuidhinishwa na Mkuu wa Taaluma.'
 ): Promise<{ success: boolean; error?: string }> {
   const now = new Date().toISOString();
+
+  // Update local cache
+  const locals = getFromLocalStorage();
+  const updated = locals.map((s) =>
+    s.id === submissionId
+      ? {
+          ...s,
+          status: 'approved' as const,
+          reviewedAt: now,
+          reviewedBy: reviewerName,
+          academicMasterNotes: notes,
+        }
+      : s
+  );
+  localStorage.setItem(LOCAL_STORAGE_PENDING_KEY, JSON.stringify(updated));
+
+  // If not authenticated via Firebase Auth, local cache is already updated
+  if (!auth.currentUser) {
+    return { success: true };
+  }
+
   try {
     const docRef = doc(db, PENDING_RESULTS_COLLECTION, submissionId);
     await updateDoc(docRef, {
@@ -229,22 +260,6 @@ export async function approvePendingSubjectSubmissionInFirestore(
       reviewedBy: reviewerName,
       academicMasterNotes: notes,
     });
-
-    // Update local cache
-    const locals = getFromLocalStorage();
-    const updated = locals.map((s) =>
-      s.id === submissionId
-        ? {
-            ...s,
-            status: 'approved' as const,
-            reviewedAt: now,
-            reviewedBy: reviewerName,
-            academicMasterNotes: notes,
-          }
-        : s
-    );
-    localStorage.setItem(LOCAL_STORAGE_PENDING_KEY, JSON.stringify(updated));
-
     return { success: true };
   } catch (err: any) {
     if (err?.code === 'permission-denied') {
@@ -288,6 +303,11 @@ export async function saveAcademicDirectiveToFirestore(directive: AcademicDirect
   const filtered = locals.filter((d) => d.id !== directive.id);
   filtered.unshift(directive);
   backupDirectivesToLocalStorage(filtered);
+
+  // If user is not authenticated via Firebase Auth, keep in local storage
+  if (!auth.currentUser) {
+    return;
+  }
 
   try {
     const docRef = doc(db, ACADEMIC_DIRECTIVES_COLLECTION, directive.id);

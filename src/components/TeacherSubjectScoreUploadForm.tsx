@@ -498,24 +498,24 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
   return (
     <div className="space-y-6 text-slate-900 animate-in fade-in duration-300">
       {/* 1. TOP TEACHER IDENTITY & FIRESTORE SECURITY VERIFICATION HEADER */}
-      <div className="p-5 bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 rounded-3xl text-white border border-emerald-800/60 shadow-2xl space-y-4">
+      <div className="p-5 bg-[#FFFDF8] rounded-3xl text-stone-900 border-2 border-red-200/80 shadow-md space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+              <span className="px-2.5 py-0.5 rounded-full bg-red-700 text-[#FFFFF0] text-[11px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 {language === 'sw' ? 'Fomu Salama ya Mwalimu' : 'Secure Teacher Score Portal'}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-900/90 text-emerald-300 border border-emerald-500/60 text-[11px] font-bold flex items-center gap-1.5">
-                <Database className="w-3 h-3 text-emerald-400" />
+              <span className="px-2.5 py-0.5 rounded-full bg-[#FAF7EE] text-red-900 border border-red-300 text-[11px] font-bold flex items-center gap-1.5">
+                <Database className="w-3 h-3 text-red-700" />
                 <span>Cloud Firestore: Hifadhi ya Matokeo ya 'Pending'</span>
               </span>
             </div>
-            <h3 className="text-xl font-black text-white flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-amber-400" />
+            <h3 className="text-xl font-black text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-red-700" />
               <span>{language === 'sw' ? 'Uingizaji wa Alama kwa Somo (Pending Results)' : 'Subject Marks Entry & Upload'}</span>
             </h3>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs text-stone-600 max-w-2xl leading-relaxed">
               {language === 'sw'
                 ? 'Ingiza au pakia alama za wanafunzi kulingana na somo unalofundisha. Alama hizi zinahifadhiwa kwenye Cloud Firestore zikiwa na hadhi ya "Pending" kwa ajili ya kukaguliwa na Mkuu wa Taaluma kabla ya kuruhusiwa kutazamwa na wazazi.'
                 : 'Upload or input student scores for your assigned subject. Data is securely saved to Cloud Firestore as "pending" results awaiting certification by the Academic Master.'}
@@ -523,24 +523,24 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           </div>
 
           {/* Teacher Profile Stamp */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 flex items-center gap-3 shadow-inner">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-slate-950 flex items-center justify-center font-black text-lg shadow-md">
+          <div className="p-3.5 rounded-2xl bg-[#FAF7EE] border border-red-200 flex items-center gap-3 shadow-xs">
+            <div className="w-11 h-11 rounded-xl bg-red-700 text-[#FFFFF0] flex items-center justify-center font-black text-lg shadow-md">
               {currentTeacherName.split(' ')[1]?.[0] || 'M'}
             </div>
             <div className="text-left">
-              <span className="text-[10px] text-slate-400 font-mono block">Mwalimu Mhusika:</span>
-              <span className="text-xs font-black text-amber-300 block">{currentTeacherName}</span>
-              <span className="text-[10px] text-emerald-400 font-mono">{currentTeacherEmail}</span>
+              <span className="text-[10px] text-stone-500 font-mono block">Mwalimu Mhusika:</span>
+              <span className="text-xs font-black text-red-900 block">{currentTeacherName}</span>
+              <span className="text-[10px] text-stone-600 font-mono">{currentTeacherEmail}</span>
             </div>
           </div>
         </div>
 
         {/* Dynamic Workflow Info Bar */}
-        <div className="pt-3 border-t border-emerald-900/50 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
+        <div className="pt-3 border-t border-red-100 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-700">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-400" />
+            <Clock className="w-4 h-4 text-red-700" />
             <span>{language === 'sw' ? 'Hadhi ya Matokeo: ' : 'Status: '}</span>
-            <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-black border border-amber-500/40 text-[10px] uppercase">
+            <span className="px-2 py-0.5 rounded-md bg-red-50 text-red-800 font-black border border-red-200 text-[10px] uppercase">
               Pending Approval (Inasubiri Mkuu wa Taaluma)
             </span>
           </div>
@@ -548,7 +548,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowRecentSubmissions(!showRecentSubmissions)}
-              className="text-emerald-300 hover:text-emerald-200 underline text-xs font-semibold cursor-pointer flex items-center gap-1"
+              className="text-red-700 hover:text-red-800 underline text-xs font-bold cursor-pointer flex items-center gap-1"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>
@@ -1279,18 +1279,18 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
       )}
 
       {/* 6. PRIMARY SUBMISSION CONTROL DOCK */}
-      <div className="p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-950 to-emerald-950 text-white border border-emerald-700/60 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-5 rounded-3xl bg-[#FFFDF8] text-stone-900 border-2 border-red-200/80 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="space-y-1 text-left">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <h5 className="text-sm font-black text-white">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
+            <h5 className="text-sm font-black text-stone-900">
               {language === 'sw' ? 'Uwasilishaji Salama wa Alama' : 'Secure Mark Submission'}
             </h5>
-            <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
+            <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 text-[10px] font-black uppercase">
               Pending Results
             </span>
           </div>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-stone-600">
             {language === 'sw'
               ? `Jumla ya wanafunzi ${statistics.total} watasajiliwa kwenye Cloud Firestore na kuwekwa hadhi ya "Pending" kuelekea kwa Mkuu wa Taaluma.`
               : `All ${statistics.total} candidate scores will be committed to Cloud Firestore with status 'pending' awaiting Academic Master certification.`}
@@ -1299,8 +1299,8 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
         <div className="flex flex-wrap items-center gap-3">
           {hasUnsavedChanges && (
-            <span className="text-[11px] text-amber-300 font-semibold flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5" />
+            <span className="text-[11px] text-red-800 font-semibold flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 text-red-700" />
               <span>Mabadiliko hayajahifadhiwa</span>
             </span>
           )}
@@ -1308,15 +1308,15 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           <button
             onClick={handleSubmitToFirestore}
             disabled={!isEntryAllowed || isSavingToFirestore || statistics.total === 0}
-            className={`px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2.5 shadow-xl transition-all cursor-pointer ${
+            className={`px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2.5 shadow-md transition-all cursor-pointer ${
               !isEntryAllowed || isSavingToFirestore || statistics.total === 0
-                ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-slate-950 hover:text-slate-950 shadow-emerald-900/50 scale-102 font-black'
+                ? 'bg-[#FAF7EE] text-stone-400 border border-red-200 cursor-not-allowed'
+                : 'bg-red-700 hover:bg-red-800 text-[#FFFFF0] border border-red-800 scale-102 font-black'
             }`}
           >
             {isSavingToFirestore ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+                <RefreshCw className="w-4 h-4 animate-spin text-[#FFFFF0]" />
                 <span>Inahifadhi kwenye Firestore...</span>
               </>
             ) : !isEntryAllowed ? (

@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { JoiningDocument } from '../types';
 import { OfficialInvitationLetterViewer } from './OfficialInvitationLetterViewer';
+import { OfficialJoiningInstructions2027Viewer } from './OfficialJoiningInstructions2027Viewer';
 import { StudentEnrollmentProgressBar } from './StudentEnrollmentProgressBar';
 import { SchoolLogo } from './SchoolLogo';
 import { downloadJoiningInstructionsPdf } from '../utils/pdfService';
@@ -36,7 +37,7 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
   const { language, t } = useLanguage();
   const { joiningDocs, incrementDocDownload } = useData();
 
-  const [activeAdmissionsTab, setActiveAdmissionsTab] = useState<'overview' | 'letter' | 'documents'>('letter');
+  const [activeAdmissionsTab, setActiveAdmissionsTab] = useState<'joining2027' | 'overview' | 'letter' | 'documents'>('joining2027');
   const [previewDoc, setPreviewDoc] = useState<JoiningDocument | null>(null);
   const [downloadSuccessMsg, setDownloadSuccessMsg] = useState<string | null>(null);
 
@@ -54,7 +55,7 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
   };
 
   return (
-    <section id="admissions" className="py-16 sm:py-20 bg-white border-b border-slate-200">
+    <section id="joining-instructions" className="py-16 sm:py-20 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -67,15 +68,15 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
           </h2>
           <p className="text-sm sm:text-base text-slate-600">
             {language === 'sw'
-              ? 'Nafasi za Pre-Form One (21/09/2026), Kidato cha 1 na 3 (2026–2027) ziko wazi. Pakua fomu na maelekezo ya kujiunga.'
-              : 'Pre-Form One starts 21/09/2026. Form 1 & 3 intake for 2026–2027 academic year is open. View and download official materials.'}
+              ? 'Nafasi za Kidato cha 1 na 3 (2026–2027) ziko wazi. Pakua fomu na maelekezo ya kujiunga.'
+              : 'Form 1 & 3 intake for 2026–2027 academic year is open. View and download official materials.'}
           </p>
         </div>
 
         {/* Visual Student Onboarding Progress Bar */}
         <StudentEnrollmentProgressBar
           onOpenApply={onOpenApply}
-          onSelectLetterTab={() => setActiveAdmissionsTab('letter')}
+          onSelectLetterTab={() => setActiveAdmissionsTab('joining2027')}
           onSelectDocsTab={() => setActiveAdmissionsTab('documents')}
         />
 
@@ -104,12 +105,24 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
               </h3>
               <p className="text-xs text-slate-600">
                 {language === 'sw'
-                  ? 'Chagua barua rasmi ya mwaliko au orodha kamili ya fomu za kupakua.'
-                  : 'Choose between the authenticated invitation letter or download individual form documents.'}
+                  ? 'Soma fomu rasmi ya kujiunga, barua ya mwaliko, au pakua nyaraka zote za udahili.'
+                  : 'Read the official joining instructions form, invitation letter, or download admissions files.'}
               </p>
             </div>
 
             <div className="inline-flex flex-wrap justify-center items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner gap-1">
+              <button
+                id="btn-tab-joining-2027"
+                onClick={() => setActiveAdmissionsTab('joining2027')}
+                className={`px-4 py-2 rounded-lg font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
+                  activeAdmissionsTab === 'joining2027'
+                    ? 'bg-[#0b2545] text-white shadow-xs'
+                    : 'text-slate-700 hover:text-slate-950'
+                }`}
+              >
+                <ScrollText className="w-4 h-4 text-amber-400" />
+                <span>{language === 'sw' ? 'Fomu Rasmi ya Kujiunga 2027' : 'Joining Instructions 2027'}</span>
+              </button>
               <button
                 id="btn-tab-letter-viewer"
                 onClick={() => setActiveAdmissionsTab('letter')}
@@ -119,8 +132,8 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                     : 'text-slate-700 hover:text-slate-950'
                 }`}
               >
-                <ScrollText className="w-4 h-4" />
-                <span>{language === 'sw' ? 'Barua Rasmi ya Mwaliko (PDF)' : 'Official Invitation Letter'}</span>
+                <FileText className="w-4 h-4" />
+                <span>{language === 'sw' ? 'Barua Rasmi ya Mwaliko' : 'Official Invitation Letter'}</span>
               </button>
               <button
                 id="btn-tab-admissions-overview"
@@ -143,7 +156,7 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                     : 'text-slate-700 hover:text-slate-950'
                 }`}
               >
-                <FileText className="w-4 h-4" />
+                <FileDown className="w-4 h-4" />
                 <span>{language === 'sw' ? 'Fomu Zote za Kujiunga' : 'Joining Forms Pack'}</span>
               </button>
             </div>
@@ -185,7 +198,7 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                          <span>Pre-Form One Program kuanzia tarehe 21 Septemba 2026</span>
+                          <span>Ada nafuu inayolipwa kwa awamu</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -214,8 +227,8 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                       </div>
                       <h3 className="text-xl sm:text-3xl font-bold text-white leading-tight">
                         {language === 'sw'
-                          ? 'Udahili wa Pre-Form One na Kidato cha 1 & 3 Uko Wazi!'
-                          : 'Admissions for Pre-Form One and Form 1 & 3 Are Now Open!'}
+                          ? 'Udahili wa Kidato cha 1 & 3 Uko Wazi!'
+                          : 'Admissions for Form 1 & 3 Are Now Open!'}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                         {language === 'sw'
@@ -227,11 +240,11 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div className="p-4 rounded-xl bg-blue-950/60 border border-blue-800/80 space-y-1">
                         <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block">
-                          {language === 'sw' ? '🗓️ TAREHE YA PRE-FORM ONE' : '🗓️ PRE-FORM ONE START'}
+                          {language === 'sw' ? '🗓️ MUHULA WA MASOMO' : '🗓️ ACADEMIC YEAR'}
                         </span>
-                        <p className="text-base font-bold text-white">21 / 09 / 2026</p>
+                        <p className="text-base font-bold text-white">2026 / 2027</p>
                         <p className="text-[11px] text-slate-300">
-                          {language === 'sw' ? 'Maandalizi maalum ya lugha ya Kiingereza na misingi ya sayansi.' : 'Intensive English immersion and core science foundation.'}
+                          {language === 'sw' ? 'Udahili wa wanafunzi wapya wa kidato cha 1 na wanaohamia.' : 'Enrollment for new form one students and transfers.'}
                         </p>
                       </div>
 
@@ -239,7 +252,7 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                         <span className="text-[10px] font-mono font-bold text-blue-200 uppercase tracking-wider block">
                           {language === 'sw' ? '🏫 MADARASA YANAYOPOKEA' : '🏫 INTAKE LEVELS'}
                         </span>
-                        <p className="text-base font-bold text-white">Pre-Form 1, Kidato 1 & 3</p>
+                        <p className="text-base font-bold text-white">Kidato 1 &amp; 3</p>
                         <p className="text-[11px] text-slate-300">
                           {language === 'sw' ? 'Wavulana na Wasichana (Bweni na Kutwa)' : 'Boys & Girls (Boarding & Day)'}
                         </p>
@@ -328,6 +341,13 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Tab: Fomu Rasmi ya Kujiunga 2027 (Official Joining Instructions Form) */}
+          {activeAdmissionsTab === 'joining2027' && (
+            <div className="animate-in fade-in duration-300">
+              <OfficialJoiningInstructions2027Viewer />
             </div>
           )}
 

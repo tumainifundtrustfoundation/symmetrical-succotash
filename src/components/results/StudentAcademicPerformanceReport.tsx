@@ -516,7 +516,15 @@ export const StudentAcademicPerformanceReport: React.FC<StudentAcademicPerforman
         {/* Class Teacher Signature */}
         <div className="text-center space-y-2">
           <div className="h-10 border-b border-dashed border-slate-400 flex items-end justify-center pb-1">
-            <span className="font-serif italic text-sm text-slate-800">E. M. Tarimo</span>
+            <span className="font-serif italic text-sm text-slate-800">
+              {student.form?.toLowerCase().includes('4') || student.form?.toLowerCase().includes('iv')
+                ? 'Mwl. Wolter Temu'
+                : student.form?.toLowerCase().includes('3') || student.form?.toLowerCase().includes('iii')
+                ? 'Mwl. Herman'
+                : student.form?.toLowerCase().includes('2') || student.form?.toLowerCase().includes('ii')
+                ? 'Mwl. Peter Kimaro'
+                : 'Mwl. Wolter Temu'}
+            </span>
           </div>
           <span className="text-[10px] uppercase font-bold text-slate-500 block">
             {language === 'sw' ? 'Mwalimu wa Darasa' : 'Class Teacher'}
@@ -526,7 +534,7 @@ export const StudentAcademicPerformanceReport: React.FC<StudentAcademicPerforman
         {/* Academic Master Signature */}
         <div className="text-center space-y-2">
           <div className="h-10 border-b border-dashed border-slate-400 flex items-end justify-center pb-1">
-            <span className="font-serif italic text-sm text-slate-800">Mwl. J. K. Lyimo</span>
+            <span className="font-serif italic text-sm text-slate-800">Mwl. Yohana Bahati</span>
           </div>
           <span className="text-[10px] uppercase font-bold text-slate-500 block">
             {language === 'sw' ? 'Mkuu wa Taaluma (Academic Master)' : 'Academic Master'}
@@ -536,7 +544,7 @@ export const StudentAcademicPerformanceReport: React.FC<StudentAcademicPerforman
         {/* Headmaster Signature */}
         <div className="text-center space-y-2">
           <div className="h-10 border-b border-dashed border-slate-400 flex items-end justify-center pb-1">
-            <span className="font-serif italic text-sm text-slate-800">Fr. Peter Mushi</span>
+            <span className="font-serif italic text-sm font-semibold text-slate-900">Br. Adolph Massawe</span>
           </div>
           <span className="text-[10px] uppercase font-bold text-slate-500 block">
             {language === 'sw' ? 'Mkuu wa Shule (Headmaster)' : 'Headmaster'}

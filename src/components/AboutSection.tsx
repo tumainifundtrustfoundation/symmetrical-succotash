@@ -86,8 +86,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
   ];
 
   return (
-    <section id="about" className="py-20 sm:py-24 bg-[#FFFFF0] border-b border-[#102A43]/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <section id="about" className="py-12 sm:py-16 bg-[#FFFFF0] border-b border-[#102A43]/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Top Part: Overview + Real Photo + Official Institutional Fact Card */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -214,9 +214,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
 
         {/* 4 Core Pillars: Vision, Mission, Core Values, Foundation */}
         <div className="space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5">
             <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#102A43]">
-              {language === 'sw' ? 'Dira, Dhima na Misingi ya Uomboni Secondary' : 'Our Vision, Mission & Foundational Values'}
+              {language === 'sw' ? 'Dira, Dhima na Misingi ya Shule' : 'Our Vision, Mission & Core Values'}
             </h3>
             <p className="text-xs sm:text-sm text-slate-600">
               {language === 'sw'
@@ -225,291 +225,135 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* 1. Vision (Dira) */}
-            <div className="bg-white p-5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-amber-500 shadow-xs flex flex-col justify-between space-y-3">
+            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-amber-500 shadow-xs flex flex-col justify-between space-y-2.5">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-600 mb-2">
-                  <Compass className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-600 mb-2">
+                  <Compass className="w-4 h-4" />
                 </div>
-                <h4 className="text-sm font-black text-[#102A43] uppercase tracking-wide">
-                  {language === 'sw' ? 'Dira Yetu (Our Vision)' : 'Our Vision'}
+                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
+                  {language === 'sw' ? 'Dira Yetu (Vision)' : 'Our Vision'}
                 </h4>
-                <p className="mt-2 text-xs text-slate-700 leading-[1.7] font-semibold">
+                <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-semibold">
                   “{language === 'sw'
                     ? (schoolProfile?.visionSw || 'Kutoa elimu bora na ufaulu wa kuvutia kitaaluma')
                     : (schoolProfile?.vision || schoolProfile?.visionEn || 'To provide quality education and impressive academic performance')}”
                 </p>
-                <p className="mt-2 text-[11px] text-slate-500 leading-relaxed">
-                  {language === 'sw'
-                    ? 'Inaongozwa na kaulimbiu rasmi ya “Elimu ni Maisha” chini ya Jimbo Katoliki la Moshi, Marangu.'
-                    : 'Guided by the official motto “Elimu ni Maisha” under the Catholic Diocese of Moshi, Marangu.'}
-                </p>
               </div>
-              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md self-start border border-amber-200">
-                Ubora na Maono
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded self-start border border-amber-200">
+                Ubora wa Kitaaluma
               </span>
             </div>
 
             {/* 2. Mission (Dhima) */}
-            <div className="bg-white p-5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#102A43] shadow-xs flex flex-col justify-between space-y-3">
+            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#102A43] shadow-xs flex flex-col justify-between space-y-2.5">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-blue-900/10 border border-blue-900/20 flex items-center justify-center text-[#102A43] mb-2">
-                  <BookOpen className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-blue-900/10 border border-blue-900/20 flex items-center justify-center text-[#102A43] mb-2">
+                  <BookOpen className="w-4 h-4" />
                 </div>
-                <h4 className="text-sm font-black text-[#102A43] uppercase tracking-wide">
-                  {language === 'sw' ? 'Dhima Yetu (Our Mission)' : 'Our Mission'}
+                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
+                  {language === 'sw' ? 'Dhima Yetu (Mission)' : 'Our Mission'}
                 </h4>
-                <p className="mt-2 text-xs text-slate-700 leading-[1.7] font-normal">
+                <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-normal">
                   {language === 'sw'
-                    ? (schoolProfile?.missionSw || 'Kuelimisha wavulana na wasichana kufikia uwezo wao kamili ili wawe watu wanaojitegemea na wenye nidhamu wanaoweza kukabiliana na changamoto za sasa na zijazo kupitia ushirikiano na wazazi na jamii husika.')
-                    : (schoolProfile?.mission || schoolProfile?.missionEn || 'To educate boys and girls to their full potential so that they become independent and disciplined persons who can face contemporary and future challenges through the cooperation with parents and relevant community.')}
+                    ? 'Kuelimisha wavulana na wasichana kufikia uwezo wao kamili wawe watu wanaojitegemea na wenye nidhamu thabiti.'
+                    : 'To educate boys and girls to their full potential to become self-reliant, disciplined citizens.'}
                 </p>
               </div>
-              <span className="text-[10px] font-bold text-[#102A43] bg-blue-50 px-2.5 py-1 rounded-md self-start border border-blue-200">
+              <span className="text-[10px] font-bold text-[#102A43] bg-blue-50 px-2 py-0.5 rounded self-start border border-blue-200">
                 Wajibu na Utendaji
               </span>
             </div>
 
             {/* 3. Core Values */}
-            <div className="bg-white p-5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-emerald-600 shadow-xs flex flex-col justify-between space-y-3">
+            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-emerald-600 shadow-xs flex flex-col justify-between space-y-2.5">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 mb-2">
-                  <HeartHandshake className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 mb-2">
+                  <HeartHandshake className="w-4 h-4" />
                 </div>
-                <h4 className="text-sm font-black text-[#102A43] uppercase tracking-wide">
+                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
                   {language === 'sw' ? 'Maadili ya Msingi' : 'Core Values'}
                 </h4>
-                <ul className="mt-2 space-y-1.5 text-xs text-slate-600 leading-[1.6]">
-                  <li className="flex items-start gap-1.5">
+                <ul className="mt-1.5 space-y-1 text-[11px] text-slate-600 leading-snug">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Bidii &amp; Uadilifu:</strong> Academic diligence &amp; honesty</span>
+                    <span><strong>Bidii &amp; Uadilifu</strong> kitaaluma</span>
                   </li>
-                  <li className="flex items-start gap-1.5">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Nidhamu &amp; Kujitambua:</strong> Moral discipline &amp; self-respect</span>
+                    <span><strong>Nidhamu &amp; Kujitambua</strong></span>
                   </li>
-                  <li className="flex items-start gap-1.5">
+                  <li className="flex items-center gap-1.5">
                     <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Sala na Kazi:</strong> Prayer, education &amp; hard work</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Unyenyekevu &amp; Huduma:</strong> Faith, humility &amp; service</span>
+                    <span><strong>Sala na Kazi:</strong> Prayer &amp; Work</span>
                   </li>
                 </ul>
               </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md self-start border border-emerald-200">
-                Malezi Thabiti
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded self-start border border-emerald-200">
+                Malezi ya Kikatoliki
               </span>
             </div>
 
             {/* 4. Institutional Foundation */}
-            <div className="bg-white p-5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs flex flex-col justify-between space-y-3">
+            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs flex flex-col justify-between space-y-2.5">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-700 mb-2">
-                  <Award className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-700 mb-2">
+                  <Award className="w-4 h-4" />
                 </div>
-                <h4 className="text-sm font-black text-[#102A43] uppercase tracking-wide">
-                  {language === 'sw' ? 'Msingi wa Shule' : 'Institutional Foundation'}
+                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
+                  {language === 'sw' ? 'Kaulimbiu ya Shule' : 'Motto'}
                 </h4>
-                <p className="mt-2 text-base font-serif font-bold text-[#102A43] leading-snug">
+                <p className="mt-1 text-sm font-serif font-black text-[#102A43]">
                   “ELIMU NI MAISHA”
                 </p>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  <strong>Tujendelee Sisi Wenyewe:</strong> Sala, Elimu na Kazi (Prayer, Education, Work). Chini ya Jimbo Katoliki la Moshi.
+                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
+                  Tujendelee Sisi Wenyewe: Prayer · Education · Work.
                 </p>
               </div>
-              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md self-start border border-amber-200">
-                Nembo na Kaulimbiu
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded self-start border border-amber-200">
+                Jimbo Katoliki Moshi
               </span>
             </div>
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* SIFA 7 KUU ZA UOMBONI & DIRA YA SHULE (OUR VISION & HALLMARK FEATURES)     */}
-        {/* ========================================================================= */}
-        <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border-2 border-amber-400/50 shadow-md space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100 text-amber-950 text-[11px] font-black uppercase tracking-wider mb-2 border border-amber-300 shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                <span>{language === 'sw' ? 'Misingi na Sifa Kuu za Shule' : 'Foundational & Hallmark Features'}</span>
-              </div>
-              <h3 className="font-serif text-xl sm:text-3xl font-bold text-[#102A43]">
-                {language === 'sw' ? 'Dira & Sifa 7 za Ubora wa Uomboni (Our Vision & Hallmark Features):' : 'Our Vision & 7 Hallmark Features:'}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-                {language === 'sw'
-                  ? 'Taarifa rasmi za kitaaluma, malezi ya kimaadili na vigezo vya ubora katika Shule ya Sekondari Uomboni (Moshi - Marangu) kwa mwaka wa masomo 2026/2027.'
-                  : 'Official institutional features, academic rigor and foundational values of Uomboni Secondary School (2026/2027).'}
-              </p>
+        {/* Hallmark Strengths (Compact 4-Card Highlights) */}
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#102A43]/15 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wider">
+                {language === 'sw' ? 'Sifa Kuu za Uomboni Secondary' : 'Key School Hallmark Features'}
+              </h4>
             </div>
-
-            {onOpenAdmissions && (
-              <button
-                onClick={onOpenAdmissions}
-                className="px-5 py-2.5 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-amber-300 text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0 border border-amber-400/30"
-              >
-                <GraduationCap className="w-4 h-4 text-amber-400" />
-                <span>{language === 'sw' ? 'Taarifa za Udahili 2026' : 'Admissions Info 2026'}</span>
-              </button>
-            )}
+            <span className="text-[11px] text-slate-500 font-medium">
+              NECTA S0486 · Marangu West, Kilimanjaro
+            </span>
           </div>
 
-          {/* Embedded Institutional Spotlight: School Seal & Core Facts */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-slate-50 p-5 sm:p-6 rounded-2xl border border-amber-300/80 items-stretch">
-            {/* Official School Seal & Affiliation Box */}
-            <div className="lg:col-span-4 bg-gradient-to-br from-[#102A43] to-[#0A1C2E] text-white p-6 rounded-2xl border-2 border-amber-400/60 shadow-lg flex flex-col justify-between space-y-4">
-              <div className="flex items-center gap-3.5">
-                <SchoolLogo size="md" />
-                <div>
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block">
-                    NECTA REG: S0486
-                  </span>
-                  <h4 className="font-serif text-base font-bold text-white leading-tight">
-                    UOMBONI SECONDARY
-                  </h4>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 border-y border-white/10 py-3 text-xs">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Mamlaka &amp; Dhamana:</span>
-                  <p className="font-bold text-amber-300 text-xs">Roman Catholic Diocese of Moshi</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Mahali pa Shule:</span>
-                  <p className="text-white text-xs font-medium">Marangu West, Mteremko wa Mlima Kilimanjaro</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Kaulimbiu Rasmi:</span>
-                  <p className="font-serif text-amber-300 font-bold text-sm">“ELIMU NI MAISHA”</p>
-                  <p className="text-[10px] text-slate-300">Tujendelee Sisi Wenyewe: Prayer · Education · Work</p>
-                </div>
-              </div>
-
-              <div className="text-[11px] text-slate-200 flex items-center gap-1.5 pt-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Usajili Kamili wa Wizara ya Elimu (NECTA S0486)</span>
-              </div>
-            </div>
-
-            {/* Structured Institutional Highlights */}
-            <div className="lg:col-span-8 space-y-4 flex flex-col justify-between">
-              <div className="space-y-1">
-                <div className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-[#102A43] text-amber-300">
-                  CATHOLIC DIOCESE OF MOSHI
-                </div>
-                <h4 className="font-serif text-lg sm:text-2xl font-black text-[#102A43]">
-                  UOMBONI SECONDARY SCHOOL
-                </h4>
-                <p className="text-xs font-bold text-amber-800">
-                  KILIMANJARO - MOSHI, MARANGU · “ELIMU NI MAISHA”
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs space-y-1">
-                  <span className="text-[10px] font-mono font-bold text-amber-700 uppercase block">
-                    {language === 'sw' ? '📌 DIRA YA SHULE (OUR VISION)' : '📌 SCHOOL VISION'}
-                  </span>
-                  <p className="font-bold text-[#102A43] text-xs">
-                    “{language === 'sw'
-                      ? (schoolProfile?.visionSw || 'Kutoa elimu bora na ufaulu wa kuvutia kitaaluma')
-                      : (schoolProfile?.vision || 'To provide quality education and impressive academic performance')}”
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs space-y-1">
-                  <span className="text-[10px] font-mono font-bold text-amber-700 uppercase block">
-                    {language === 'sw' ? '📅 TANGAZO LA PRE-FORM ONE' : '📅 SPECIAL NOTICE'}
-                  </span>
-                  <p className="font-bold text-[#102A43] text-xs">
-                    Kuanza: 21 Septemba 2026
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    Masomo: Kiingereza, Mathematics Form 1 &amp; Sayansi.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs space-y-1">
-                  <span className="text-[10px] font-mono font-bold text-amber-700 uppercase block">
-                    {language === 'sw' ? '📍 MAHALI & ANWANI YA SHULE' : '📍 LOCATION & ADDRESS'}
-                  </span>
-                  <p className="font-semibold text-slate-800 text-xs">
-                    Marangu - Moshi, Kilimanjaro · P.O. Box 90000
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs space-y-1">
-                  <span className="text-[10px] font-mono font-bold text-amber-700 uppercase block">
-                    {language === 'sw' ? '📞 MAWASILIANO YA SHULE' : '📞 SCHOOL CONTACTS'}
-                  </span>
-                  <p className="font-semibold text-slate-800 text-xs">
-                    Simu: +255 802 2000 / +255 000 0000
-                  </p>
-                  <p className="text-[11px] text-slate-500 font-mono">
-                    info@uomboniss.ac.tz · www.uomboniss.ac.tz
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Grid of the 7 features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {flyerFeatures.map((feat, idx) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {flyerFeatures.slice(0, 4).map((feat, idx) => {
               const Icon = feat.icon;
               return (
                 <div
                   key={idx}
-                  className="p-4.5 rounded-2xl bg-[#FFFFF0] border border-[#102A43]/10 hover:border-[#102A43]/30 transition-all hover:shadow-xs space-y-2.5 flex flex-col justify-between"
+                  className="p-3.5 rounded-xl bg-[#FFFFF0] border border-[#102A43]/10 space-y-1.5 flex flex-col justify-between"
                 >
-                  <div className="space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-[#102A43] text-amber-300 flex items-center justify-center shadow-xs">
-                      <Icon className="w-4 h-4" />
+                  <div className="space-y-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-[#102A43] text-amber-300 flex items-center justify-center">
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <h4 className="text-xs sm:text-sm font-black text-[#102A43] leading-snug">
+                    <h5 className="text-xs font-bold text-[#102A43] leading-snug">
                       {language === 'sw' ? feat.titleSw : feat.titleEn}
-                    </h4>
+                    </h5>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       {language === 'sw' ? feat.descSw : feat.descEn}
                     </p>
                   </div>
-                  <div className="pt-2 border-t border-slate-200/60 flex items-center gap-1.5 text-[10px] font-bold text-[#102A43]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{language === 'sw' ? 'Sifa Kuu ya Shule' : 'School Hallmark Feature'}</span>
-                  </div>
                 </div>
               );
             })}
-
-            {/* 8th Special Notice Card */}
-            <div className="p-4.5 rounded-2xl bg-gradient-to-br from-amber-500/20 via-amber-400/10 to-[#FFFFF0] border-2 border-amber-400/80 shadow-xs space-y-2.5 flex flex-col justify-between">
-              <div className="space-y-2">
-                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
-                  SPECIAL NOTICE
-                </span>
-                <h4 className="text-xs sm:text-sm font-black text-[#102A43] leading-snug">
-                  PRE-FORM ONE PROGRAM
-                </h4>
-                <p className="text-[11px] text-slate-700 leading-relaxed font-semibold">
-                  Starts: <span className="font-black text-[#102A43]">21st September 2026</span>
-                </p>
-                <p className="text-[10px] text-slate-600 leading-tight">
-                  Maandalizi maalum ya lugha ya Kiingereza, hisabati (Mathematics Form 1) na sayansi kwa wanafunzi wanaoingia kidato cha kwanza.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onOpenAdmissions}
-                className="w-full py-1.5 px-3 rounded-lg bg-[#102A43] text-amber-300 text-[11px] font-bold text-center hover:bg-[#0A1C2E] transition-colors cursor-pointer"
-              >
-                Omba Nafasi Sasa →
-              </button>
-            </div>
           </div>
         </div>
 
@@ -518,13 +362,13 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
           <div>
             <h4 className="font-serif text-base sm:text-lg font-bold text-white">
               {language === 'sw'
-                ? 'Karibu Ujiunge na Familia ya Shule ya Sekondari Uomboni'
-                : 'Welcome to the Uomboni Secondary School Family'}
+                ? 'Shule ya Sekondari Uomboni — Marangu, Moshi'
+                : 'Uomboni Secondary School — Marangu, Moshi'}
             </h4>
             <p className="text-xs text-slate-300 mt-0.5">
               {language === 'sw'
-                ? 'Nafasi za Pre-Form One, Kidato cha 1 na cha 3 kwa Mwaka wa Masomo 2026–2027 zipo wazi.'
-                : 'Admissions for Pre-Form 1, Form 1 and Form 3 for the 2026–2027 Academic Year are open.'}
+                ? 'Elimu Bora yenye Maadili ya Kikanisa, Nidhamu ya Hali ya Juu na Taaluma Bora.'
+                : 'Quality Catholic Education, High Discipline and Academic Excellence.'}
             </p>
           </div>
 
@@ -537,12 +381,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 {language === 'sw' ? 'Tazama Taaluma' : 'Academic Programs'}
               </button>
             )}
-            {onOpenAdmissions && (
+            {onNavigate && (
               <button
-                onClick={onOpenAdmissions}
+                onClick={() => onNavigate('contact')}
                 className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-sm"
               >
-                {language === 'sw' ? 'Omba Udahili Sasa' : 'Apply for Admission'}
+                {language === 'sw' ? 'Wasiliana Nasi' : 'Contact Us'}
               </button>
             )}
           </div>

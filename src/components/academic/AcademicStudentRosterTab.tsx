@@ -260,20 +260,20 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
       )}
 
       {/* Top Banner & Quick Overview */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950/40 to-slate-900 p-5 rounded-3xl border border-emerald-800/40 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="bg-[#FFFDF8] p-5 rounded-3xl border-2 border-red-200/80 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-400 text-slate-950 font-black">
+            <span className="p-2 rounded-xl bg-red-700 text-[#FFFFF0] font-black shadow-xs">
               <Users className="w-5 h-5" />
             </span>
             <div>
-              <h3 className="text-base font-black text-white flex items-center gap-2">
+              <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
                 <span>{language === 'sw' ? 'Daftari Kamili la Wanafunzi (Nominal Roll ya Mtaaluma)' : 'Official Student Register (Nominal Roll)'}</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 text-xs font-mono font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#FAF7EE] text-red-900 border border-red-300 text-xs font-mono font-bold">
                   {students.length} {language === 'sw' ? 'Wanafunzi' : 'Students'}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-stone-600">
                 {language === 'sw'
                   ? 'Orodha rasmi ya wanafunzi waliosajiliwa Kidato cha 1 hadi cha 4, namba za NECTA/CSEE, PREM, na viunganishi vya matokeo.'
                   : 'Official registered students roster across Form 1 to 4 with NECTA CSEE candidate indices, PREM numbers, and results.'}
@@ -286,27 +286,27 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer transition-all active:scale-95"
+            className="px-3.5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer transition-all active:scale-95"
           >
-            <Plus className="w-4 h-4 text-slate-950" />
+            <Plus className="w-4 h-4 text-[#FFFFF0]" />
             <span>{language === 'sw' ? 'Sajili Mwanafunzi Mpya' : 'Add New Student'}</span>
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 text-xs font-bold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-all"
+            className="px-3 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 text-xs font-bold flex items-center gap-1.5 border border-red-300 cursor-pointer transition-all"
             title="Pakua Orodha katika Muundo wa Excel au CSV"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-red-700" />
             <span>{language === 'sw' ? 'Pakua Excel/CSV' : 'Export CSV'}</span>
           </button>
 
           <button
             onClick={handlePrintRoster}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 cursor-pointer transition-all"
+            className="px-3 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-stone-800 text-xs font-bold flex items-center gap-1.5 border border-red-300 cursor-pointer transition-all"
             title="Chapisha Orodha Rasmi ya Darasa"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5 text-red-700" />
             <span>{language === 'sw' ? 'Chapisha Orodha' : 'Print Roll'}</span>
           </button>
         </div>
@@ -318,81 +318,81 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
           onClick={() => setSelectedForm('ALL')}
           className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedForm === 'ALL'
-              ? 'bg-emerald-900/50 border-emerald-500 text-white shadow-md'
-              : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'bg-red-700 border-red-800 text-[#FFFFF0] shadow-md'
+              : 'bg-[#FFFDF8] border-red-200 text-stone-800 hover:bg-[#FAF7EE]'
           }`}
         >
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Wote (Shule Nzima)</span>
-          <span className="text-xl font-black text-amber-300 mt-0.5 block">{stats.total}</span>
-          <span className="text-[10px] text-slate-400">{stats.boys} ME &bull; {stats.girls} KE</span>
+          <span className={`text-[10px] font-bold uppercase block ${selectedForm === 'ALL' ? 'text-red-100' : 'text-stone-500'}`}>Wote (Shule Nzima)</span>
+          <span className={`text-xl font-black mt-0.5 block ${selectedForm === 'ALL' ? 'text-[#FFFFF0]' : 'text-red-900'}`}>{stats.total}</span>
+          <span className={`text-[10px] ${selectedForm === 'ALL' ? 'text-red-100' : 'text-stone-500'}`}>{stats.boys} ME &bull; {stats.girls} KE</span>
         </button>
 
         <button
           onClick={() => setSelectedForm('Form 1')}
           className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedForm === 'Form 1'
-              ? 'bg-emerald-900/50 border-emerald-500 text-white shadow-md'
-              : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'bg-red-700 border-red-800 text-[#FFFFF0] shadow-md'
+              : 'bg-[#FFFDF8] border-red-200 text-stone-800 hover:bg-[#FAF7EE]'
           }`}
         >
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Kidato cha 1 (Form 1)</span>
-          <span className="text-xl font-black text-white mt-0.5 block">{stats.form1}</span>
-          <span className="text-[10px] text-emerald-400">Waliosajiliwa 2025/26</span>
+          <span className={`text-[10px] font-bold uppercase block ${selectedForm === 'Form 1' ? 'text-red-100' : 'text-stone-500'}`}>Kidato cha 1 (Form 1)</span>
+          <span className={`text-xl font-black mt-0.5 block ${selectedForm === 'Form 1' ? 'text-[#FFFFF0]' : 'text-stone-900'}`}>{stats.form1}</span>
+          <span className={`text-[10px] ${selectedForm === 'Form 1' ? 'text-red-100' : 'text-red-800'}`}>Waliosajiliwa 2025/26</span>
         </button>
 
         <button
           onClick={() => setSelectedForm('Form 2')}
           className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedForm === 'Form 2'
-              ? 'bg-emerald-900/50 border-emerald-500 text-white shadow-md'
-              : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'bg-red-700 border-red-800 text-[#FFFFF0] shadow-md'
+              : 'bg-[#FFFDF8] border-red-200 text-stone-800 hover:bg-[#FAF7EE]'
           }`}
         >
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Kidato cha 2 (Form 2)</span>
-          <span className="text-xl font-black text-white mt-0.5 block">{stats.form2}</span>
-          <span className="text-[10px] text-emerald-400">FTNA NECTA / CSSC</span>
+          <span className={`text-[10px] font-bold uppercase block ${selectedForm === 'Form 2' ? 'text-red-100' : 'text-stone-500'}`}>Kidato cha 2 (Form 2)</span>
+          <span className={`text-xl font-black mt-0.5 block ${selectedForm === 'Form 2' ? 'text-[#FFFFF0]' : 'text-stone-900'}`}>{stats.form2}</span>
+          <span className={`text-[10px] ${selectedForm === 'Form 2' ? 'text-red-100' : 'text-red-800'}`}>FTNA NECTA / CSSC</span>
         </button>
 
         <button
           onClick={() => setSelectedForm('Form 3')}
           className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedForm === 'Form 3'
-              ? 'bg-emerald-900/50 border-emerald-500 text-white shadow-md'
-              : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'bg-red-700 border-red-800 text-[#FFFFF0] shadow-md'
+              : 'bg-[#FFFDF8] border-red-200 text-stone-800 hover:bg-[#FAF7EE]'
           }`}
         >
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Kidato cha 3 (Form 3)</span>
-          <span className="text-xl font-black text-white mt-0.5 block">{stats.form3}</span>
-          <span className="text-[10px] text-emerald-400">Science & Arts</span>
+          <span className={`text-[10px] font-bold uppercase block ${selectedForm === 'Form 3' ? 'text-red-100' : 'text-stone-500'}`}>Kidato cha 3 (Form 3)</span>
+          <span className={`text-xl font-black mt-0.5 block ${selectedForm === 'Form 3' ? 'text-[#FFFFF0]' : 'text-stone-900'}`}>{stats.form3}</span>
+          <span className={`text-[10px] ${selectedForm === 'Form 3' ? 'text-red-100' : 'text-red-800'}`}>Science & Arts</span>
         </button>
 
         <button
           onClick={() => setSelectedForm('Form 4')}
           className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedForm === 'Form 4'
-              ? 'bg-emerald-900/50 border-emerald-500 text-white shadow-md'
-              : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'
+              ? 'bg-red-700 border-red-800 text-[#FFFFF0] shadow-md'
+              : 'bg-[#FFFDF8] border-red-200 text-stone-800 hover:bg-[#FAF7EE]'
           }`}
         >
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Kidato cha 4 (Form 4)</span>
-          <span className="text-xl font-black text-amber-400 mt-0.5 block">{stats.form4}</span>
-          <span className="text-[10px] text-amber-300">Watahiniwa CSEE S0486</span>
+          <span className={`text-[10px] font-bold uppercase block ${selectedForm === 'Form 4' ? 'text-red-100' : 'text-stone-500'}`}>Kidato cha 4 (Form 4)</span>
+          <span className={`text-xl font-black mt-0.5 block ${selectedForm === 'Form 4' ? 'text-[#FFFFF0]' : 'text-red-900'}`}>{stats.form4}</span>
+          <span className={`text-[10px] ${selectedForm === 'Form 4' ? 'text-red-100' : 'text-red-800'}`}>Watahiniwa CSEE S0486</span>
         </button>
 
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-slate-300">
-          <span className="text-[10px] text-slate-400 font-bold uppercase block">Ukaazi (Boarding/Day)</span>
-          <span className="text-sm font-black text-white mt-1 block">
-            <span className="text-emerald-400">{stats.boarding}</span> Bweni / <span className="text-blue-400">{stats.day}</span> Kutwa
+        <div className="p-3 rounded-2xl bg-[#FFFDF8] border border-red-200 text-stone-800 shadow-xs">
+          <span className="text-[10px] text-stone-500 font-bold uppercase block">Ukaazi (Boarding/Day)</span>
+          <span className="text-sm font-black text-stone-900 mt-1 block">
+            <span className="text-red-700">{stats.boarding}</span> Bweni / <span className="text-stone-700">{stats.day}</span> Kutwa
           </span>
-          <span className="text-[10px] text-slate-400">Hosteli 100% Salama</span>
+          <span className="text-[10px] text-stone-500">Hosteli 100% Salama</span>
         </div>
       </div>
 
       {/* Filter Toolbar & Search */}
-      <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-[#FFFDF8] p-4 rounded-3xl border-2 border-red-200/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-xs">
         {/* Search Bar */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-red-700 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={
@@ -402,12 +402,12 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 font-medium"
+            className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#FAF7EE] border border-red-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-red-600 font-medium"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-red-700"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -417,46 +417,46 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
         {/* Filters Group */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Form Select */}
-          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] text-slate-400 font-bold">Kidato:</span>
+          <div className="flex items-center gap-1 bg-[#FAF7EE] border border-red-300 rounded-xl px-2.5 py-1">
+            <span className="text-[10px] text-stone-600 font-bold">Kidato:</span>
             <select
               value={selectedForm}
               onChange={(e) => setSelectedForm(e.target.value)}
-              className="bg-transparent text-xs text-white font-bold focus:outline-hidden cursor-pointer"
+              className="bg-transparent text-xs text-stone-900 font-bold focus:outline-hidden cursor-pointer"
             >
-              <option value="ALL" className="bg-slate-900 text-white">Madarasa Yote</option>
-              <option value="Form 1" className="bg-slate-900 text-white">Kidato cha 1</option>
-              <option value="Form 2" className="bg-slate-900 text-white">Kidato cha 2</option>
-              <option value="Form 3" className="bg-slate-900 text-white">Kidato cha 3</option>
-              <option value="Form 4" className="bg-slate-900 text-white">Kidato cha 4</option>
+              <option value="ALL">Madarasa Yote</option>
+              <option value="Form 1">Kidato cha 1</option>
+              <option value="Form 2">Kidato cha 2</option>
+              <option value="Form 3">Kidato cha 3</option>
+              <option value="Form 4">Kidato cha 4</option>
             </select>
           </div>
 
           {/* Gender Select */}
-          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] text-slate-400 font-bold">Jinsia:</span>
+          <div className="flex items-center gap-1 bg-[#FAF7EE] border border-red-300 rounded-xl px-2.5 py-1">
+            <span className="text-[10px] text-stone-600 font-bold">Jinsia:</span>
             <select
               value={selectedGender}
               onChange={(e) => setSelectedGender(e.target.value)}
-              className="bg-transparent text-xs text-white font-bold focus:outline-hidden cursor-pointer"
+              className="bg-transparent text-xs text-stone-900 font-bold focus:outline-hidden cursor-pointer"
             >
-              <option value="ALL" className="bg-slate-900 text-white">Wote (ME & KE)</option>
-              <option value="M" className="bg-slate-900 text-white">Wavulana (ME)</option>
-              <option value="F" className="bg-slate-900 text-white">Wasichana (KE)</option>
+              <option value="ALL">Wote (ME & KE)</option>
+              <option value="M">Wavulana (ME)</option>
+              <option value="F">Wasichana (KE)</option>
             </select>
           </div>
 
           {/* Residency Select */}
-          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] text-slate-400 font-bold">Ukaazi:</span>
+          <div className="flex items-center gap-1 bg-[#FAF7EE] border border-red-300 rounded-xl px-2.5 py-1">
+            <span className="text-[10px] text-stone-600 font-bold">Ukaazi:</span>
             <select
               value={selectedResidency}
               onChange={(e) => setSelectedResidency(e.target.value)}
-              className="bg-transparent text-xs text-white font-bold focus:outline-hidden cursor-pointer"
+              className="bg-transparent text-xs text-stone-900 font-bold focus:outline-hidden cursor-pointer"
             >
-              <option value="ALL" className="bg-slate-900 text-white">Wote</option>
-              <option value="Bweni" className="bg-slate-900 text-white">Bweni</option>
-              <option value="Kutwa" className="bg-slate-900 text-white">Kutwa</option>
+              <option value="ALL">Wote</option>
+              <option value="Bweni">Bweni</option>
+              <option value="Kutwa">Kutwa</option>
             </select>
           </div>
 
@@ -468,7 +468,7 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                 setSelectedResidency('ALL');
                 setSearchQuery('');
               }}
-              className="px-2 py-1 text-[11px] text-amber-400 hover:text-amber-300 font-bold cursor-pointer underline"
+              className="px-2 py-1 text-[11px] text-red-700 hover:text-red-900 font-bold cursor-pointer underline"
             >
               Weka Upya
             </button>
@@ -477,31 +477,31 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
       </div>
 
       {/* Main Student Directory Table */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div className="bg-[#FFFDF8] rounded-3xl border-2 border-red-200/80 shadow-md overflow-hidden">
+        <div className="p-4 border-b border-red-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-emerald-400" />
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+            <GraduationCap className="w-4 h-4 text-red-700" />
+            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
               {language === 'sw' ? 'Orodha ya Wanafunzi Waliochujwa' : 'Filtered Students Roster'}
             </h4>
-            <span className="text-xs text-slate-400">({filteredStudents.length} / {students.length})</span>
+            <span className="text-xs text-stone-500">({filteredStudents.length} / {students.length})</span>
           </div>
 
-          <span className="text-[11px] text-slate-400 font-mono">
-            Kituo: <strong className="text-amber-300">S.0486</strong> &bull; Marangu, Moshi
+          <span className="text-[11px] text-stone-500 font-mono">
+            Kituo: <strong className="text-red-800">S.0486</strong> &bull; Marangu, Moshi
           </span>
         </div>
 
         {filteredStudents.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 space-y-3">
-            <Users className="w-12 h-12 text-slate-600 mx-auto" />
-            <p className="text-sm font-bold text-slate-300">Hakuna mwanafunzi aliyepatikana kwa vigezo hivi.</p>
-            <p className="text-xs text-slate-500">Jaribu kubadilisha darasa au maneno ya utafutaji.</p>
+          <div className="py-16 text-center text-stone-500 space-y-3">
+            <Users className="w-12 h-12 text-stone-400 mx-auto" />
+            <p className="text-sm font-bold text-stone-800">Hakuna mwanafunzi aliyepatikana kwa vigezo hivi.</p>
+            <p className="text-xs text-stone-500">Jaribu kubadilisha darasa au maneno ya utafutaji.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+              <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
                 <tr>
                   <th className="py-3 px-3">#</th>
                   <th className="py-3 px-4">Jina Kamili la Mwanafunzi</th>
@@ -515,17 +515,17 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                   <th className="py-3 px-4 text-right">Vitendo vya Taaluma</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-medium text-slate-300">
+              <tbody className="divide-y divide-red-100 font-medium text-stone-800">
                 {filteredStudents.map((s, idx) => {
                   const latestRes = getStudentLatestResult(s.examNumber);
 
                   return (
                     <tr
                       key={s.id || s.studentId || idx}
-                      className="hover:bg-slate-800/50 transition-colors group"
+                      className="hover:bg-[#FAF7EE] transition-colors group"
                     >
                       {/* Roll Index */}
-                      <td className="py-3 px-3 text-slate-500 font-mono text-[11px] font-bold">
+                      <td className="py-3 px-3 text-stone-500 font-mono text-[11px] font-bold">
                         {idx + 1}
                       </td>
 
@@ -533,16 +533,16 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                            s.gender === 'M' ? 'bg-blue-900/60 text-blue-300 border border-blue-700/50' : 'bg-rose-900/60 text-rose-300 border border-rose-700/50'
+                            s.gender === 'M' ? 'bg-[#FAF7EE] text-stone-800 border border-red-200' : 'bg-red-50 text-red-800 border border-red-200'
                           }`}>
                             {s.gender === 'M' ? 'ME' : 'KE'}
                           </span>
                           <div>
-                            <span className="text-white font-black text-xs block group-hover:text-amber-300 transition-colors">
+                            <span className="text-stone-900 font-black text-xs block group-hover:text-red-700 transition-colors">
                               {s.fullName}
                             </span>
                             {s.leadershipRole && (
-                              <span className="text-[10px] text-amber-400 font-semibold block">
+                              <span className="text-[10px] text-red-800 font-semibold block">
                                 👑 {s.leadershipRole}
                               </span>
                             )}
@@ -551,19 +551,19 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                       </td>
 
                       {/* Exam Number */}
-                      <td className="py-3 px-3 font-mono font-bold text-amber-300 text-[11px]">
+                      <td className="py-3 px-3 font-mono font-bold text-red-800 text-[11px]">
                         {s.examNumber}
                       </td>
 
                       {/* PREM Number */}
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-400">
+                      <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
                         {s.premNumber || s.studentId}
                       </td>
 
                       {/* Gender */}
                       <td className="py-3 px-2 text-center font-bold">
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
-                          s.gender === 'M' ? 'bg-blue-950 text-blue-300' : 'bg-rose-950 text-rose-300'
+                          s.gender === 'M' ? 'bg-[#FAF7EE] text-stone-800 border border-red-200' : 'bg-red-50 text-red-800 border border-red-200'
                         }`}>
                           {s.gender === 'M' ? 'ME' : 'KE'}
                         </span>
@@ -571,17 +571,17 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
 
                       {/* Form & Stream */}
                       <td className="py-3 px-3">
-                        <span className="font-bold text-white block">{s.form}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">{s.stream}</span>
+                        <span className="font-bold text-stone-900 block">{s.form}</span>
+                        <span className="text-[10px] text-stone-500 font-mono">{s.stream}</span>
                       </td>
 
                       {/* Residency / Boarding */}
                       <td className="py-3 px-3">
-                        <span className="text-slate-300 text-xs block">
+                        <span className="text-stone-700 text-xs block">
                           {(s.studentType || s.boardingStatus || '').includes('Bweni') ? '🏠 Bweni' : '🚶 Kutwa'}
                         </span>
                         {s.dormitoryRoom && (
-                          <span className="text-[10px] text-slate-500 block truncate max-w-[130px]">
+                          <span className="text-[10px] text-stone-500 block truncate max-w-[130px]">
                             {s.dormitoryRoom}
                           </span>
                         )}
@@ -589,13 +589,13 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
 
                       {/* Parent / Guardian & Phone */}
                       <td className="py-3 px-3">
-                        <span className="text-slate-300 text-xs block truncate max-w-[130px]">
+                        <span className="text-stone-700 text-xs block truncate max-w-[130px]">
                           {s.parentName || s.parentGuardianName || '-'}
                         </span>
                         {s.parentPhone && (
                           <a
                             href={`tel:${s.parentPhone}`}
-                            className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1"
+                            className="text-[10px] text-red-700 hover:underline flex items-center gap-1 font-semibold"
                           >
                             <Phone className="w-2.5 h-2.5" />
                             <span>{s.parentPhone}</span>
@@ -609,21 +609,21 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                           <div className="space-y-0.5">
                             <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black ${
                               latestRes.division === 'Division I'
-                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'
+                                ? 'bg-red-700 text-[#FFFFF0]'
                                 : latestRes.division === 'Division II'
-                                ? 'bg-blue-950 text-blue-300 border border-blue-700/50'
+                                ? 'bg-red-800 text-[#FFFFF0]'
                                 : latestRes.division === 'Division III'
-                                ? 'bg-amber-950 text-amber-300 border border-amber-700/50'
-                                : 'bg-slate-800 text-slate-300'
+                                ? 'bg-red-900 text-[#FFFFF0]'
+                                : 'bg-[#FAF7EE] text-stone-700 border border-red-200'
                             }`}>
                               {latestRes.division} (Pts {latestRes.points})
                             </span>
-                            <span className="text-[10px] text-slate-400 block truncate max-w-[110px]">
+                            <span className="text-[10px] text-stone-500 block truncate max-w-[110px]">
                               {latestRes.examType}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-slate-500 italic">Haijarekodiwa</span>
+                          <span className="text-[10px] text-stone-400 italic">Haijarekodiwa</span>
                         )}
                       </td>
 
@@ -634,10 +634,10 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                           {onSelectStudentForMarks && (
                             <button
                               onClick={() => onSelectStudentForMarks(s)}
-                              className="px-2 py-1 rounded-lg bg-emerald-800/70 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs"
+                              className="px-2 py-1 rounded-lg bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs"
                               title="Weka Alama za Somo kwa mwanafunzi huyu"
                             >
-                              <Edit2 className="w-3 h-3 text-emerald-300" />
+                              <Edit2 className="w-3 h-3 text-[#FFFFF0]" />
                               <span className="hidden xl:inline">Alama</span>
                             </button>
                           )}
@@ -646,10 +646,10 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                           {onViewStudentResults && (
                             <button
                               onClick={() => onViewStudentResults(s.examNumber || s.studentId)}
-                              className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                              className="px-2 py-1 rounded-lg bg-[#FAF7EE] hover:bg-red-50 text-red-900 border border-red-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                               title="Tazama Matokeo Kamili / Result Slip"
                             >
-                              <Eye className="w-3 h-3" />
+                              <Eye className="w-3.5 h-3.5 text-red-700" />
                               <span className="hidden xl:inline">Matokeo</span>
                             </button>
                           )}
@@ -657,7 +657,7 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                           {/* Quick Edit */}
                           <button
                             onClick={() => setEditingStudent(s)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                            className="p-1 rounded-lg text-stone-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                             title="Hariri Taarifa za Mwanafunzi"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -666,7 +666,7 @@ export const AcademicStudentRosterTab: React.FC<AcademicStudentRosterTabProps> =
                           {/* Quick Delete */}
                           <button
                             onClick={() => setDeleteConfirmStudent(s)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 cursor-pointer"
+                            className="p-1 rounded-lg text-stone-400 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                             title="Futa Mwanafunzi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

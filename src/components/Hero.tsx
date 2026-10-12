@@ -3,17 +3,10 @@ import { ChevronDown, ArrowRight } from 'lucide-react';
 
 interface HeroProps {
   onNavigate: (sectionId: string) => void;
-  onOpenAdmissions?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
-  const handleAdmissionsClick = () => {
-    if (onOpenAdmissions) {
-      onOpenAdmissions();
-    } else {
-      onNavigate('admissions');
-    }
-  };
+export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin }) => {
 
   return (
     <section id="home" className="relative w-full min-h-[82vh] lg:min-h-[88vh] flex items-center justify-center overflow-hidden bg-[#102A43]">
@@ -30,48 +23,40 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmissions }) => {
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center animate-in fade-in duration-700">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center animate-in fade-in duration-700">
         {/* Institutional Kicker */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-xs font-semibold tracking-wider uppercase mb-6 backdrop-blur-xs">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-xs font-semibold tracking-wider uppercase mb-5 backdrop-blur-xs">
           <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" />
           <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
         </div>
 
         {/* Headline */}
-        <div className="space-y-3 max-w-4xl mx-auto">
-          <p className="font-serif text-amber-300 text-lg sm:text-2xl font-black tracking-wide uppercase">
-            “ELIMU NI MAISHA”
-          </p>
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.15]">
+        <div className="space-y-2.5 max-w-4xl mx-auto">
+          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
             Tujendelee Sisi Wenyewe: Prayer · Education · Work
           </h1>
         </div>
 
-        {/* Subheading */}
-        <p className="mt-6 text-base sm:text-lg text-[#FFFFF0]/90 max-w-3xl mx-auto font-normal leading-[1.75]">
-          Shule ya Sekondari Uomboni (Pre-Form 1, Kidato cha 1–4 Bweni &amp; Kutwa) chini ya Jimbo Katoliki la Moshi, Marangu West kwenye mteremko wa Mlima Kilimanjaro. Udahili wa 2026/2027 umefunguliwa rasmi!
-        </p>
-
         {/* Action Buttons */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
           <button
             onClick={() => onNavigate('about')}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-md bg-[#FFFFF0] text-[#102A43] font-semibold text-sm hover:bg-white transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#FFFFF0] text-[#102A43] font-semibold text-xs sm:text-sm hover:bg-white transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2 group"
           >
             <span>Explore Our School</span>
             <ArrowRight className="w-4 h-4 text-[#C9A227] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           <button
-            onClick={handleAdmissionsClick}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-md bg-[#C9A227] text-slate-950 font-bold text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
+            onClick={() => onNavigate('contact')}
+            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#C9A227] text-slate-950 font-bold text-xs sm:text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
           >
-            <span>Admissions &amp; Joining</span>
+            <span>Mawasiliano &amp; Mahali</span>
           </button>
         </div>
 
         {/* Key Institutional Facts */}
-        <div className="mt-16 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-6 text-left max-w-4xl mx-auto">
+        <div className="mt-10 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-left max-w-4xl mx-auto">
           <div className="border-l-2 border-[#C9A227] pl-3.5">
             <span className="block text-xl font-bold text-white">S0486</span>
             <span className="text-xs text-[#FFFFF0]/70">NECTA Registered Centre</span>

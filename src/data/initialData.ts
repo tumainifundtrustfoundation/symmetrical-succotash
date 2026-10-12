@@ -307,6 +307,15 @@ export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
     swiftCode: 'NMBLTZTZ',
     type: 'Ada ya Shule (School Fees)',
   },
+  {
+    id: 'bank-003',
+    bankName: 'Mkombozi Commercial Bank',
+    accountName: 'UOMBONI SECONDARY SCHOOL',
+    accountNumber: '0051150397901',
+    branch: 'Moshi Branch / Kilimanjaro',
+    swiftCode: 'MKOMTZTZ',
+    type: 'Ada ya Shule (School Fees)',
+  },
 ];
 
 export const INITIAL_MOBILE_METHODS: MobilePaymentMethod[] = [];

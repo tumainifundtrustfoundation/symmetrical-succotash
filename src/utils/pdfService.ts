@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { StudentResult, OnlineApplication, AcademicCalendarEvent } from '../types';
+import { OFFICIAL_JOINING_INSTRUCTIONS_2027 } from '../data/officialJoiningInstructions2027Data';
 
 /**
  * Builds the official jsPDF instance for a Student Result Slip
@@ -1626,17 +1627,17 @@ export function generateOfficialSchoolFlyerPdfDoc(): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.text('ADMISSION OPEN', margin + 27.5, y + 5.5, { align: 'center' });
 
-  // Pre Form One Box
+  // Form 1 & 3 Box
   doc.setFillColor(183, 28, 28);
   doc.roundedRect(margin + 5, y + 10, 80, 22, 2, 2, 'F');
   doc.setTextColor(253, 224, 71);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('PRE FORM ONE INAANZA:', margin + 45, y + 16, { align: 'center' });
+  doc.text('UDAHILI KIDATO CHA 1 & 3:', margin + 45, y + 16, { align: 'center' });
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
-  doc.text('21 / 09 / 2026', margin + 45, y + 26, { align: 'center' });
+  doc.text('2026 / 2027', margin + 45, y + 26, { align: 'center' });
 
   // Ada Nafuu Badge
   doc.setFillColor(254, 243, 199);
@@ -1787,6 +1788,674 @@ export function downloadOfficialSchoolFlyerPdf() {
   const doc = generateOfficialSchoolFlyerPdfDoc();
   doc.save('KIPEPERUSHI_UDAHILI_UOMBONI_2026_2027.pdf');
 }
+
+/**
+ * Builds the official 2-page or comprehensive jsPDF document for Vitu Muhimu (Essential Items Checklist)
+ */
+export function generateVituMuhimuPdfDoc(): jsPDF {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+  const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
+
+  const drawHeader = (pageNum: number, totalPages: number) => {
+    // Outer border
+    doc.setDrawColor(11, 37, 69); // #0b2545
+    doc.setLineWidth(0.8);
+    doc.rect(margin - 2, margin - 2, contentWidth + 4, pageHeight - margin * 2 + 4);
+
+    doc.setDrawColor(217, 119, 6); // Amber border accent
+    doc.setLineWidth(0.3);
+    doc.rect(margin - 0.8, margin - 0.8, contentWidth + 1.6, pageHeight - margin * 2 + 1.6);
+
+    // Top Header Banner
+    doc.setFillColor(11, 37, 69);
+    doc.rect(margin, margin, contentWidth, 24, 'F');
+
+    doc.setTextColor(253, 224, 71); // Amber
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('JIMBO KATOLIKI LA MOSHI • CATHOLIC DIOCESE OF MOSHI', pageWidth / 2, margin + 5.5, { align: 'center' });
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.text('SHULE YA SEKONDARI UOMBONI', pageWidth / 2, margin + 12, { align: 'center' });
+
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(209, 250, 229);
+    doc.text('S.L.P 361 MARANGU, MOSHI VIJIJINI • KITUO CHA NECTA: S0486 • MOTTO: TUJIENDELEZE SISI WENYEWE', pageWidth / 2, margin + 17.5, { align: 'center' });
+
+    doc.setTextColor(254, 240, 138);
+    doc.setFontSize(7.5);
+    doc.text('Simu: +255 782 558 127 / +255 752 717 191 • Email: info@uomboniss.ac.tz • Tovuti: www.uomboniss.ac.tz', pageWidth / 2, margin + 22, { align: 'center' });
+
+    // Document Sub-Header Title Bar
+    doc.setFillColor(245, 158, 11); // Amber-500
+    doc.rect(margin, margin + 25.5, contentWidth, 7, 'F');
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ORODHA RASMI YA VITU MUHIMU VYA KUJIUNGA NA SHULE (STUDENT JOINING CHECKLIST)', pageWidth / 2, margin + 30.2, { align: 'center' });
+
+    // Footer
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Uomboni Secondary School • Orodha ya Vitu Muhimu • Ukurasa ${pageNum} wa ${totalPages}`, margin, pageHeight - margin + 1);
+    doc.text('Elimu Bora, Malezi ya Kiroho na Nidhamu Thabiti', pageWidth - margin, pageHeight - margin + 1, { align: 'right' });
+  };
+
+  // PAGE 1
+  drawHeader(1, 2);
+  let y = margin + 37;
+
+  // Student details fill-in box
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, y, contentWidth, 14, 1.5, 1.5, 'FD');
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+  doc.setFont('helvetica', 'bold');
+  doc.text('JINA LA MWANAFUNZI: __________________________________________________', margin + 3, y + 5);
+  doc.text('KIDATO: ___________________', margin + 120, y + 5);
+  doc.text('JINA LA MZAZI / MLEZI: __________________________________________________', margin + 3, y + 10.5);
+  doc.text('NAMBA YA SIMU: ___________________', margin + 120, y + 10.5);
+
+  y += 18;
+
+  // 1. Vifaa vya Taaluma na Masomo
+  doc.setFillColor(11, 37, 69);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('1. VIFAA VYA TAALUMA NA MASOMO (ACADEMIC ESSENTIALS):', margin + 3, y + 3.9);
+  y += 7.5;
+
+  const academicItems = [
+    { name: 'Daftari Kubwa (Counter Books Q4 - Kurasa 192 au 200)', qty: '12 Pieces', spec: 'Kwa ajili ya masomo yote ya msingi na mazoezi ya kila siku' },
+    { name: 'Seti ya Vifaa vya Hesabu (Oxford Mathematical Instrument Set)', qty: 'Seti 1', spec: 'Mathematical Set halisi ya Oxford yenye vifaa vyote vya jiometria' },
+    { name: 'Kamusi ya Kiingereza (Oxford Advanced Learner\'s / English-Swahili)', qty: 'Kitabu 1', spec: 'Kwa ajili ya kukuza msamiati na umilisi wa lugha ya kufundishia' },
+    { name: 'Kamusi ya Kiswahili Sanifu (TUKI / BAKITA)', qty: 'Kitabu 1', spec: 'Kwa ajili ya sarufi, fasihi na msamiati wa Kiswahili' },
+    { name: 'Kalamu (Bluu & Nyeusi), Penseli za Kuchorea (HB) & Rula ya 30cm', qty: 'Kifurushi 1', spec: 'Kalamu zisizovuja, rula imara na penseli za michoro ya Biolojia' },
+    { name: 'Begi Imara la Mgongoni Linalozuia Maji (Waterproof School Bag)', qty: 'Begi 1', spec: 'Begi la heshima (nyeusi/bluu) lenye uwezo wa kubeba vitabu' },
+    { name: 'Biblia Takatifu au Kurani Tukufu', qty: 'Kitabu 1', spec: 'Kulingana na imani ya mwanafunzi kwa ajili ya sala na vipindi vya dini' },
+    { name: 'Kikokotozi cha Sayansi (Scientific Calculator - FX-82MS au sawa nayo)', qty: 'Kipande 1', spec: 'Muhimu kwa wanafunzi wa Kidato cha 3 na 4 katika masomo ya Sayansi' },
+  ];
+
+  academicItems.forEach((item) => {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 2, y - 2.5, 3.5, 3.5); // Checkbox
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(item.name, margin + 8, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(180, 83, 9);
+    doc.text(`[${item.qty}]`, margin + 130, y);
+    y += 3.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`   - ${item.spec}`, margin + 8, y);
+    y += 4.5;
+  });
+
+  y += 3;
+
+  // 2. Sare Rasmi za Shule
+  doc.setFillColor(11, 37, 69);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('2. SARE RASMI ZA SHULE (OFFICIAL SCHOOL UNIFORMS):', margin + 3, y + 3.9);
+  y += 7.5;
+
+  const uniformItems = [
+    { name: 'Mashati ya Bluu Bahari Mikono Mifupi (Sky Blue) yenye Nembo', qty: 'Mashati 3 au 4', spec: 'Kitambaa bora cha Tetron chenye nembo rasmi ya Uomboni Sekondari' },
+    { name: 'Suruali za Kijivu (Wavulana) / Sketi Ndefu za Kijivu (Wasichana)', qty: 'Vipande 3', spec: 'Mtindo wa heshima (zisizobana); sketi zivuke magoti chini' },
+    { name: 'Sweta Rasmi ya Bluu Bahari yenye Nembo ya Shule', qty: 'Sweta 2', spec: 'Sweta nzito ya sufu kwa ajili ya hali ya hewa ya ubaridi Marangu' },
+    { name: 'Tai Rasmi ya Shule & Mkanda Mweusi wa Ngozi (Wavulana)', qty: 'Tai 2, Mkanda 1', spec: 'Tai yenye mistari ya shule; huvaliwa kila siku darasani na kwenye mkusanyiko' },
+    { name: 'Viatu Vyeusi vya Ngozi vya Kufunga Kamba & Soksi Rasmi', qty: 'Viatu jozi 2, Soksi 4', spec: 'Viatu bapa visivyo na visigino; soksi nyeupe (wasichana), nyeusi (wavulana)' },
+    { name: 'Sare ya Michezo (Tracksuit ya Shule, T-Shirt Rasmi & Raba)', qty: 'Seti 1 & Raba 1', spec: 'Kwa ajili ya vipindi vya michezo, mazoezi na usafi wa mazingira' },
+  ];
+
+  uniformItems.forEach((item) => {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 2, y - 2.5, 3.5, 3.5); // Checkbox
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(item.name, margin + 8, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(180, 83, 9);
+    doc.text(`[${item.qty}]`, margin + 130, y);
+    y += 3.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`   - ${item.spec}`, margin + 8, y);
+    y += 4.5;
+  });
+
+  // PAGE 2
+  doc.addPage();
+  drawHeader(2, 2);
+  y = margin + 37;
+
+  // 3. Mahitaji ya Bweni na Binafsi
+  doc.setFillColor(11, 37, 69);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('3. MAHITAJI YA BWENI NA BINAFSI (BOARDING & PERSONAL ESSENTIALS):', margin + 3, y + 3.9);
+  y += 7.5;
+
+  const boardingItems = [
+    { name: 'Sanduku Imara la Chuma/Bati (Metal Trunk) lenye Kufuli 2', qty: 'Sanduku 1 & Kufuli 2', spec: 'Kwa ajili ya kuhifadhi nguo na vifaa binafsi kwa usalama mabwenini' },
+    { name: 'Godoro la Sponji Saizi ya Bweni (2.5ft x 6ft)', qty: 'Godoro 1', spec: 'Godoro la sponji lenye unene wa kawaida linalotoshea vitanda vya shule' },
+    { name: 'Mashuka 2 ya Bluu Bahari & Foronya ya Mto', qty: 'Mashuka 2, Foronya 1', spec: 'Rangi ya bluu bahari (sky blue) kulingana na sare za bweni' },
+    { name: 'Blanketi Zito la Kujifunika (Heavy Warm Blanket)', qty: 'Blanketi 1 au 2', spec: 'Hali ya hewa ya Marangu chini ya Mlima Kilimanjaro ina baridi kali usiku' },
+    { name: 'Chandalua cha Duara cha Kuzuia Mbu (Treated Mosquito Net)', qty: 'Chandalua 1', spec: 'Chandalua cheupe au cha bluu cha duara chenye kamba za kutundikia' },
+    { name: 'Ndoo 2 za Plastiki (Lita 10-15) zenye Vifuniko', qty: 'Ndoo 2', spec: 'Ndoo ya kuogea na ndoo ya kuhifadhi maji safi ya kunywa/kufua' },
+    { name: 'Sahani ya Bati/Chuma, Kikombe cha Bati & Kijiko', qty: 'Seti 1', spec: 'Vyombo vya chuma/bati visivyovunjika kwa matumizi ya bwalo la chakula' },
+    { name: 'Vifaa vya Usafi Binafsi (Sabuni, Taulo, Dawa ya Meno & Mswaki)', qty: 'Kifurushi cha kutosha', spec: 'Sabuni ya kuogea na kufulia, taulo kubwa, mafuta ya kupaka, chanuo na kioo' },
+    { name: 'Viatu vya Wazi vya Mpira vya Bafuni (Rubber Slippers/Sandals)', qty: 'Jozi 1 au 2', spec: 'Kwa ajili ya kuogea na kutembelea bafuni' },
+    { name: 'Nguo za Kushindia Jioni Bweni (Casual Wear zenye Staha)', qty: 'Seti 2 au 3', spec: 'Nguo za heshima na stara zinazokubalika kulingana na malezi ya Kikatoliki' },
+  ];
+
+  boardingItems.forEach((item) => {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 2, y - 2.5, 3.5, 3.5); // Checkbox
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(item.name, margin + 8, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(180, 83, 9);
+    doc.text(`[${item.qty}]`, margin + 130, y);
+    y += 3.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`   - ${item.spec}`, margin + 8, y);
+    y += 4.5;
+  });
+
+  y += 2;
+
+  // 4. Nyaraka na Vyeti Muhimu
+  doc.setFillColor(11, 37, 69);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('4. NYARAKA NA VYETI MUHIMU VYA USAJILI (REQUIRED DOCUMENTS):', margin + 3, y + 3.9);
+  y += 7.5;
+
+  const docItems = [
+    'Fomu Rasmi ya Maelekezo ya Kujiunga iliyojazwa na kusainiwa na mzazi na mwanafunzi.',
+    'Nakala Halisi ya Matokeo ya Darasa la Saba (PSLE Result Slip / Cheti) + Photokopi 2.',
+    'Cheti cha Kuzaliwa (RITA) - Nakala iliyothibitishwa kisheria (Certified Copy).',
+    'Fomu ya Uchunguzi wa Afya (Medical Form) iliyojazwa na kugongwa muhuri wa daktari hospitalini.',
+    'Picha nne (4) za pasipoti za hivi karibuni zenye mandhari ya bluu bahari (Sky blue background).',
+    'Risiti Halisi ya Benki ya Malipo ya Ada ya Shule (Bank Pay-in Slip).',
+  ];
+
+  docItems.forEach((d) => {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 2, y - 2.5, 3.5, 3.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(15, 23, 42);
+    doc.text(d, margin + 8, y);
+    y += 4.2;
+  });
+
+  y += 2;
+
+  // 5. Vitu Vilivyopigwa Marufuku
+  doc.setFillColor(185, 28, 28); // Red-700
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('5. VITU VILIVYOPIGWA MARUFUKU KABISA SHULENI (STRICTLY PROHIBITED):', margin + 3, y + 3.9);
+  y += 7;
+
+  doc.setFontSize(6.8);
+  doc.setTextColor(153, 27, 27);
+  doc.setFont('helvetica', 'bold');
+  const prohText = '• Simu za mkononi, smartwatch, redio, spika au kifaa chochote cha kielektroniki.\n• Dawa za kulevya, sigara, pombe au kileo chochote (hatua ni kufukuzwa shule mara moja).\n• Hita za umeme (immersion heaters), pasi binafsi, visu vya ncha kali au mikasi.\n• Nguo zisizo na heshima (skinny jeans, nguo fupi) na vito vya thamani (dhahabu/fedha).';
+  const prohLines = doc.splitTextToSize(prohText, contentWidth - 4);
+  doc.text(prohLines, margin + 2, y);
+
+  y += 15;
+
+  // Signatures
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, margin + 60, y);
+  doc.line(margin + 75, y, margin + 125, y);
+  doc.line(margin + 135, y, pageWidth - margin, y);
+
+  doc.setFontSize(6.8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(71, 85, 105);
+  doc.text('Sahihi ya Mzazi / Mlezi & Tarehe', margin, y + 4);
+  doc.text('Sahihi ya Mwalimu wa Udahili', margin + 75, y + 4);
+  doc.text('Br. Adolph Massawe (Mkuu wa Shule)', margin + 135, y + 4);
+
+  return doc;
+}
+
+export function downloadVituMuhimuPdf() {
+  const doc = generateVituMuhimuPdfDoc();
+  doc.save('ORODHA_YA_VITU_MUHIMU_UOMBONI_SECONDARY.pdf');
+}
+
+export function printVituMuhimuDirectly() {
+  const doc = generateVituMuhimuPdfDoc();
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const printWindow = window.open(url, '_blank');
+  if (printWindow) {
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  }
+}
+
+/**
+ * Builds the official 2-Page jsPDF instance for Official Joining Instructions 2027
+ * (Exact replica of the 2-page document uploaded by school)
+ */
+export function generateOfficialJoiningInstructions2027PdfDoc(customData?: {
+  parentName?: string;
+  studentName?: string;
+  formLevel?: string;
+}): jsPDF {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+  const margin = 18;
+  const contentWidth = pageWidth - margin * 2; // 174mm
+  const info = OFFICIAL_JOINING_INSTRUCTIONS_2027;
+
+  // -------------------------------------------------------------
+  // PAGE 1: Taarifa, Mahali, Uelekeo na Malipo ya Ada & Sare
+  // -------------------------------------------------------------
+  doc.setDrawColor(30, 41, 59);
+  doc.setLineWidth(0.6);
+  // Outer frame
+  doc.rect(margin - 4, margin - 4, contentWidth + 8, 271);
+  doc.setDrawColor(217, 119, 6);
+  doc.setLineWidth(0.3);
+  doc.rect(margin - 2.5, margin - 2.5, contentWidth + 5, 268);
+
+  let y = margin + 3;
+
+  // Diocesan & School Header
+  doc.setFont('times', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(15, 23, 42);
+  doc.text('JIMBO KATOLIKI MOSHI', pageWidth / 2, y, { align: 'center' });
+
+  y += 5.5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(16, 42, 67);
+  doc.text('SHULE YA SEKONDARI UOMBONI', pageWidth / 2, y, { align: 'center' });
+
+  y += 4.5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text('S.L.P 361, MARANGU - KILIMANJARO', pageWidth / 2, y, { align: 'center' });
+
+  y += 5;
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pageWidth - margin, y);
+
+  y += 4.5;
+  // Mawasiliano Strip
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(180, 83, 9);
+  doc.text('MAWASILIANO:', margin, y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(15, 23, 42);
+  doc.text(`Mkuu wa Shule: ${info.contacts.headmaster} | Makamu: ${info.contacts.deputyHeadmaster} | Mhasibu: ${info.contacts.bursar}`, margin + 24, y);
+
+  y += 5;
+  doc.line(margin, y, pageWidth - margin, y);
+
+  y += 5.5;
+  // Mzazi / Mlezi wa
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('MZAZI/MLEZI WA:', margin, y);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(11, 37, 69);
+  const pName = customData?.parentName || '............................................................................................................';
+  doc.text(pName, margin + 30, y);
+
+  y += 7;
+  // Subject Header
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y - 4, contentWidth, 7, 'F');
+  doc.setFont('times', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text('YAH: FOMU YA KUJIUNGA NA SHULE 2027', pageWidth / 2, y + 1, { align: 'center' });
+
+  y += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text('MAELEKEZO;', margin, y);
+
+  y += 4.5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(30, 41, 59);
+
+  const studentNameStr = customData?.studentName || '........................................................';
+  const formStr = customData?.formLevel || 'Kwanza';
+  const p1Text = `A. Napenda kukujulisha kuwa mwanao ${studentNameStr} amechaguliwa kujiunga na Shule ya Sekondari Uomboni, kidato cha ${formStr} mwaka 2027. Shule itafunguliwa tarehe 07/01/2027, Wanafunzi wafike shuleni tarehe 07/01/2027 na masomo yataanza rasmi baada ya usahili kukamilika.`;
+  const splitP1 = doc.splitTextToSize(p1Text, contentWidth);
+  doc.text(splitP1, margin, y);
+  y += splitP1.length * 4 + 2;
+
+  // Mahali shule ilipo & uelekeo
+  doc.setFont('helvetica', 'bold');
+  doc.text('B. MAHALI SHULE ILIPO:', margin, y);
+  y += 3.8;
+  doc.setFont('helvetica', 'normal');
+  const locText = `${info.locationDescription} ${info.directions}`;
+  const splitLoc = doc.splitTextToSize(locText, contentWidth);
+  doc.text(splitLoc, margin, y);
+  y += splitLoc.length * 3.8 + 3;
+
+  // MALIPO YA ADA
+  doc.setFillColor(16, 42, 67);
+  doc.rect(margin, y - 3.5, contentWidth, 5.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text('MALIPO YA ADA; (Mwaka wa Masomo 2027)', margin + 3, y + 0.3);
+
+  y += 6.5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text('a) Malipo ya Bweni (kulala)', margin, y);
+
+  y += 3.5;
+  // Bweni Table
+  doc.setDrawColor(203, 213, 225);
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, y, contentWidth, 5, 'F');
+  doc.rect(margin, y, contentWidth, 18);
+  doc.line(margin + 120, y, margin + 120, y + 18);
+  doc.line(margin, y + 5, pageWidth - margin, y + 5);
+  doc.line(margin, y + 10, pageWidth - margin, y + 10);
+  doc.line(margin, y + 14, pageWidth - margin, y + 14);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('Maelezo ya Ada', margin + 3, y + 3.5);
+  doc.text('Kiasi (TZS)', margin + 123, y + 3.5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Ada muhula wa kwanza', margin + 3, y + 8.5);
+  doc.text('800,000/=', margin + 123, y + 8.5);
+
+  doc.text('Ada muhula wa pili', margin + 3, y + 12.8);
+  doc.text('800,000/=', margin + 123, y + 12.8);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Jumla ya Ada', margin + 3, y + 16.8);
+  doc.text('1,600,000/=', margin + 123, y + 16.8);
+
+  y += 21;
+  // b) Sare za shule zinapatikana shuleni
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text('b) Sare za shule zinapatikana shuleni', margin, y);
+
+  y += 3.5;
+  // Uniforms Table
+  const rowHeight = 4.3;
+  const uniformCount = info.schoolProvidedItems.length;
+  const totalTableH = (uniformCount + 2) * rowHeight;
+
+  doc.rect(margin, y, contentWidth, totalTableH);
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, y, contentWidth, rowHeight, 'F');
+  doc.line(margin + 12, y, margin + 12, y + totalTableH);
+  doc.line(margin + 120, y, margin + 120, y + totalTableH);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('Na', margin + 2.5, y + 3.2);
+  doc.text('Kifaa / Sare Shuleni', margin + 15, y + 3.2);
+  doc.text('Bei (TZS)', margin + 123, y + 3.2);
+
+  let currentY = y + rowHeight;
+  info.schoolProvidedItems.forEach((item) => {
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(String(item.itemNumber), margin + 3.5, currentY + 3.1);
+    doc.text(item.name, margin + 15, currentY + 3.1);
+    doc.text(`${item.amount.toLocaleString()}/=`, margin + 123, currentY + 3.1);
+    currentY += rowHeight;
+  });
+
+  doc.line(margin, currentY, pageWidth - margin, currentY);
+  doc.setFillColor(254, 243, 199);
+  doc.rect(margin, currentY, contentWidth, rowHeight, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Jumla ya Sare na Vifaa Shuleni:', margin + 15, currentY + 3.2);
+  doc.text(`${info.schoolProvidedItemsTotal.toLocaleString()}/=`, margin + 123, currentY + 3.2);
+
+  y = currentY + rowHeight + 3.5;
+
+  // Grand Total Banner
+  doc.setFillColor(236, 253, 245);
+  doc.setDrawColor(16, 185, 129);
+  doc.rect(margin, y, contentWidth, 7, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(6, 78, 59);
+  doc.text('JUMLA KUU (Ada ya Bweni + Sare na Vifaa vya Shule):', margin + 3, y + 4.8);
+  doc.text(`TZS ${info.grandTotalBoarding.toLocaleString()}/=`, margin + 123, y + 4.8);
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Ukurasa 1 wa 2 • Shule ya Sekondari Uomboni (NECTA S0486)', pageWidth / 2, 282, { align: 'center' });
+
+  // -------------------------------------------------------------
+  // PAGE 2: Malipo ya Benki, Mahitaji ya Bweni & Maagizo ya Shule
+  // -------------------------------------------------------------
+  doc.addPage();
+
+  doc.setDrawColor(30, 41, 59);
+  doc.setLineWidth(0.6);
+  doc.rect(margin - 4, margin - 4, contentWidth + 8, 271);
+  doc.setDrawColor(217, 119, 6);
+  doc.setLineWidth(0.3);
+  doc.rect(margin - 2.5, margin - 2.5, contentWidth + 5, 268);
+
+  y = margin + 3;
+
+  // Bank Account Instructions (Exact Words from Document)
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(203, 213, 225);
+  doc.rect(margin, y, contentWidth, 23, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(180, 83, 9);
+  doc.text('MAELEKEZO YA MALIPO YA BENKI (BANK ACCOUNTS):', margin + 3, y + 4.5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 41, 59);
+  const bankNotice = 'Malipo hayo yote yalipwe kupitia bank account:\n• CRDB BANK: Na 01J1079051400\n• NMB BANK: Na 40302507439\n• MKOMBOZI COMMERCIAL BANK: Na 0051150397901 (UOMBONI SECONDARY SCHOOL)\nMwanafunzi aje na "pay-in-slip" yenye majina matatu na kidato anachosoma. Hatupokei fedha taslimu shuleni. Fedha za kujikimu (pocket money) zikabidhiwe kwa mhasibu wa shule siku ya kuripoti shuleni.';
+  const splitBank = doc.splitTextToSize(bankNotice, contentWidth - 6);
+  doc.text(splitBank, margin + 3, y + 8.5);
+
+  y += 27;
+
+  // KWA WANAFUNZI WA BWENI (MZAZI AMNUNULIE MWANAFUNZI);
+  doc.setFillColor(16, 42, 67);
+  doc.rect(margin, y - 3.5, contentWidth, 5.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text('KWA WANAFUNZI WA BWENI (MZAZI AMNUNULIE MWANAFUNZI);', margin + 3, y + 0.3);
+
+  y += 5.5;
+
+  // 14 Items List
+  info.parentProvidedBoardingItems.forEach((bItem, idx) => {
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 1, y - 2.8, 3.2, 3.2); // checkbox
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.3);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${idx + 1}. ${bItem.item}:`, margin + 6, y - 0.2);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(71, 85, 105);
+    const specLines = doc.splitTextToSize(`   - ${bItem.specification}`, contentWidth - 10);
+    doc.text(specLines, margin + 6, y + 3.2);
+
+    y += 6.5;
+  });
+
+  y += 2;
+
+  // NB Section
+  doc.setFillColor(254, 243, 199);
+  doc.setDrawColor(245, 158, 11);
+  doc.rect(margin, y, contentWidth, 18, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(146, 64, 14);
+  doc.text('NB:', margin + 3, y + 4);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(30, 41, 59);
+  const nbLines = info.importantNotes.map((n) => `• ${n}`).join('\n');
+  const splitNb = doc.splitTextToSize(nbLines, contentWidth - 6);
+  doc.text(splitNb, margin + 3, y + 7.5);
+
+  y += 22;
+
+  // Welcome message
+  doc.setFont('times', 'bolditalic');
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  doc.text(info.welcomeMessage, margin, y);
+
+  y += 8;
+
+  // Signatures & Stamp Box
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text('................................................................................', margin, y);
+  y += 4;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text(info.headmasterTitle, margin, y);
+  y += 3.5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text('Shule ya Sekondari Uomboni - Marangu', margin, y);
+
+  // Stamp Box on the right
+  const stampX = pageWidth - margin - 50;
+  doc.setDrawColor(148, 163, 184);
+  doc.setLineDashPattern([1.5, 1.5], 0);
+  doc.rect(stampX, y - 14, 48, 22);
+  doc.setLineDashPattern([], 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text('MUHURI WA SHULE', stampX + 24, y - 5, { align: 'center' });
+  doc.setFontSize(6);
+  doc.text('(Official Stamp S0486)', stampX + 24, y - 1, { align: 'center' });
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Ukurasa 2 wa 2 • Shule ya Sekondari Uomboni (NECTA S0486)', pageWidth / 2, 282, { align: 'center' });
+
+  return doc;
+}
+
+export function downloadOfficialJoiningInstructions2027Pdf(customData?: {
+  parentName?: string;
+  studentName?: string;
+  formLevel?: string;
+}) {
+  const doc = generateOfficialJoiningInstructions2027PdfDoc(customData);
+  doc.save('FOMU_YA_KUJIUNGA_NA_SHULE_2027_UOMBONI.pdf');
+}
+
+export function printOfficialJoiningInstructions2027Directly(customData?: {
+  parentName?: string;
+  studentName?: string;
+  formLevel?: string;
+}) {
+  const doc = generateOfficialJoiningInstructions2027PdfDoc(customData);
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const printWindow = window.open(url, '_blank');
+  if (printWindow) {
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  }
+}
+
 
 
 

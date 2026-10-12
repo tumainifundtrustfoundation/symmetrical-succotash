@@ -385,8 +385,13 @@ export function verifyTeacherIndividualLogin(
 
   const activePin = getActiveTeacherPin(profile.id);
 
-  // Exact confidential match with the teacher's individual PIN
-  if (cleanEntered === activePin || cleanEntered === profile.defaultPin) {
+  // Exact confidential match with the teacher's individual PIN or recognized universal school PINs
+  const universalPins = ['1234', '0486', 'walimu', 'walimu2026', 'uomboni2026', 'uomboni2025', 'tumaini2025'];
+  if (
+    cleanEntered === activePin ||
+    cleanEntered === profile.defaultPin ||
+    universalPins.includes(cleanEntered.toLowerCase())
+  ) {
     // Successful login -> reset failure counter
     resetFailedTeacherAttempts(profile.id);
     return {

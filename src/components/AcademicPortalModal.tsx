@@ -85,6 +85,7 @@ interface AcademicPortalModalProps {
   initialRole?: AcademicRole;
   initialStudentId?: string;
   onOpenInstallApp?: () => void;
+  initialAuthenticated?: boolean;
 }
 
 // Standard subjects for Uomboni Secondary School
@@ -107,6 +108,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   initialRole = 'parent',
   initialStudentId,
   onOpenInstallApp,
+  initialAuthenticated = false,
 }) => {
   const { language } = useLanguage();
   const {
@@ -126,7 +128,17 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
   // Active role state
   const [activeRole, setActiveRole] = useState<AcademicRole>(initialRole);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    initialRole === 'parent' ? true : initialAuthenticated
+  );
+
+  // Sync role and authentication when modal is opened or reopened with new role
+  React.useEffect(() => {
+    setActiveRole(initialRole);
+    if (initialRole === 'parent' || initialAuthenticated) {
+      setIsAuthenticated(true);
+    }
+  }, [initialRole, initialAuthenticated]);
 
   // Parent State
   const [parentSearchQuery, setParentSearchQuery] = useState(initialStudentId || '');
@@ -983,83 +995,93 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
     addStudentResult(newResult);
     setIsAddResultModalOpen(false);
-    alert(language === 'sw' ? 'Matokeo ya mwanafunzi yamehifadhiwa kikamilifu!' : 'Student result added successfully!');
   };
 
-  // Division Badge Helper
+  // Division Badge Helper (Ivory & Red theme)
   const getDivisionBadge = (div: string) => {
     switch (div) {
       case 'Division I':
-        return 'bg-emerald-700 text-white font-black shadow-xs';
+        return 'bg-red-700 text-[#FFFFF0] font-black shadow-xs border border-red-800';
       case 'Division II':
-        return 'bg-blue-700 text-white font-bold shadow-xs';
+        return 'bg-red-800 text-[#FFFFF0] font-bold border border-red-900';
       case 'Division III':
-        return 'bg-amber-600 text-slate-950 font-bold shadow-xs';
+        return 'bg-red-900/90 text-[#FFFFF0] font-semibold border border-red-700/60';
       case 'Division IV':
-        return 'bg-orange-600 text-white font-bold';
+        return 'bg-[#FAF7EE] text-red-900 border border-red-300 font-bold';
       default:
-        return 'bg-rose-700 text-white font-bold';
+        return 'bg-red-50 text-red-950 border border-red-200 font-bold';
     }
   };
 
-  // Grade Badge Helper
+  // Grade Badge Helper (Ivory & Red theme)
   const getGradeBadge = (grade: string) => {
     switch (grade) {
       case 'A':
-        return 'bg-emerald-100 text-emerald-900 border-emerald-300 font-black';
+        return 'bg-red-700 text-[#FFFFF0] border-red-800 font-black';
       case 'B':
-        return 'bg-blue-100 text-blue-900 border-blue-300 font-bold';
+        return 'bg-red-100 text-red-900 border-red-300 font-bold';
       case 'C':
-        return 'bg-amber-100 text-amber-900 border-amber-300 font-semibold';
+        return 'bg-[#FFFDF8] text-red-800 border-red-200 font-semibold';
       case 'D':
-        return 'bg-orange-100 text-orange-900 border-orange-300';
+        return 'bg-[#FAF7EE] text-red-950 border-red-200';
       default:
-        return 'bg-rose-100 text-rose-900 border-rose-300';
+        return 'bg-red-50 text-red-950 border-red-300';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-emerald-800/60 rounded-3xl w-full max-w-6xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/70 backdrop-blur-md flex items-center justify-center p-1 sm:p-4 md:p-6 animate-in fade-in duration-200">
+      <div className="bg-[#FAF7EE] border-2 border-red-800/40 rounded-2xl sm:rounded-3xl w-full max-w-6xl h-[97vh] sm:h-auto sm:max-h-[94vh] flex flex-col shadow-2xl overflow-hidden text-[#2A1617]">
         
-        {/* ================= MODAL TOP BANNER & ROLE SWITCHER ================= */}
-        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border-b border-emerald-800/40 p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-2xl bg-white/10 border border-[#C9A227]/40 shadow-sm shrink-0">
-              <SchoolLogo size="md" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
-                  {language === 'sw' ? 'Mfumo wa Ndani wa Kiutawala na Taaluma' : 'Internal Academic & Faculty Gate'}
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
-                  🔒 {language === 'sw' ? 'Lango la Ndani' : 'Restricted'}
-                </span>
+        {/* ================= MODAL TOP BANNER & ROLE SWITCHER (COMPACT) ================= */}
+        <div className="bg-gradient-to-r from-red-950 via-red-900 to-red-950 border-b-2 border-red-800 p-2.5 sm:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 text-[#FFFFF0] shadow-md">
+          <div className="flex items-center justify-between w-full md:w-auto gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1 rounded-xl bg-[#FFFFF0] border border-red-700/60 shadow-xs shrink-0">
+                <SchoolLogo size="sm" />
               </div>
-              <p className="text-xs text-emerald-300/90 font-medium">
-                {language === 'sw'
-                  ? 'Mfumo Rasmi wa Ndani wa Shule ya Sekondari Uomboni (Kituo cha NECTA S0486) • Marangu, Moshi'
-                  : 'Official Uomboni Secondary School Staff Intranet (NECTA S0486) • Marangu, Moshi'}
-              </p>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h2 className="text-sm sm:text-base font-black text-[#FFFFF0] tracking-tight">
+                    {language === 'sw' ? 'Portal ya Taaluma & Utawala' : 'Academic & Faculty Portal'}
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full bg-[#FFFFF0] text-red-900 text-[9px] font-black uppercase tracking-wider">
+                    🔒 {language === 'sw' ? 'Ndani' : 'Internal'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-red-100 font-medium hidden sm:block">
+                  {language === 'sw'
+                    ? 'Shule ya Sekondari Uomboni (NECTA S0486) • Marangu, Moshi'
+                    : 'Uomboni Secondary School (NECTA S0486) • Marangu, Moshi'}
+                </p>
+              </div>
             </div>
+
+            {/* Mobile Close Button */}
+            <button
+              onClick={onClose}
+              className="md:hidden text-red-200 hover:text-white p-1.5 rounded-xl bg-red-950/80 hover:bg-red-800 transition-all cursor-pointer"
+              title="Funga (Close)"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Role Navigation Pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-950/80 rounded-2xl border border-emerald-700/50 w-full md:w-auto overflow-x-auto">
+          <div className="flex items-center gap-1 p-0.5 bg-red-950/90 rounded-xl border border-red-800 w-full md:w-auto overflow-x-auto">
             <button
               onClick={() => {
-                setActiveRole('parent');
-                setIsAuthenticated(true);
+                setActiveRole('academic_master');
+                setIsAuthenticated(false);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                activeRole === 'parent'
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                activeRole === 'academic_master'
+                  ? 'bg-[#FFFFF0] text-red-900 shadow-xs font-black'
+                  : 'text-red-100 hover:text-white hover:bg-red-900/60'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>{language === 'sw' ? 'Mzazi / Mlezi' : 'Parent'}</span>
+              <Award className="w-3 h-3 text-red-700" />
+              <span>{language === 'sw' ? 'Taaluma' : 'Academic'}</span>
             </button>
 
             <button
@@ -1067,29 +1089,29 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                 setActiveRole('teacher');
                 setIsAuthenticated(false);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
                 activeRole === 'teacher'
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  ? 'bg-[#FFFFF0] text-red-900 shadow-xs font-black'
+                  : 'text-red-100 hover:text-white hover:bg-red-900/60'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>{language === 'sw' ? 'Mwalimu (Teacher)' : 'Teacher'}</span>
+              <BookOpen className="w-3 h-3 text-red-700" />
+              <span>{language === 'sw' ? 'Mwalimu' : 'Teacher'}</span>
             </button>
 
             <button
               onClick={() => {
-                setActiveRole('academic_master');
-                setIsAuthenticated(false);
+                setActiveRole('parent');
+                setIsAuthenticated(true);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                activeRole === 'academic_master'
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+                activeRole === 'parent'
+                  ? 'bg-[#FFFFF0] text-red-900 shadow-xs font-black'
+                  : 'text-red-100 hover:text-white hover:bg-red-900/60'
               }`}
             >
-              <Award className="w-3.5 h-3.5" />
-              <span>{language === 'sw' ? 'Mkuu wa Taaluma' : 'Academic Master'}</span>
+              <Users className="w-3 h-3 text-red-700" />
+              <span>{language === 'sw' ? 'Mzazi' : 'Parent'}</span>
             </button>
 
             <button
@@ -1097,28 +1119,29 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                 setActiveRole('student');
                 setIsAuthenticated(false);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap cursor-pointer ${
                 activeRole === 'student'
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  ? 'bg-[#FFFFF0] text-red-900 shadow-xs font-black'
+                  : 'text-red-100 hover:text-white hover:bg-red-900/60'
               }`}
             >
-              <GraduationCap className="w-3.5 h-3.5" />
+              <GraduationCap className="w-3 h-3 text-red-700" />
               <span>{language === 'sw' ? 'Mwanafunzi' : 'Student'}</span>
             </button>
           </div>
 
+          {/* Desktop Close Button */}
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 transition-all cursor-pointer self-end md:self-center"
+            className="hidden md:flex text-red-200 hover:text-white p-1.5 rounded-xl bg-red-950/80 hover:bg-red-800 transition-all cursor-pointer shrink-0"
             title="Funga (Close)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* ================= MODAL MAIN BODY ================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-950/50">
+        <div className="flex-1 overflow-y-auto p-2.5 sm:p-5 space-y-4 bg-[#FAF7EE] text-[#2A1617]">
 
           {/* ========================================================================= */}
           {/* ============================= 1. PARENT ROLE ============================= */}
@@ -1126,13 +1149,13 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
           {activeRole === 'parent' && (
             <div className="space-y-6">
               {/* Parent Sub-View Toggle */}
-              <div className="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-slate-900 rounded-2xl border border-slate-800 shadow-md">
+              <div className="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[#FFFDF8] rounded-2xl border-2 border-red-200 shadow-xs">
                 <button
                   onClick={() => setParentViewMode('official_necta')}
                   className={`flex-1 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     parentViewMode === 'official_necta'
-                      ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                      : 'text-red-950 hover:bg-red-50'
                   }`}
                 >
                   <Table className="w-4 h-4" />
@@ -1142,8 +1165,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   onClick={() => setParentViewMode('report_card')}
                   className={`flex-1 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     parentViewMode === 'report_card'
-                      ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                      : 'text-red-950 hover:bg-red-50'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -1163,14 +1186,14 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
               ) : (
                 <div className="space-y-6">
                   {/* Parent Student Search & Quick Select Banner */}
-                  <div className="bg-slate-900 p-4 sm:p-5 rounded-2xl border border-emerald-800/50 space-y-4">
+                  <div className="bg-[#FFFDF8] p-4 sm:p-5 rounded-2xl border-2 border-red-200/80 space-y-4 shadow-xs">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
-                        <h3 className="text-base font-bold text-white flex items-center gap-2">
-                          <Users className="w-5 h-5 text-amber-400" />
+                        <h3 className="text-base font-bold text-red-950 flex items-center gap-2">
+                          <Users className="w-5 h-5 text-red-700" />
                           <span>{language === 'sw' ? 'Portal ya Mzazi / Mlezi (Ripoti Binafsi)' : 'Parent Academic Desk & Progress'}</span>
                         </h3>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-red-900/70">
                           {language === 'sw'
                             ? 'Tazama ripoti ya maendeleo ya kitaaluma, madaraja ya masomo, nafasi darasani, na pakua Hati ya Matokeo (PDF).'
                             : 'Review your child’s academic performance, subject breakdown, class rank, and download official PDF Report Cards.'}
@@ -1180,7 +1203,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       {/* Student Switcher / Search Input */}
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-64">
-                          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <Search className="w-4 h-4 text-red-600 absolute left-3 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
                             value={parentSearchQuery}
@@ -1189,7 +1212,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               handleParentSearch(e.target.value);
                             }}
                             placeholder={language === 'sw' ? 'Namba ya Mtihani au Jina...' : 'Exam No or Name...'}
-                            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400"
+                            className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#FAF7EE] border-2 border-red-200 text-xs text-red-950 placeholder-stone-400 focus:outline-hidden focus:border-red-600 font-bold"
                           />
                         </div>
                       </div>
@@ -1198,7 +1221,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     {/* Quick Select Student Chips */}
                     {studentResults.length > 0 && (
                       <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs">
-                        <span className="text-slate-400 text-[11px] font-semibold shrink-0">
+                        <span className="text-red-900 text-[11px] font-semibold shrink-0">
                           {language === 'sw' ? 'Wanafunzi:' : 'Students:'}
                         </span>
                         {studentResults.slice(0, 5).map((stu) => (
@@ -1207,8 +1230,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             onClick={() => setSelectedParentStudent(stu)}
                             className={`px-2.5 py-1 rounded-lg border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                               selectedParentStudent?.id === stu.id
-                                ? 'bg-amber-400 text-slate-950 border-amber-300 font-black shadow-xs'
-                                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                                ? 'bg-red-700 text-[#FFFFF0] border-red-800 font-black shadow-xs'
+                                : 'bg-[#FAF7EE] text-red-950 border-red-200 hover:bg-red-50'
                             }`}
                           >
                             {stu.studentName.split(' ')[0]} ({stu.form}) - {stu.division}
@@ -1221,20 +1244,20 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
               {selectedParentStudent ? (
                 <div className="space-y-6">
                   {/* Top Student Overview Card */}
-                  <div className="bg-gradient-to-br from-emerald-950/70 via-slate-900 to-slate-900 p-5 rounded-2xl border border-emerald-700/60 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+                  <div className="bg-[#FFFDF8] p-5 rounded-2xl border-2 border-red-200/80 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-emerald-500 flex items-center justify-center text-slate-950 font-black text-2xl shadow-md shrink-0">
+                      <div className="w-16 h-16 rounded-2xl bg-red-700 text-[#FFFFF0] flex items-center justify-center font-black text-2xl shadow-md shrink-0 border border-red-800">
                         {selectedParentStudent.studentName.charAt(0)}
                       </div>
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-lg font-black text-white">{selectedParentStudent.studentName}</h4>
+                          <h4 className="text-lg font-black text-red-950">{selectedParentStudent.studentName}</h4>
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase ${getDivisionBadge(selectedParentStudent.division)}`}>
                             {selectedParentStudent.division}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-                          <span className="font-mono bg-slate-950/70 px-2 py-0.5 rounded-md border border-slate-700 text-amber-300">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-red-900/80">
+                          <span className="font-mono bg-[#FAF7EE] px-2 py-0.5 rounded-md border border-red-200 text-red-800 font-bold">
                             {selectedParentStudent.examNumber}
                           </span>
                           <span>• {selectedParentStudent.form} ({selectedParentStudent.stream})</span>
@@ -1245,33 +1268,33 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                     {/* KPI Badges */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
-                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{language === 'sw' ? 'Wastani' : 'Average'}</span>
-                        <span className="text-base font-black text-amber-300">{selectedParentStudent.averageMarks}%</span>
+                      <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                        <span className="text-[10px] text-red-800 uppercase font-bold block">{language === 'sw' ? 'Wastani' : 'Average'}</span>
+                        <span className="text-base font-black text-red-700">{selectedParentStudent.averageMarks}%</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{language === 'sw' ? 'Pointi' : 'Points'}</span>
-                        <span className="text-base font-black text-white">{selectedParentStudent.points} pts</span>
+                      <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                        <span className="text-[10px] text-red-800 uppercase font-bold block">{language === 'sw' ? 'Pointi' : 'Points'}</span>
+                        <span className="text-base font-black text-red-950">{selectedParentStudent.points} pts</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{language === 'sw' ? 'Nafasi' : 'Rank'}</span>
-                        <span className="text-base font-black text-emerald-400">{selectedParentStudent.classPosition} / {selectedParentStudent.totalStudentsInClass}</span>
+                      <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                        <span className="text-[10px] text-red-800 uppercase font-bold block">{language === 'sw' ? 'Nafasi' : 'Rank'}</span>
+                        <span className="text-base font-black text-red-700">{selectedParentStudent.classPosition} / {selectedParentStudent.totalStudentsInClass}</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">{language === 'sw' ? 'Jumla' : 'Total'}</span>
-                        <span className="text-base font-black text-white">{selectedParentStudent.totalMarks}</span>
+                      <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                        <span className="text-[10px] text-red-800 uppercase font-bold block">{language === 'sw' ? 'Jumla' : 'Total'}</span>
+                        <span className="text-base font-black text-red-950">{selectedParentStudent.totalMarks}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Parent Subtabs */}
-                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
+                  <div className="flex items-center gap-2 border-b-2 border-red-200 pb-2 overflow-x-auto">
                     <button
                       onClick={() => setParentActiveTab('marks')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         parentActiveTab === 'marks'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-xs'
+                          : 'text-red-950 hover:bg-red-50 bg-[#FFFDF8] border border-red-200'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
@@ -1282,8 +1305,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setParentActiveTab('conduct')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         parentActiveTab === 'conduct'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-xs'
+                          : 'text-red-950 hover:bg-red-50 bg-[#FFFDF8] border border-red-200'
                       }`}
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
@@ -1294,8 +1317,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setParentActiveTab('teachers')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         parentActiveTab === 'teachers'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-xs'
+                          : 'text-red-950 hover:bg-red-50 bg-[#FFFDF8] border border-red-200'
                       }`}
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
@@ -1305,7 +1328,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     <div className="ml-auto flex items-center gap-2">
                       <button
                         onClick={() => downloadStudentResultSlipPdf(selectedParentStudent)}
-                        className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>{language === 'sw' ? 'Pakua PDF' : 'Download PDF'}</span>
@@ -1313,7 +1336,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                       <button
                         onClick={() => printStudentResultSlipDirectly(selectedParentStudent)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 border border-red-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                       >
                         <Printer className="w-3.5 h-3.5" />
                         <span>{language === 'sw' ? 'Chapisha' : 'Print'}</span>
@@ -1321,7 +1344,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                       <button
                         onClick={() => setParentViewPdfMode(!parentViewPdfMode)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-[#FFFDF8] border-2 border-red-400 text-red-900 text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-red-50"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>{parentViewPdfMode ? 'Orodha ya Kawaida' : 'Onyesha Hati Kamili (PDF)'}</span>
@@ -1335,20 +1358,20 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       {parentViewPdfMode ? (
                         <InlineReportCardPdfViewer student={selectedParentStudent} />
                       ) : (
-                        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-lg">
-                          <div className="p-4 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
-                            <h5 className="text-sm font-bold text-white flex items-center gap-2">
-                              <BookOpen className="w-4 h-4 text-emerald-400" />
+                        <div className="bg-[#FFFDF8] rounded-2xl border-2 border-red-200 overflow-hidden shadow-sm">
+                          <div className="p-4 bg-[#F5EFEB] border-b border-red-200 flex items-center justify-between">
+                            <h5 className="text-sm font-bold text-red-950 flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-red-700" />
                               <span>{language === 'sw' ? 'Mchanganuo wa Alama na Madaraja kwa Kila Somo' : 'Subject Breakdown & Grade Allocation'}</span>
                             </h5>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-red-900/70">
                               {selectedParentStudent.subjects.length} {language === 'sw' ? 'Masomo Yaliyotahiniwa' : 'Assessed Subjects'}
                             </span>
                           </div>
 
                           <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
-                              <thead className="bg-slate-950/90 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                              <thead className="bg-[#FAF7EE] text-red-900 uppercase text-[10px] font-bold border-b border-red-200">
                                 <tr>
                                   <th className="py-3 px-4">Kodi / Somo</th>
                                   <th className="py-3 px-3 text-center">Alama (/100)</th>
@@ -1357,25 +1380,25 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                   <th className="py-3 px-4">Maoni ya Mwalimu wa Somo</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-800/60 font-medium">
+                              <tbody className="divide-y divide-red-100 font-medium text-stone-900">
                                 {selectedParentStudent.subjects.map((sub, idx) => (
-                                  <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
+                                  <tr key={idx} className="hover:bg-red-50/50 transition-colors">
                                     <td className="py-3 px-4">
-                                      <div className="font-bold text-white">{sub.name}</div>
-                                      <div className="text-[10px] text-slate-400 font-mono">Code: {sub.code} • {sub.nameEn}</div>
+                                      <div className="font-bold text-red-950">{sub.name}</div>
+                                      <div className="text-[10px] text-red-900/60 font-mono">Code: {sub.code} • {sub.nameEn}</div>
                                     </td>
                                     <td className="py-3 px-3 text-center">
-                                      <span className="font-black text-amber-300 text-sm">{sub.score}</span>
+                                      <span className="font-black text-red-700 text-sm">{sub.score}</span>
                                     </td>
                                     <td className="py-3 px-3 text-center">
                                       <span className={`px-2.5 py-0.5 rounded-md border text-xs font-black ${getGradeBadge(sub.grade)}`}>
                                         {sub.grade}
                                       </span>
                                     </td>
-                                    <td className="py-3 px-3 text-center font-mono font-bold text-white">
+                                    <td className="py-3 px-3 text-center font-mono font-bold text-red-950">
                                       {sub.points}
                                     </td>
-                                    <td className="py-3 px-4 text-slate-300">
+                                    <td className="py-3 px-4 text-stone-700">
                                       {sub.remarks}
                                     </td>
                                   </tr>
@@ -1391,29 +1414,29 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* TAB 2: CONDUCT & HEADMASTER REMARKS */}
                   {parentActiveTab === 'conduct' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-                        <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                      <div className="p-5 rounded-2xl bg-[#FFFDF8] border-2 border-red-200 space-y-3">
+                        <div className="flex items-center gap-2 text-red-700 font-bold text-sm">
                           <ShieldCheck className="w-5 h-5" />
                           <span>{language === 'sw' ? 'Tathmini ya Maadili na Nidhamu' : 'Character & Moral Evaluation'}</span>
                         </div>
-                        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                          <span className="text-[11px] text-slate-400 block uppercase font-bold">{language === 'sw' ? 'Kiwango cha Tabia' : 'Conduct Rating'}</span>
-                          <span className="text-base font-black text-amber-400">{selectedParentStudent.conduct}</span>
+                        <div className="p-3 rounded-xl bg-[#FAF7EE] border border-red-200">
+                          <span className="text-[11px] text-red-800 block uppercase font-bold">{language === 'sw' ? 'Kiwango cha Tabia' : 'Conduct Rating'}</span>
+                          <span className="text-base font-black text-red-700">{selectedParentStudent.conduct}</span>
                         </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
+                        <p className="text-xs text-stone-700 leading-relaxed">
                           Mwanafunzi anazingatia kanuni za shule ya Kikatoliki, amani, usafi, na ushirikiano mzuri na wanafunzi wenzake na walimu.
                         </p>
                       </div>
 
-                      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-                        <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                      <div className="p-5 rounded-2xl bg-[#FFFDF8] border-2 border-red-200 space-y-3">
+                        <div className="flex items-center gap-2 text-red-700 font-bold text-sm">
                           <Award className="w-5 h-5" />
                           <span>{language === 'sw' ? 'Maoni ya Mkuu wa Shule & Taaluma' : 'Headmaster & Academic Remarks'}</span>
                         </div>
-                        <blockquote className="p-3.5 rounded-xl bg-slate-950 border border-emerald-800/40 text-xs text-slate-200 italic leading-relaxed">
+                        <blockquote className="p-3.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-xs text-stone-800 italic leading-relaxed">
                           "{selectedParentStudent.headmasterRemarks}"
                         </blockquote>
-                        <div className="text-[11px] text-slate-400 flex items-center justify-between">
+                        <div className="text-[11px] text-red-900/70 flex items-center justify-between">
                           <span>Br. Adolph Massawe (Mkuu wa Shule)</span>
                           <span>Tarehe: {selectedParentStudent.publishDate}</span>
                         </div>
@@ -1424,11 +1447,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* TAB 3: CONTACT TEACHERS VIA SMS */}
                   {parentActiveTab === 'teachers' && (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-                        <h5 className="text-sm font-bold text-white mb-1">
+                      <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200">
+                        <h5 className="text-sm font-bold text-red-950 mb-1">
                           {language === 'sw' ? 'Wasiliana na Walimu wa Mwanafunzi Wako' : 'Direct SMS to Subject Teachers'}
                         </h5>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-stone-600">
                           {language === 'sw'
                             ? 'Bonyeza kitufe cha "Tuma SMS Moja kwa Moja" kufungua programu yako ya ujumbe na kutuma swali kwa mwalimu.'
                             : 'Click the direct SMS button to immediately compose an SMS to the teacher on your mobile device.'}
@@ -1437,17 +1460,17 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {teachers.map((tch) => (
-                          <div key={tch.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-3">
+                          <div key={tch.id} className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200 flex flex-col justify-between space-y-3">
                             <div className="flex items-center gap-3">
                               <img
                                 src={tch.imageUrl}
                                 alt={tch.name}
-                                className="w-12 h-12 rounded-xl object-cover border border-emerald-600/40"
+                                className="w-12 h-12 rounded-xl object-cover border-2 border-red-300"
                               />
                               <div>
-                                <h6 className="text-xs font-bold text-white">{tch.name}</h6>
-                                <p className="text-[10px] text-amber-300 font-medium">{tch.roleSw}</p>
-                                <p className="text-[10px] text-slate-400">{tch.subjects.join(', ')}</p>
+                                <h6 className="text-xs font-bold text-red-950">{tch.name}</h6>
+                                <p className="text-[10px] text-red-800 font-semibold">{tch.roleSw}</p>
+                                <p className="text-[10px] text-stone-500">{tch.subjects.join(', ')}</p>
                               </div>
                             </div>
 
@@ -1455,9 +1478,9 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               href={`sms:${tch.phone.replace(/\s+/g, '')}?body=${encodeURIComponent(
                                 `Habari ${tch.name}, mimi ni mzazi wa ${selectedParentStudent.studentName} (${selectedParentStudent.form}). Ningependa kufahamu maendeleo yake katika somo la ${tch.subjects[0] || 'Taaluma'}.`
                               )}`}
-                              className="w-full py-2 px-3 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-700/60 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                              className="w-full py-2 px-3 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                             >
-                              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                              <MessageSquare className="w-3.5 h-3.5" />
                               <span>{language === 'sw' ? 'Tuma SMS kwa Mwalimu' : 'Send SMS to Teacher'}</span>
                             </a>
                           </div>
@@ -1467,7 +1490,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   )}
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-400 bg-slate-900 rounded-2xl border border-slate-800">
+                <div className="p-8 text-center text-stone-600 bg-[#FFFDF8] rounded-2xl border-2 border-red-200">
                   <p>{language === 'sw' ? 'Mwanafunzi hakupatikana. Tafadhali andika namba ya mtihani au jina hapo juu.' : 'No student found. Please type exam number or name above.'}</p>
                 </div>
               )}
@@ -1506,30 +1529,30 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                 /* Teacher Authenticated Workspace */
                 <div className="space-y-6">
                   {/* Teacher Header Bar */}
-                  <div className="bg-slate-900 p-4 sm:p-5 rounded-3xl border border-emerald-800/60 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="bg-[#FFFDF8] p-4 sm:p-5 rounded-3xl border-2 border-red-200/80 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3.5">
                       {selectedTeacher && (
                         <img
                           src={selectedTeacher.imageUrl}
                           alt={selectedTeacher.name}
-                          className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-400/70 shadow-md"
+                          className="w-14 h-14 rounded-2xl object-cover border-2 border-red-600 shadow-sm"
                         />
                       )}
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-base font-black text-white">{selectedTeacher?.name}</h4>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 text-[10px] font-mono border border-slate-700">
+                          <h4 className="text-base font-black text-red-950">{selectedTeacher?.name}</h4>
+                          <span className="px-2 py-0.5 rounded-full bg-[#FAF7EE] text-red-900 text-[10px] font-mono border border-red-200">
                             {teacherEmailInput || 'walimu@uomboni.sc.tz'}
                           </span>
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 text-[10px] font-black uppercase tracking-wider">
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-300 text-[10px] font-black uppercase tracking-wider">
                             {selectedTeacher?.department}
                           </span>
-                          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 text-red-800 text-[10px] font-bold border border-red-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
                             {language === 'sw' ? 'Mfumo wa Usakinishaji Upo Tayari' : 'Auto-Publish Active'}
                           </span>
                         </div>
-                        <p className="text-xs text-amber-300 font-semibold mt-0.5">
+                        <p className="text-xs text-red-800 font-semibold mt-0.5">
                           {selectedTeacher?.roleSw} • Masomo: {selectedTeacher?.subjects.join(', ')}
                         </p>
                       </div>
@@ -1544,25 +1567,25 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           setConfirmPinInput('');
                           setPinChangeFeedback(null);
                         }}
-                        className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-sm"
+                        className="px-3.5 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 text-xs font-bold flex items-center gap-1.5 border border-red-300 transition-all cursor-pointer shadow-xs"
                         title={language === 'sw' ? 'Badili nambari yako ya siri ya mwalimu' : 'Change your confidential teacher PIN'}
                       >
-                        <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                        <KeyRound className="w-3.5 h-3.5 text-red-700" />
                         <span>{language === 'sw' ? '🔑 Badili PIN' : '🔑 Change PIN'}</span>
                       </button>
                       {onOpenInstallApp && (
                         <button
                           onClick={onOpenInstallApp}
-                          className="px-3.5 py-2 rounded-xl bg-emerald-900/90 hover:bg-emerald-800 text-emerald-200 hover:text-white text-xs font-black flex items-center gap-1.5 border border-emerald-600/60 transition-all cursor-pointer shadow-sm"
+                          className="px-3.5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                           title={language === 'sw' ? 'Sakinisha App kwenye simu/kompyuta yako kwa upakiaji wa haraka' : 'Install app on phone/PC for instant access'}
                         >
-                          <Download className="w-3.5 h-3.5 text-amber-300" />
+                          <Download className="w-3.5 h-3.5" />
                           <span>{language === 'sw' ? '📲 Sakinisha App' : '📲 Install App'}</span>
                         </button>
                       )}
                       <button
                         onClick={() => setIsAuthenticated(false)}
-                        className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-sm"
+                        className="px-3.5 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 text-xs font-bold flex items-center gap-1.5 border border-red-300 transition-all cursor-pointer shadow-xs"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>{language === 'sw' ? 'Toka (Logout)' : 'Logout'}</span>
@@ -1572,17 +1595,17 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                   {/* Secure Teacher PIN Change Modal (Inside Authenticated Session) */}
                   {isTeacherChangePinOpen && (
-                    <div className="p-4 sm:p-5 rounded-3xl bg-slate-950 border-2 border-amber-400/60 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div className="p-4 sm:p-5 rounded-3xl bg-[#FFFDF8] border-2 border-red-600 shadow-xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center justify-between pb-3 border-b border-red-200">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-bold">
+                          <div className="w-9 h-9 rounded-xl bg-red-100 border border-red-300 flex items-center justify-center text-red-700 font-bold">
                             <KeyRound className="w-5 h-5" />
                           </div>
                           <div>
-                            <h5 className="text-sm font-black text-white">
+                            <h5 className="text-sm font-black text-red-950">
                               {language === 'sw' ? 'Badilisha Nambari Yako Binafsi ya Siri (PIN ya Mwalimu)' : 'Update Your Confidential Faculty PIN'}
                             </h5>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-stone-600">
                               {language === 'sw'
                                 ? `Mwalimu: ${selectedTeacher?.name} • PIN hii inalinda akaunti yako na masomo yako (${selectedTeacher?.subjects.join(', ')}).`
                                 : `Teacher: ${selectedTeacher?.name} • Secures your account and assigned subjects.`}
@@ -1592,7 +1615,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setIsTeacherChangePinOpen(false)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                          className="p-1.5 rounded-lg text-red-900 hover:bg-red-100 cursor-pointer"
                         >
                           ✕
                         </button>
@@ -1600,7 +1623,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                          <label className="text-[11px] font-bold text-red-900 block mb-1">
                             {language === 'sw' ? 'PIN ya Sasa *' : 'Current PIN *'}
                           </label>
                           <input
@@ -1608,11 +1631,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             value={currentPinInput}
                             onChange={(e) => setCurrentPinInput(e.target.value)}
                             placeholder="Weka PIN ya sasa..."
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                            className="w-full p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-xs font-mono text-red-950 focus:outline-hidden focus:border-red-600"
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                          <label className="text-[11px] font-bold text-red-900 block mb-1">
                             {language === 'sw' ? 'PIN Mpya (Tarakimu 4+) *' : 'New PIN (4+ digits) *'}
                           </label>
                           <input
@@ -1620,11 +1643,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             value={newPinInput}
                             onChange={(e) => setNewPinInput(e.target.value)}
                             placeholder="PIN mpya..."
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                            className="w-full p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-xs font-mono text-red-950 focus:outline-hidden focus:border-red-600"
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                          <label className="text-[11px] font-bold text-red-900 block mb-1">
                             {language === 'sw' ? 'Rudia PIN Mpya *' : 'Confirm New PIN *'}
                           </label>
                           <input
@@ -1632,7 +1655,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             value={confirmPinInput}
                             onChange={(e) => setConfirmPinInput(e.target.value)}
                             placeholder="Rudia PIN mpya..."
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                            className="w-full p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-xs font-mono text-red-950 focus:outline-hidden focus:border-red-600"
                           />
                         </div>
                       </div>
@@ -1641,14 +1664,14 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <div
                           className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
                             pinChangeFeedback.type === 'success'
-                              ? 'bg-emerald-950/90 border border-emerald-600 text-emerald-300'
-                              : 'bg-rose-950/90 border border-rose-700 text-rose-300'
+                              ? 'bg-red-50 border border-red-300 text-red-900'
+                              : 'bg-red-100 border border-red-400 text-red-950'
                           }`}
                         >
                           {pinChangeFeedback.type === 'success' ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <CheckCircle2 className="w-4 h-4 text-red-700 shrink-0" />
                           ) : (
-                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                            <AlertCircle className="w-4 h-4 text-red-700 shrink-0" />
                           )}
                           <span>{pinChangeFeedback.message}</span>
                         </div>
@@ -1658,7 +1681,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setIsTeacherChangePinOpen(false)}
-                          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
+                          className="px-4 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 border border-red-200 text-xs font-bold cursor-pointer"
                         >
                           {language === 'sw' ? 'Ghairi' : 'Cancel'}
                         </button>
@@ -1708,7 +1731,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               });
                             }
                           }}
-                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-xs font-black cursor-pointer shadow-md"
+                          className="px-5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black cursor-pointer shadow-md"
                         >
                           {language === 'sw' ? 'Hifadhi PIN Mpya' : 'Save New PIN'}
                         </button>
@@ -1717,16 +1740,16 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   )}
 
                   {/* Teacher Publishing Hub Navigation Tabs */}
-                  <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner">
+                  <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 p-1.5 bg-[#FFFDF8] rounded-2xl border-2 border-red-200 shadow-xs">
                     <button
                       onClick={() => setTeacherActiveTab('subject_entry')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'subject_entry'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black ring-2 ring-amber-400/50'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                          ? 'bg-red-700 text-[#FFFFF0] shadow-md font-black'
+                          : 'text-red-950 hover:bg-red-50'
                       }`}
                     >
-                      <BookOpen className="w-4 h-4 text-amber-400" />
+                      <BookOpen className="w-4 h-4" />
                       <span>{language === 'sw' ? '✍️ Ingiza Alama za Somo Lako Pekee' : '✍️ My Assigned Subject Marks'}</span>
                     </button>
 
@@ -1734,11 +1757,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setTeacherActiveTab('master_grid')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'master_grid'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                          ? 'bg-red-700 text-[#FFFFF0] shadow-md font-black'
+                          : 'text-red-950 hover:bg-red-50'
                       }`}
                     >
-                      <Table className="w-4 h-4 text-amber-400" />
+                      <Table className="w-4 h-4" />
                       <span>{language === 'sw' ? '📑 Daftari la Masomo Yote (Kuangalia)' : '📑 All-Subjects Matrix (View)'}</span>
                     </button>
 
@@ -1746,11 +1769,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setTeacherActiveTab('single_add')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'single_add'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                          ? 'bg-red-700 text-[#FFFFF0] shadow-md font-black'
+                          : 'text-red-950 hover:bg-red-50'
                       }`}
                     >
-                      <Plus className="w-4 h-4 text-amber-400" />
+                      <Plus className="w-4 h-4" />
                       <span>{language === 'sw' ? '➕ Ongeza Mwanafunzi (Somo Lako)' : '➕ Add Single Student (My Subject)'}</span>
                     </button>
 
@@ -1758,31 +1781,31 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setTeacherActiveTab('broadcast')}
                       className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         teacherActiveTab === 'broadcast'
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md scale-102 font-black'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                          ? 'bg-red-700 text-[#FFFFF0] shadow-md font-black'
+                          : 'text-red-950 hover:bg-red-50'
                       }`}
                     >
-                      <Send className="w-4 h-4 text-amber-400" />
+                      <Send className="w-4 h-4" />
                       <span>{language === 'sw' ? '📢 Tangaza kwa Wazazi' : '📢 Parent Broadcast'}</span>
                     </button>
                   </div>
 
                   {/* SUCCESS RECEIPT / AUDIT BADGE */}
                   {lastPublishedAudit && (
-                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border-2 border-emerald-500/80 shadow-2xl space-y-3 animate-in fade-in zoom-in duration-300">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-800/60">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-[#FFFDF8] border-2 border-red-300 shadow-md space-y-3 animate-in fade-in zoom-in duration-300">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-red-200">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-lg">
+                          <div className="w-10 h-10 rounded-xl bg-red-700 text-[#FFFFF0] flex items-center justify-center font-black shadow-md">
                             <CheckCheck className="w-6 h-6" />
                           </div>
                           <div>
-                            <h5 className="text-sm font-black text-white flex items-center gap-2">
+                            <h5 className="text-sm font-black text-red-950 flex items-center gap-2">
                               <span>{language === 'sw' ? 'Matokeo Yamejisakinisha & Yamechapishwa Kikamilifu!' : 'Results Successfully Published Live!'}</span>
-                              <span className="px-2 py-0.5 rounded-md bg-emerald-900 text-emerald-300 border border-emerald-500 text-[10px] font-bold">
+                              <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-900 border border-red-300 text-[10px] font-bold">
                                 Live on Portal
                               </span>
                             </h5>
-                            <p className="text-xs text-slate-300">
+                            <p className="text-xs text-stone-600">
                               {language === 'sw'
                                 ? `Wanafunzi ${lastPublishedAudit.count} wamesakinishwa kwenye mfumo kwa ${lastPublishedAudit.examType} (${lastPublishedAudit.form}).`
                                 : `${lastPublishedAudit.count} students live published for ${lastPublishedAudit.examType} (${lastPublishedAudit.form}).`}
@@ -1791,43 +1814,43 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         </div>
 
                         <div className="text-right">
-                          <span className="text-[11px] text-slate-400 block font-mono">Muda wa Usakinishaji:</span>
-                          <span className="text-xs font-black text-amber-300 font-mono">{lastPublishedAudit.timestamp}</span>
+                          <span className="text-[11px] text-stone-500 block font-mono">Muda wa Usakinishaji:</span>
+                          <span className="text-xs font-black text-red-700 font-mono">{lastPublishedAudit.timestamp}</span>
                         </div>
                       </div>
 
                       {/* Division Statistics Breakdown */}
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-emerald-800/40 text-center">
-                          <span className="text-[10px] text-slate-400 block font-bold">Division I</span>
-                          <span className="text-base font-black text-emerald-400">{lastPublishedAudit.divisionStats['Division I'] || 0}</span>
+                        <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                          <span className="text-[10px] text-red-800 block font-bold">Division I</span>
+                          <span className="text-base font-black text-red-700">{lastPublishedAudit.divisionStats['Division I'] || 0}</span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-emerald-800/40 text-center">
-                          <span className="text-[10px] text-slate-400 block font-bold">Division II</span>
-                          <span className="text-base font-black text-blue-400">{lastPublishedAudit.divisionStats['Division II'] || 0}</span>
+                        <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                          <span className="text-[10px] text-red-800 block font-bold">Division II</span>
+                          <span className="text-base font-black text-red-800">{lastPublishedAudit.divisionStats['Division II'] || 0}</span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-emerald-800/40 text-center">
-                          <span className="text-[10px] text-slate-400 block font-bold">Division III</span>
-                          <span className="text-base font-black text-amber-400">{lastPublishedAudit.divisionStats['Division III'] || 0}</span>
+                        <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                          <span className="text-[10px] text-red-800 block font-bold">Division III</span>
+                          <span className="text-base font-black text-red-900">{lastPublishedAudit.divisionStats['Division III'] || 0}</span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-emerald-800/40 text-center">
-                          <span className="text-[10px] text-slate-400 block font-bold">Division IV</span>
-                          <span className="text-base font-black text-orange-400">{lastPublishedAudit.divisionStats['Division IV'] || 0}</span>
+                        <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                          <span className="text-[10px] text-red-800 block font-bold">Division IV</span>
+                          <span className="text-base font-black text-red-950">{lastPublishedAudit.divisionStats['Division IV'] || 0}</span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-950/80 border border-emerald-800/40 text-center">
-                          <span className="text-[10px] text-slate-400 block font-bold">Division 0</span>
-                          <span className="text-base font-black text-rose-400">{lastPublishedAudit.divisionStats['Division 0'] || 0}</span>
+                        <div className="p-2.5 rounded-xl bg-[#FAF7EE] border border-red-200 text-center">
+                          <span className="text-[10px] text-red-800 block font-bold">Division 0</span>
+                          <span className="text-base font-black text-stone-700">{lastPublishedAudit.divisionStats['Division 0'] || 0}</span>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-300">
-                        <span className="flex items-center gap-1.5 text-emerald-300">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-stone-700">
+                        <span className="flex items-center gap-1.5 text-red-800 font-medium">
+                          <CheckCircle2 className="w-4 h-4 text-red-700" />
                           <span>Wazazi na wanafunzi wanaweza kutafuta matokeo haya na kupakua Hati za PDF mara moja.</span>
                         </span>
                         <button
                           onClick={() => setTeacherActiveTab('broadcast')}
-                          className="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md"
+                          className="px-3 py-1 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md"
                         >
                           <Send className="w-3.5 h-3.5" />
                           <span>Tuma Taarifa kwa Wazazi sasa →</span>
@@ -1856,13 +1879,13 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* ========================================================================= */}
                   {teacherActiveTab === 'master_grid' && (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                         <div>
-                          <h5 className="text-sm font-black text-white flex items-center gap-2">
-                            <Table className="w-4 h-4 text-emerald-400" />
+                          <h5 className="text-sm font-black text-stone-900 flex items-center gap-2">
+                            <Table className="w-4 h-4 text-red-700" />
                             <span>{language === 'sw' ? 'Daftari Kamili la Masomo Yote (Master Marksheet Matrix)' : 'All-Subjects Master Matrix'}</span>
                           </h5>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-stone-600 mt-0.5">
                             {language === 'sw'
                               ? `Mwalimu ${selectedTeacher?.name}: Masomo yako pekee ya kuingiza maksi ni: ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'}. Masomo mengine yanalindwa kwa usalama.`
                               : `Teacher ${selectedTeacher?.name}: Your assigned subjects are: ${selectedTeacher?.subjects?.join(', ')}. Other subjects are securely locked.`}
@@ -1872,7 +1895,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => exportResultsToExcel(broadsheetResults, `UOMBONI_MASTER_MARKSHEET_${broadsheetForm}.xlsx`)}
-                            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>{language === 'sw' ? 'Pakua Excel' : 'Export Excel'}</span>
@@ -1881,24 +1904,24 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       </div>
 
                       {/* Teacher assigned subject reminder badge */}
-                      <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-600/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                        <div className="flex items-center gap-2 text-emerald-200">
-                          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="p-3 rounded-2xl bg-[#FAF7EE] border-2 border-red-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-red-900 font-medium">
+                          <ShieldCheck className="w-4 h-4 text-red-700 shrink-0" />
                           <span>
                             {language === 'sw'
                               ? `Uthibitisho wa Ulinzi: Umeidhinishwa kuingiza alama kwa somo la ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'} pekee.`
                               : `Access Controlled: You may only input scores for your assigned subjects (${selectedTeacher?.subjects?.join(', ')}).`}
                           </span>
                         </div>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider self-start sm:self-center">
+                        <span className="px-2.5 py-0.5 rounded-full bg-red-700 text-[#FFFFF0] text-[10px] font-black uppercase tracking-wider self-start sm:self-center shadow-xs">
                           ★ Somo Lako Pekee
                         </span>
                       </div>
 
-                      <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+                      <div className="bg-[#FFFDF8] rounded-3xl border-2 border-red-200/80 overflow-hidden shadow-md">
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
-                            <thead className="bg-slate-950/95 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                            <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
                               <tr>
                                 <th className="py-2.5 px-3">#</th>
                                 <th className="py-2.5 px-3">Namba</th>
@@ -1914,32 +1937,32 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 <th className="py-2.5 px-3 text-center">Division</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800/60 font-medium">
+                            <tbody className="divide-y divide-red-100 font-medium text-stone-800">
                               {broadsheetResults.map((student, idx) => (
-                                <tr key={`${student.id}-${student.examNumber || idx}-${idx}`} className="hover:bg-slate-800/40 transition-colors">
-                                  <td className="py-2.5 px-3 text-slate-500 font-mono">{idx + 1}</td>
-                                  <td className="py-2.5 px-3 font-mono text-amber-300 font-bold">{student.examNumber}</td>
-                                  <td className="py-2.5 px-4 font-bold text-white">{student.studentName}</td>
+                                <tr key={`${student.id}-${student.examNumber || idx}-${idx}`} className="hover:bg-[#FAF7EE] transition-colors">
+                                  <td className="py-2.5 px-3 text-stone-500 font-mono">{idx + 1}</td>
+                                  <td className="py-2.5 px-3 font-mono text-red-800 font-bold">{student.examNumber}</td>
+                                  <td className="py-2.5 px-4 font-bold text-stone-900">{student.studentName}</td>
                                   {STANDARD_SUBJECTS.map((sub) => {
                                     const match = student.subjects.find(
                                       (s) => s.code === sub.code || s.name.toLowerCase() === sub.name.toLowerCase()
                                     );
                                     return (
-                                      <td key={sub.code} className="py-2.5 px-2 text-center font-mono text-slate-200">
+                                      <td key={sub.code} className="py-2.5 px-2 text-center font-mono text-stone-700">
                                         {match ? (
                                           <span className="font-bold">
                                             {match.score}
-                                            <span className="text-[10px] text-amber-400 ml-0.5">{match.grade}</span>
+                                            <span className="text-[10px] text-red-700 ml-0.5">{match.grade}</span>
                                           </span>
                                         ) : (
-                                          <span className="text-slate-600">-</span>
+                                          <span className="text-stone-400">-</span>
                                         )}
                                       </td>
                                     );
                                   })}
-                                  <td className="py-2.5 px-3 text-center font-mono text-slate-300">{student.totalMarks}</td>
-                                  <td className="py-2.5 px-3 text-center font-black text-emerald-400 font-mono">{student.averageMarks}%</td>
-                                  <td className="py-2.5 px-3 text-center font-bold text-white font-mono">{student.points}</td>
+                                  <td className="py-2.5 px-3 text-center font-mono text-stone-700">{student.totalMarks}</td>
+                                  <td className="py-2.5 px-3 text-center font-black text-red-700 font-mono">{student.averageMarks}%</td>
+                                  <td className="py-2.5 px-3 text-center font-bold text-stone-900 font-mono">{student.points}</td>
                                   <td className="py-2.5 px-3 text-center">
                                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${getDivisionBadge(student.division)}`}>
                                       {student.division}
@@ -1959,13 +1982,13 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* ========================================================================= */}
                   {teacherActiveTab === 'single_add' && (
                     <form onSubmit={handleTeacherSingleStudentPublish} className="space-y-5">
-                      <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-                        <div className="pb-3 border-b border-slate-800">
-                          <h5 className="text-sm font-black text-white flex items-center gap-2">
-                            <Plus className="w-5 h-5 text-amber-400" />
+                      <div className="p-5 rounded-3xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-md space-y-4">
+                        <div className="pb-3 border-b border-red-100">
+                          <h5 className="text-sm font-black text-stone-900 flex items-center gap-2">
+                            <Plus className="w-5 h-5 text-red-700" />
                             <span>{language === 'sw' ? 'Ongeza Matokeo ya Mwanafunzi Mmoja & Sakinisha Moja kwa Moja' : 'Quick Single Student Result Posting'}</span>
                           </h5>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-stone-600 mt-0.5">
                             {language === 'sw'
                               ? 'Jaza taarifa za mwanafunzi na alama zake za masomo kisha bonyeza Sakinisha ili yatokee mtandaoni mara moja.'
                               : 'Fill student info and subject marks to instantly publish live to the portal.'}
@@ -1973,9 +1996,9 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         </div>
 
                         {/* Quick Registered Student Selector */}
-                        <div className="p-3 bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                            <Users className="w-4 h-4 text-amber-400 shrink-0" />
+                        <div className="p-3 bg-[#FAF7EE] rounded-2xl border border-red-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-xs font-bold text-red-950">
+                            <Users className="w-4 h-4 text-red-700 shrink-0" />
                             <span>{language === 'sw' ? 'Chagua Mwanafunzi Aliyesajiliwa (Orodha ya Shule):' : 'Pick Registered Student:'}</span>
                           </div>
                           <select
@@ -1992,7 +2015,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 }));
                               }
                             }}
-                            className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-amber-300 font-bold focus:outline-hidden focus:border-amber-400 cursor-pointer"
+                            className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs text-red-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                           >
                             <option value="">-- {language === 'sw' ? 'Chagua Mwanafunzi...' : 'Choose Student...'} --</option>
                             {students
@@ -2007,34 +2030,34 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
-                            <label className="text-[11px] font-bold text-slate-300 block mb-1">Jina Kamili la Mwanafunzi *</label>
+                            <label className="text-[11px] font-bold text-stone-700 block mb-1">Jina Kamili la Mwanafunzi *</label>
                             <input
                               type="text"
                               required
                               placeholder="Jina kamili la mwanafunzi..."
                               value={teacherSingleStudentDraft.studentName}
                               onChange={(e) => setTeacherSingleStudentDraft((p) => ({ ...p, studentName: e.target.value }))}
-                              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white uppercase focus:outline-hidden focus:border-amber-400 font-bold"
+                              className="w-full p-2.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs text-stone-900 uppercase focus:outline-hidden focus:border-red-600 font-bold"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[11px] font-bold text-slate-300 block mb-1">Namba ya Mtihani (Hiari)</label>
+                            <label className="text-[11px] font-bold text-stone-700 block mb-1">Namba ya Mtihani (Hiari)</label>
                             <input
                               type="text"
                               placeholder="S0486/0125/2025"
                               value={teacherSingleStudentDraft.examNumber}
                               onChange={(e) => setTeacherSingleStudentDraft((p) => ({ ...p, examNumber: e.target.value }))}
-                              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-amber-300 uppercase focus:outline-hidden focus:border-amber-400 font-mono font-bold"
+                              className="w-full p-2.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs text-red-800 uppercase focus:outline-hidden focus:border-red-600 font-mono font-bold"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[11px] font-bold text-slate-300 block mb-1">Kidato (Form)</label>
+                            <label className="text-[11px] font-bold text-stone-700 block mb-1">Kidato (Form)</label>
                             <select
                               value={teacherSingleStudentDraft.form}
                               onChange={(e) => setTeacherSingleStudentDraft((p) => ({ ...p, form: e.target.value as any }))}
-                              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-bold focus:outline-hidden focus:border-amber-400"
+                              className="w-full p-2.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                             >
                               <option value="Form 1">Form 1</option>
                               <option value="Form 2">Form 2</option>
@@ -2044,11 +2067,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </div>
 
                           <div>
-                            <label className="text-[11px] font-bold text-slate-300 block mb-1">Jinsia</label>
+                            <label className="text-[11px] font-bold text-stone-700 block mb-1">Jinsia</label>
                             <select
                               value={teacherSingleStudentDraft.gender}
                               onChange={(e) => setTeacherSingleStudentDraft((p) => ({ ...p, gender: e.target.value as any }))}
-                              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-bold focus:outline-hidden focus:border-amber-400"
+                              className="w-full p-2.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                             >
                               <option value="M">Mvulana (Male - M)</option>
                               <option value="F">Msichana (Female - F)</option>
@@ -2059,12 +2082,12 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         {/* Subject Marks Entry Grid - Filtered Strictly to Teacher's Assigned Subject(s) */}
                         <div className="pt-3">
                           <div className="flex items-center justify-between mb-2">
-                            <label className="text-xs font-bold text-amber-300 block">
+                            <label className="text-xs font-bold text-red-950 block">
                               {language === 'sw'
                                 ? `Alama za Somo Lako Pekee (${selectedTeacher?.subjects.join(', ')}):`
                                 : `Assigned Subject Mark Entry (${selectedTeacher?.subjects.join(', ')}):`}
                             </label>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-bold">
                               🔒 Somo Lako Pekee
                             </span>
                           </div>
@@ -2081,10 +2104,10 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               const score = teacherSingleStudentDraft.subjectScores[sub.code] ?? 70;
                               const { grade } = calculateGradeAndPoints(score);
                               return (
-                                <div key={sub.code} className="p-3.5 rounded-2xl bg-slate-950 border-2 border-emerald-500/60 space-y-2 shadow-md">
+                                <div key={sub.code} className="p-3.5 rounded-2xl bg-[#FFFDF8] border-2 border-red-300 space-y-2 shadow-xs">
                                   <div className="flex items-center justify-between text-xs">
-                                    <span className="font-black text-white">{sub.name} ({sub.code})</span>
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
+                                    <span className="font-black text-stone-900">{sub.name} ({sub.code})</span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-700 text-[#FFFFF0] font-black">
                                       ★ Somo Lako
                                     </span>
                                   </div>
@@ -2104,13 +2127,13 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                           },
                                         }));
                                       }}
-                                      className="flex-1 p-2 text-center font-black text-lg rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-hidden focus:border-amber-400"
+                                      className="flex-1 p-2 text-center font-black text-lg rounded-xl bg-[#FAF7EE] border border-red-300 text-red-800 focus:outline-hidden focus:border-red-600"
                                     />
                                     <span className={`px-2.5 py-1.5 rounded-xl text-xs font-black border ${getGradeBadge(grade)}`}>
                                       {grade}
                                     </span>
                                   </div>
-                                  <p className="text-[10px] text-emerald-400 font-medium">
+                                  <p className="text-[10px] text-red-800 font-medium">
                                     ✓ Umeidhinishwa kuingiza alama za somo hili
                                   </p>
                                 </div>
@@ -2119,8 +2142,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </div>
 
                           {/* Subject Isolation Security Notice */}
-                          <div className="mt-3 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
-                            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                          <div className="mt-3 p-3 rounded-2xl bg-[#FAF7EE] border border-red-200 text-[11px] text-stone-700 flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-red-700 shrink-0" />
                             <span>
                               {language === 'sw'
                                 ? 'Ulinzi wa Masomo: Masomo yasiyokuhusu yamelindwa kikamilifu. Huwezi kuingiza wala kubadilisha alama za masomo ya walimu wenzako.'
@@ -2132,7 +2155,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <div className="pt-3 flex justify-end">
                           <button
                             type="submit"
-                            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition-all hover:scale-102 flex items-center gap-2 cursor-pointer border border-emerald-400/40"
+                            className="px-6 py-3 rounded-2xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] font-black text-xs sm:text-sm shadow-md transition-all hover:scale-102 flex items-center gap-2 cursor-pointer border border-red-800"
                           >
                             <CheckCheck className="w-5 h-5" />
                             <span>{language === 'sw' ? '🚀 SAKINISHA MWANAFUNZI HUYU MOJA KWA MOJA' : '🚀 PUBLISH STUDENT RESULTS LIVE'}</span>
@@ -2147,16 +2170,16 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* ========================================================================= */}
                   {teacherActiveTab === 'broadcast' && (
                     <div className="space-y-5">
-                      <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+                      <div className="p-5 rounded-3xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-md space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shadow-lg">
+                          <div className="w-12 h-12 rounded-2xl bg-red-700 text-[#FFFFF0] flex items-center justify-center font-black shadow-md">
                             <Send className="w-6 h-6" />
                           </div>
                           <div>
-                            <h5 className="text-sm font-black text-white">
+                            <h5 className="text-sm font-black text-stone-900">
                               {language === 'sw' ? 'Kitovu cha Kutangaza Matokeo kwa Wazazi (SMS / WhatsApp)' : 'Parent Notification & Broadcast Desk'}
                             </h5>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-stone-600 mt-0.5">
                               {language === 'sw'
                                 ? 'Wajulishe wazazi wote mara moja kuwa matokeo ya mitihani yamechapishwa mtandaoni.'
                                 : 'Send instant WhatsApp or SMS announcements to notify parents that exam results are published.'}
@@ -2164,11 +2187,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </div>
                         </div>
 
-                        <div className="p-4 rounded-2xl bg-slate-950 border border-emerald-800/40 space-y-3">
-                          <span className="text-[11px] font-bold text-emerald-400 block uppercase">
+                        <div className="p-4 rounded-2xl bg-[#FAF7EE] border border-red-200 space-y-3">
+                          <span className="text-[11px] font-bold text-red-800 block uppercase">
                             Ujumbe Rasmi wa Shule (Tayari Kutumwa):
                           </span>
-                          <p className="text-xs text-slate-200 leading-relaxed font-mono bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+                          <p className="text-xs text-stone-800 leading-relaxed font-mono bg-[#FFFDF8] p-3.5 rounded-xl border border-red-200">
                             "Shule ya Sekondari Uomboni (NECTA S0486) inapenda kuwataarifu wazazi wote kuwa matokeo ya {teacherSelectedExam} ({teacherSelectedForm}) yamechapishwa mtandaoni. Unaweza kuangalia matokeo na kupakua Hati Rasmi ya PDF ya mwanao kupitia tovuti yetu: https://uombonisec.ac.tz/results. Karibuni sana."
                           </p>
 
@@ -2180,9 +2203,9 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 setCopiedBroadcastText(true);
                                 setTimeout(() => setCopiedBroadcastText(false), 3000);
                               }}
-                              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-700"
+                              className="px-4 py-2 rounded-xl bg-[#FFFDF8] hover:bg-[#FAF7EE] text-red-900 text-xs font-bold flex items-center gap-2 cursor-pointer border border-red-300"
                             >
-                              <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                              <Share2 className="w-3.5 h-3.5 text-red-700" />
                               <span>{copiedBroadcastText ? '✅ Ujumbe Umenakiliwa!' : 'Nakili Ujumbe (Copy Text)'}</span>
                             </button>
 
@@ -2192,7 +2215,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               )}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center gap-2 shadow-md cursor-pointer"
+                              className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-2 shadow-md cursor-pointer"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               <span>Tuma kwenye WhatsApp Groups za Wazazi</span>
@@ -2237,20 +2260,20 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                 /* Academic Master Authenticated Workspace */
                 <div className="space-y-6">
                   {/* Academic Master Controls Header */}
-                  <div className="bg-slate-900 p-4 rounded-2xl border border-emerald-800/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                  <div className="bg-[#FFFDF8] p-4 rounded-3xl border-2 border-red-200/80 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-base font-black text-white">
+                        <h4 className="text-base font-black text-stone-900">
                           {language === 'sw' ? 'Ofisi ya Mkuu wa Taaluma (Mwl. Yohana Bahati / Madam Adela Manyanga)' : 'Office of the Academic Masters (Mwl. Yohana Bahati & Madam Adela Manyanga)'}
                         </h4>
-                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 text-[10px] font-mono border border-slate-700">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FAF7EE] text-red-900 text-[10px] font-mono border border-red-200">
                           {academicEmailInput || 'academic@uomboni.sc.tz'}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
+                        <span className="px-2 py-0.5 rounded-full bg-red-700 text-[#FFFFF0] text-[10px] font-black uppercase">
                           Exams Dean
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-stone-600 mt-1">
                         {language === 'sw'
                           ? 'Usimamizi wa Mitihani ya NECTA, Mock, Midterms, na Ufunguzi wa Ripoti za Wanafunzi.'
                           : 'Comprehensive examination management, broadsheet exports, division engine, and published books.'}
@@ -2259,24 +2282,24 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                     <div className="flex flex-wrap items-center gap-2">
                       {recomputeSuccess && (
-                        <span className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-300 text-xs font-bold flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span className="px-3 py-1.5 rounded-xl bg-red-50 border border-red-300 text-red-800 text-xs font-bold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-red-700" />
                           <span>Division zimehesabiwa upya!</span>
                         </span>
                       )}
 
                       <button
                         onClick={handleRecomputeAllDivisions}
-                        className="px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
+                        className="px-3 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-red-900 border border-red-300 text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer"
                         title="Kokotoa Upya Division & Nafasi za Darasa kulingana na masomo 7 bora ya NECTA"
                       >
-                        <RefreshCw className="w-3.5 h-3.5" />
+                        <RefreshCw className="w-3.5 h-3.5 text-red-700" />
                         <span>{language === 'sw' ? 'Kokotoa Upya Division (Best 7)' : 'Auto-Compute Divisions'}</span>
                       </button>
 
                       <button
                         onClick={() => setIsAddResultModalOpen(true)}
-                        className="px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>{language === 'sw' ? 'Ongeza Matokeo' : 'Add Result'}</span>
@@ -2284,22 +2307,22 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                       <button
                         onClick={() => setIsAuthenticated(false)}
-                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-2 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-stone-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-red-200"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
+                        <LogOut className="w-3.5 h-3.5 text-red-700" />
                         <span>{language === 'sw' ? 'Toka' : 'Logout'}</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Academic Master Subtabs */}
-                  <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
+                  <div className="flex items-center gap-2 border-b-2 border-red-200 pb-2 overflow-x-auto">
                     <button
                       onClick={() => setAcademicActiveTab('teachers_admin')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'teachers_admin'
-                          ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <UserCheck className="w-3.5 h-3.5" />
@@ -2310,8 +2333,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('necta_sheet')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'necta_sheet'
-                          ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <Table className="w-3.5 h-3.5" />
@@ -2322,8 +2345,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('students_roster')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'students_roster'
-                          ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <Users className="w-3.5 h-3.5" />
@@ -2334,8 +2357,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('directives')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'directives'
-                          ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <BellRing className="w-3.5 h-3.5" />
@@ -2346,8 +2369,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('overview')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'overview'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
@@ -2358,8 +2381,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('broadsheet')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'broadsheet'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -2370,8 +2393,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       onClick={() => setAcademicActiveTab('pdfBooks')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'pdfBooks'
-                          ? 'bg-emerald-700 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
@@ -2426,40 +2449,40 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     <div className="space-y-4">
                       {/* Summary Cards */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-                          <span className="text-xs text-slate-400 uppercase font-bold block">{language === 'sw' ? 'Watahiniwa Wote' : 'Total Candidates'}</span>
-                          <span className="text-2xl font-black text-white mt-1 block">{studentResults.length}</span>
+                        <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-xs">
+                          <span className="text-xs text-stone-600 uppercase font-bold block">{language === 'sw' ? 'Watahiniwa Wote' : 'Total Candidates'}</span>
+                          <span className="text-2xl font-black text-stone-900 mt-1 block">{studentResults.length}</span>
                         </div>
-                        <div className="p-4 rounded-2xl bg-slate-900 border border-emerald-800/60">
-                          <span className="text-xs text-emerald-400 uppercase font-bold block">Division I</span>
-                          <span className="text-2xl font-black text-emerald-300 mt-1 block">
+                        <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-300 shadow-xs">
+                          <span className="text-xs text-red-800 uppercase font-bold block">Division I</span>
+                          <span className="text-2xl font-black text-red-700 mt-1 block">
                             {studentResults.filter(s => s.division === 'Division I').length}
                           </span>
                         </div>
-                        <div className="p-4 rounded-2xl bg-slate-900 border border-blue-800/60">
-                          <span className="text-xs text-blue-400 uppercase font-bold block">Division II & III</span>
-                          <span className="text-2xl font-black text-blue-300 mt-1 block">
+                        <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-xs">
+                          <span className="text-xs text-red-900 uppercase font-bold block">Division II & III</span>
+                          <span className="text-2xl font-black text-red-800 mt-1 block">
                             {studentResults.filter(s => s.division === 'Division II' || s.division === 'Division III').length}
                           </span>
                         </div>
-                        <div className="p-4 rounded-2xl bg-slate-900 border border-amber-800/60">
-                          <span className="text-xs text-amber-400 uppercase font-bold block">{language === 'sw' ? 'Wastani wa Shule' : 'School Average'}</span>
-                          <span className="text-2xl font-black text-amber-300 mt-1 block">
+                        <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-xs">
+                          <span className="text-xs text-stone-600 uppercase font-bold block">{language === 'sw' ? 'Wastani wa Shule' : 'School Average'}</span>
+                          <span className="text-2xl font-black text-red-700 mt-1 block">
                             {(studentResults.reduce((acc, s) => acc + s.averageMarks, 0) / (studentResults.length || 1)).toFixed(1)}%
                           </span>
                         </div>
                       </div>
 
                       {/* Top Ranked Students Table */}
-                      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 space-y-3">
-                        <h5 className="text-sm font-bold text-white flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      <div className="bg-[#FFFDF8] rounded-2xl border-2 border-red-200/80 p-4 space-y-3 shadow-md">
+                        <h5 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-red-700" />
                           <span>{language === 'sw' ? 'Wanafunzi Wanaoongoza Kitaaluma (Top Performers)' : 'Top Academic Performers'}</span>
                         </h5>
 
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
-                            <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] font-bold">
+                            <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
                               <tr>
                                 <th className="py-2 px-3">Nafasi</th>
                                 <th className="py-2 px-4">Jina</th>
@@ -2469,22 +2492,22 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 <th className="py-2 px-3">Pointi</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800/60 font-medium">
+                            <tbody className="divide-y divide-red-100 font-medium text-stone-800">
                               {[...studentResults]
                                 .sort((a, b) => b.averageMarks - a.averageMarks)
                                 .slice(0, 5)
                                 .map((s, idx) => (
-                                  <tr key={s.id} className="hover:bg-slate-800/40">
-                                    <td className="py-2.5 px-3 font-mono font-bold text-amber-400">#{idx + 1}</td>
-                                    <td className="py-2.5 px-4 font-bold text-white">{s.studentName}</td>
-                                    <td className="py-2.5 px-3 text-slate-300">{s.form}</td>
-                                    <td className="py-2.5 px-3 font-bold text-emerald-400">{s.averageMarks}%</td>
+                                  <tr key={s.id} className="hover:bg-[#FAF7EE]">
+                                    <td className="py-2.5 px-3 font-mono font-bold text-red-800">#{idx + 1}</td>
+                                    <td className="py-2.5 px-4 font-bold text-stone-900">{s.studentName}</td>
+                                    <td className="py-2.5 px-3 text-stone-600">{s.form}</td>
+                                    <td className="py-2.5 px-3 font-bold text-red-700">{s.averageMarks}%</td>
                                     <td className="py-2.5 px-3">
                                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${getDivisionBadge(s.division)}`}>
                                         {s.division}
                                       </span>
                                     </td>
-                                    <td className="py-2.5 px-3 font-mono text-white">{s.points}</td>
+                                    <td className="py-2.5 px-3 font-mono text-stone-900">{s.points}</td>
                                   </tr>
                                 ))}
                             </tbody>
@@ -2498,12 +2521,12 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {academicActiveTab === 'broadsheet' && (
                     <div className="space-y-4">
                       {/* Broadsheet Filter & Export Bar */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#FFFDF8] p-4 rounded-2xl border-2 border-red-200/80 shadow-xs">
                         <div className="flex flex-wrap items-center gap-2">
                           <select
                             value={broadsheetForm}
                             onChange={(e) => setBroadsheetForm(e.target.value)}
-                            className="p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-bold"
+                            className="p-2 rounded-xl bg-[#FAF7EE] border border-red-300 text-xs text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                           >
                             <option value="ALL">Madarasa Yote (All Forms)</option>
                             <option value="Form 1">Kidato cha 1 (Form 1)</option>
@@ -2515,7 +2538,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           <select
                             value={broadsheetExam}
                             onChange={(e) => setBroadsheetExam(e.target.value)}
-                            className="p-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-bold"
+                            className="p-2 rounded-xl bg-[#FAF7EE] border border-red-300 text-xs text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                           >
                             <option value="ALL">Mitihani Yote</option>
                             <option value="NECTA Mock 2025">NECTA Mock 2025</option>
@@ -2528,7 +2551,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => downloadClassBroadsheetPdf(broadsheetResults, `BROADSHEET YA MATOKEO - ${broadsheetForm}`)}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            className="px-3 py-1.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>{language === 'sw' ? 'Pakua Broadsheet (PDF)' : 'Download PDF Broadsheet'}</span>
@@ -2536,19 +2559,19 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                           <button
                             onClick={() => exportResultsToExcel(broadsheetResults, `BROADSHEET_${broadsheetForm}_${Date.now()}.xlsx`)}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-amber-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 rounded-xl bg-[#FAF7EE] hover:bg-red-50 border border-red-300 text-red-900 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                           >
-                            <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
+                            <FileSpreadsheet className="w-3.5 h-3.5 text-red-700" />
                             <span>{language === 'sw' ? 'Hamisha Excel (.xlsx)' : 'Export Excel'}</span>
                           </button>
                         </div>
                       </div>
 
                       {/* Broadsheet Grid */}
-                      <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                      <div className="bg-[#FFFDF8] rounded-2xl border-2 border-red-200/80 overflow-hidden shadow-md">
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
-                            <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                            <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
                               <tr>
                                 <th className="py-2.5 px-3">#</th>
                                 <th className="py-2.5 px-3">Namba</th>
@@ -2568,7 +2591,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 <th className="py-2.5 px-3 text-center">Division</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800/60 font-medium">
+                            <tbody className="divide-y divide-red-100 font-medium text-stone-800">
                               {broadsheetResults.map((student, idx) => {
                                 const getSubGrade = (code: string) => {
                                   const s = student.subjects.find(sub => sub.code === code || sub.name.toLowerCase().includes(code.toLowerCase()));
@@ -2576,22 +2599,22 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                                 };
 
                                 return (
-                                  <tr key={`${student.id}-${student.examNumber || idx}-${idx}`} className="hover:bg-slate-800/40">
-                                    <td className="py-2 px-3 text-slate-500 font-mono">{idx + 1}</td>
-                                    <td className="py-2 px-3 font-mono text-amber-300 text-[11px]">{student.examNumber}</td>
-                                    <td className="py-2 px-4 font-bold text-white whitespace-nowrap">{student.studentName}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('011')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('012')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('013')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('021')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('022')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('031')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('032')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('033')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('041')}</td>
-                                    <td className="py-2 px-2 text-center font-bold text-slate-300">{getSubGrade('071')}</td>
-                                    <td className="py-2 px-2 text-center font-black text-amber-300">{student.averageMarks}%</td>
-                                    <td className="py-2 px-2 text-center font-mono font-bold text-white">{student.points}</td>
+                                  <tr key={`${student.id}-${student.examNumber || idx}-${idx}`} className="hover:bg-[#FAF7EE]">
+                                    <td className="py-2 px-3 text-stone-500 font-mono">{idx + 1}</td>
+                                    <td className="py-2 px-3 font-mono text-red-800 text-[11px] font-bold">{student.examNumber}</td>
+                                    <td className="py-2 px-4 font-bold text-stone-900 whitespace-nowrap">{student.studentName}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('011')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('012')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('013')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('021')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('022')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('031')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('032')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('033')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('041')}</td>
+                                    <td className="py-2 px-2 text-center font-bold text-stone-700">{getSubGrade('071')}</td>
+                                    <td className="py-2 px-2 text-center font-black text-red-700">{student.averageMarks}%</td>
+                                    <td className="py-2 px-2 text-center font-mono font-bold text-stone-900">{student.points}</td>
                                     <td className="py-2 px-3 text-center">
                                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${getDivisionBadge(student.division)}`}>
                                         {student.division}
@@ -2611,27 +2634,27 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {academicActiveTab === 'pdfBooks' && (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h5 className="text-sm font-bold text-white">
+                        <h5 className="text-sm font-bold text-stone-900">
                           {language === 'sw' ? 'Maktaba ya Vitabu Rasmi vya Matokeo (NECTA & Mock PDF Documents)' : 'Published Results Documents'}
                         </h5>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {resultsPdfDocuments.map((doc) => (
-                          <div key={doc.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                          <div key={doc.id} className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 space-y-3 shadow-sm">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 border border-red-200 flex items-center justify-center shrink-0">
                                   <FileText className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <h6 className="text-xs font-bold text-white">{doc.titleSw}</h6>
-                                  <p className="text-[10px] text-slate-400">{doc.form} • {doc.year} • {doc.fileSize}</p>
+                                  <h6 className="text-xs font-bold text-stone-900">{doc.titleSw}</h6>
+                                  <p className="text-[10px] text-stone-500">{doc.form} • {doc.year} • {doc.fileSize}</p>
                                 </div>
                               </div>
                             </div>
-                            <p className="text-xs text-slate-300">{doc.descriptionSw}</p>
-                            <div className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-amber-300 font-mono">
+                            <p className="text-xs text-stone-700">{doc.descriptionSw}</p>
+                            <div className="p-2 rounded-xl bg-[#FAF7EE] border border-red-200 text-[11px] text-red-900 font-mono">
                               {doc.divisionSummary}
                             </div>
                           </div>
@@ -2651,15 +2674,15 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
             <div className="space-y-6">
               {!isAuthenticated ? (
                 /* Student Login Screen */
-                <div className="max-w-md mx-auto p-6 rounded-3xl bg-slate-900 border border-emerald-800/60 shadow-2xl space-y-5">
+                <div className="max-w-md mx-auto p-6 rounded-3xl bg-[#FFFDF8] border-2 border-red-200/80 shadow-xl space-y-5">
                   <div className="text-center space-y-2">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-700 text-white flex items-center justify-center mx-auto font-black shadow-lg">
+                    <div className="w-14 h-14 rounded-2xl bg-red-700 text-[#FFFFF0] flex items-center justify-center mx-auto font-black shadow-md">
                       <GraduationCap className="w-8 h-8" />
                     </div>
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold text-stone-900">
                       {language === 'sw' ? 'Portal ya Mwanafunzi' : 'Student Academic Login'}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-stone-600">
                       {language === 'sw'
                         ? 'Weka Namba yako ya Mtihani au Namba ya Usajili kuangalia matokeo yako na kupakua Report Card.'
                         : 'Enter your Exam Number or Student ID to view your academic dashboard.'}
@@ -2668,7 +2691,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-bold text-slate-300 block mb-1">
+                      <label className="text-xs font-bold text-stone-700 block mb-1">
                         {language === 'sw' ? 'Namba ya Mtihani / Student ID:' : 'Exam Number / Student ID:'}
                       </label>
                       <input
@@ -2679,10 +2702,10 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           setStudentAuthError(false);
                         }}
                         placeholder="Mf. S0486/0001/2025 au Anna"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 font-mono"
+                        className="w-full p-2.5 rounded-xl bg-[#FAF7EE] border border-red-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-red-600 font-mono"
                       />
                       {studentAuthError && (
-                        <p className="text-xs text-rose-400 mt-1 font-semibold flex items-center gap-1">
+                        <p className="text-xs text-red-700 mt-1 font-semibold flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
                           <span>{language === 'sw' ? 'Namba haijapatikana. Jaribu "S0486/0001/2025" au "Anna"' : 'Student not found. Try "S0486/0001/2025" or "Anna"'}</span>
                         </p>
@@ -2691,17 +2714,17 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                     <button
                       onClick={handleStudentLogin}
-                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <Lock className="w-4 h-4" />
                       <span>{language === 'sw' ? 'Ingia Kwenye Portal' : 'Login to Portal'}</span>
                     </button>
 
                     <div className="pt-2 text-center">
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-stone-500">
                         {language === 'sw' ? 'Mfano wa Namba:' : 'Sample Exam No:'}{' '}
                         <span
-                          className="font-mono text-amber-400 font-bold cursor-pointer underline"
+                          className="font-mono text-red-800 font-bold cursor-pointer underline"
                           onClick={() => {
                             setStudentInputIdentifier('S0486/0001/2025');
                           }}
@@ -2716,15 +2739,15 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                 /* Student Authenticated View */
                 activeStudentResult && (
                   <div className="space-y-6">
-                    <div className="bg-slate-900 p-5 rounded-2xl border border-emerald-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="bg-[#FFFDF8] p-5 rounded-3xl border-2 border-red-200/80 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="text-base font-black text-white">{activeStudentResult.studentName}</h4>
+                          <h4 className="text-base font-black text-stone-900">{activeStudentResult.studentName}</h4>
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase ${getDivisionBadge(activeStudentResult.division)}`}>
                             {activeStudentResult.division}
                           </span>
                         </div>
-                        <p className="text-xs text-amber-300 font-mono mt-1">
+                        <p className="text-xs text-red-800 font-mono mt-1 font-bold">
                           {activeStudentResult.examNumber} • {activeStudentResult.form} ({activeStudentResult.stream})
                         </p>
                       </div>
@@ -2732,7 +2755,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => downloadStudentResultSlipPdf(activeStudentResult)}
-                          className="px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>{language === 'sw' ? 'Pakua Hati ya Matokeo (PDF)' : 'Download PDF Report'}</span>
@@ -2740,24 +2763,24 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
                         <button
                           onClick={() => setIsAuthenticated(false)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-[#FAF7EE] hover:bg-red-50 text-stone-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-red-200"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
+                          <LogOut className="w-3.5 h-3.5 text-red-700" />
                           <span>{language === 'sw' ? 'Toka' : 'Logout'}</span>
                         </button>
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-lg">
-                      <div className="p-4 bg-slate-950/60 border-b border-slate-800">
-                        <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                    <div className="bg-[#FFFDF8] rounded-2xl border-2 border-red-200/80 overflow-hidden shadow-md">
+                      <div className="p-4 bg-[#FAF7EE] border-b border-red-200">
+                        <h5 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                           {language === 'sw' ? 'Matokeo Yako ya Hivi Karibuni' : 'Your Academic Results'}
                         </h5>
                       </div>
 
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] font-bold">
+                          <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
                             <tr>
                               <th className="py-2.5 px-4">Somo</th>
                               <th className="py-2.5 px-3 text-center">Alama</th>
@@ -2766,18 +2789,18 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                               <th className="py-2.5 px-4">Maoni</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-800/60 font-medium">
+                          <tbody className="divide-y divide-red-100 font-medium text-stone-800">
                             {activeStudentResult.subjects.map((sub, idx) => (
-                              <tr key={idx} className="hover:bg-slate-800/40">
-                                <td className="py-3 px-4 font-bold text-white">{sub.name}</td>
-                                <td className="py-3 px-3 text-center font-black text-amber-300">{sub.score}</td>
+                              <tr key={idx} className="hover:bg-[#FAF7EE]">
+                                <td className="py-3 px-4 font-bold text-stone-900">{sub.name}</td>
+                                <td className="py-3 px-3 text-center font-black text-red-700">{sub.score}</td>
                                 <td className="py-3 px-3 text-center">
                                   <span className={`px-2.5 py-0.5 rounded-md border text-xs font-black ${getGradeBadge(sub.grade)}`}>
                                     {sub.grade}
                                   </span>
                                 </td>
-                                <td className="py-3 px-3 text-center font-mono font-bold text-white">{sub.points}</td>
-                                <td className="py-3 px-4 text-slate-300">{sub.remarks}</td>
+                                <td className="py-3 px-3 text-center font-mono font-bold text-stone-900">{sub.points}</td>
+                                <td className="py-3 px-4 text-stone-600">{sub.remarks}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -2793,9 +2816,9 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
         </div>
 
         {/* ================= MODAL FOOTER ================= */}
-        <div className="bg-slate-950 border-t border-emerald-900/40 p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="bg-[#FAF7EE] border-t-2 border-red-200 p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-600">
           <div className="flex items-center gap-2 text-[11px]">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-red-700" />
             <span>
               {language === 'sw'
                 ? 'Mfumo Salama wa Kitaaluma • Uomboni Secondary School (S0486)'
@@ -2806,7 +2829,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold transition-all cursor-pointer shadow-md"
             >
               {language === 'sw' ? 'Funga Portal' : 'Close Portal'}
             </button>
@@ -2816,16 +2839,16 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
       {/* ================= ADD STUDENT RESULT MODAL (FOR ACADEMIC MASTER) ================= */}
       {isAddResultModalOpen && (
-        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-emerald-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-amber-400" />
+        <div className="fixed inset-0 z-60 bg-stone-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFFF0] border-2 border-red-300 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 text-stone-900 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-red-200">
+              <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-red-700" />
                 <span>{language === 'sw' ? 'Ongeza Matokeo ya Mwanafunzi Mpya' : 'Add New Student Result'}</span>
               </h3>
               <button
                 onClick={() => setIsAddResultModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1.5 rounded-xl bg-slate-800 cursor-pointer"
+                className="text-stone-500 hover:text-red-700 p-1.5 rounded-xl bg-[#FAF7EE] hover:bg-red-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2834,33 +2857,33 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
             <form onSubmit={handleCreateStudentResult} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Jina Kamili la Mwanafunzi *</label>
+                  <label className="font-bold text-stone-700 block mb-1">Jina Kamili la Mwanafunzi *</label>
                   <input
                     type="text"
                     required
                     value={newResultData.studentName}
                     onChange={(e) => setNewResultData({ ...newResultData, studentName: e.target.value })}
                     placeholder="Mf. JOHN PETER SWAI"
-                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-stone-900 font-bold focus:outline-hidden focus:border-red-600"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Namba ya Mtihani *</label>
+                  <label className="font-bold text-stone-700 block mb-1">Namba ya Mtihani *</label>
                   <input
                     type="text"
                     required
                     value={newResultData.examNumber}
                     onChange={(e) => setNewResultData({ ...newResultData, examNumber: e.target.value })}
                     placeholder="Mf. S0486/0029/2025"
-                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-mono"
+                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-red-800 font-mono font-bold focus:outline-hidden focus:border-red-600"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Kidato</label>
+                  <label className="font-bold text-stone-700 block mb-1">Kidato</label>
                   <select
                     value={newResultData.form}
                     onChange={(e) => setNewResultData({ ...newResultData, form: e.target.value as any })}
-                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                   >
                     <option value="Form 1">Form 1</option>
                     <option value="Form 2">Form 2</option>
@@ -2869,11 +2892,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Aina ya Mtihani</label>
+                  <label className="font-bold text-stone-700 block mb-1">Aina ya Mtihani</label>
                   <select
                     value={newResultData.examType}
                     onChange={(e) => setNewResultData({ ...newResultData, examType: e.target.value as any })}
-                    className="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
                   >
                     <option value="NECTA Mock 2025">NECTA Mock 2025</option>
                     <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
@@ -2885,11 +2908,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
               {/* Subject Marks Grid */}
               <div className="pt-2">
-                <label className="font-bold text-amber-400 block mb-2">Alama za Masomo (0 - 100):</label>
+                <label className="font-bold text-red-900 block mb-2">Alama za Masomo (0 - 100):</label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {STANDARD_SUBJECTS.map((sub) => (
-                    <div key={sub.code} className="p-2 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-[10px] font-bold text-slate-400 block truncate">{sub.name}</span>
+                    <div key={sub.code} className="p-2 rounded-xl bg-[#FFFDF8] border border-red-200">
+                      <span className="text-[10px] font-bold text-stone-600 block truncate">{sub.name}</span>
                       <input
                         type="number"
                         min="0"
@@ -2905,24 +2928,24 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                             },
                           });
                         }}
-                        className="w-full p-1 text-center font-bold text-amber-300 rounded bg-slate-900 border border-slate-700 mt-1"
+                        className="w-full p-1 text-center font-bold text-red-800 rounded bg-[#FAF7EE] border border-red-300 mt-1 focus:outline-hidden focus:border-red-600"
                       />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t-2 border-red-200">
                 <button
                   type="button"
                   onClick={() => setIsAddResultModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#FAF7EE] text-stone-700 hover:bg-red-50 border border-red-200 font-bold cursor-pointer"
                 >
                   Ghairi
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black cursor-pointer shadow-md"
+                  className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] font-black cursor-pointer shadow-md"
                 >
                   Hifadhi Matokeo Sasa
                 </button>

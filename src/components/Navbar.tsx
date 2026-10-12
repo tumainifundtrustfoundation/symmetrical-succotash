@@ -14,6 +14,9 @@ import {
   Globe,
   LogIn,
   LogOut,
+  GraduationCap,
+  ShieldCheck,
+  Flame,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,7 +24,13 @@ interface NavbarProps {
   onNavigate?: (sectionId: string) => void;
   onOpenParentPortal?: () => void;
   onOpenStaffPortal?: () => void;
+  onOpenAcademicPortal?: () => void;
+  onOpenAdmin?: () => void;
+  onOpenNews?: () => void;
   onOpenAdmissions?: () => void;
+  onOpenJoiningInstructions?: () => void;
+  onOpenVituMuhimu?: () => void;
+  onOpenWelcome?: () => void;
   onOpenLogin?: () => void;
 }
 
@@ -30,7 +39,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenParentPortal,
   onOpenStaffPortal,
+  onOpenAcademicPortal,
+  onOpenAdmin,
+  onOpenNews,
   onOpenAdmissions,
+  onOpenJoiningInstructions,
+  onOpenVituMuhimu,
+  onOpenWelcome,
   onOpenLogin,
 }) => {
   const { language, setLanguage } = useLanguage();
@@ -60,6 +75,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleNavClick = (sectionId: string) => {
     setMobileMenuOpen(false);
+    if (sectionId === 'news' && onOpenNews) {
+      onOpenNews();
+      return;
+    }
     if (onNavigate) {
       onNavigate(sectionId);
     } else {
@@ -73,11 +92,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'about', label: 'About' },
     { id: 'academics', label: 'Academics' },
     { id: 'teachers', label: 'Teachers' },
-    { id: 'students', label: 'Students' },
-    { id: 'parents', label: 'Parents' },
-    { id: 'admissions', label: 'Admissions' },
-    { id: 'news', label: 'News & Events' },
     { id: 'gallery', label: 'Gallery' },
+    { id: 'news', label: '🔥 News' },
     { id: 'contact', label: 'Contact' },
   ];
 
@@ -101,18 +117,59 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {onOpenNews && (
+              <button
+                onClick={onOpenNews}
+                className="fire-news-btn liquid-btn inline-flex items-center gap-1.5 px-3.5 py-1 text-[11px] font-black text-white border border-amber-300/80 transition-all cursor-pointer group"
+                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <span className="relative flex items-center justify-center">
+                    <span className="absolute -inset-1 rounded-full bg-yellow-400 blur-xs opacity-75 animate-ping" />
+                    <Flame className="w-3.5 h-3.5 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_6px_rgba(255,200,0,1)]" />
+                  </span>
+                  <span className="drop-shadow-xs">{language === 'sw' ? 'Habari Mpya' : 'Hot News'}</span>
+                  <span className="px-1 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[8px] font-black uppercase">
+                    HOT
+                  </span>
+                </span>
+              </button>
+            )}
+            {onOpenWelcome && (
+              <button
+                onClick={onOpenWelcome}
+                className="liquid-btn liquid-btn-frosted hidden lg:inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 cursor-pointer"
+                title="Welcome Screen (Animated Embossed Login)"
+              >
+                <span className="relative z-10 flex items-center gap-1">✨ Welcome Screen</span>
+              </button>
+            )}
+            {onOpenAcademicPortal && (
+              <button
+                onClick={onOpenAcademicPortal}
+                className="liquid-btn liquid-btn-gold hidden sm:inline-flex items-center gap-1.5 text-[11px] font-black px-3.5 py-1 cursor-pointer"
+                title="Lango la Taaluma na Mitihani (Academic Portal)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <GraduationCap className="w-3.5 h-3.5 text-amber-950" />
+                  <span>🎓 Portal ya Taaluma</span>
+                </span>
+              </button>
+            )}
             <span className="text-[11px] font-semibold tracking-wider text-[#C9A227]">
               NECTA CENTRE S0486
             </span>
             <span className="text-[#FFFFF0]/30">|</span>
             <button
               onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFFFF0]/90 hover:text-[#C9A227] transition-colors cursor-pointer"
+              className="liquid-btn liquid-btn-frosted inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 text-[#FFFFF0] cursor-pointer"
               title="Change Language"
             >
-              <Globe className="w-3 h-3 text-[#C9A227]" />
-              {language === 'sw' ? 'English' : 'Kiswahili'}
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Globe className="w-3 h-3 text-[#C9A227]" />
+                <span>{language === 'sw' ? 'English' : 'Kiswahili'}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -165,49 +222,99 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
+            {onOpenNews && (
+              <button
+                id="nav-news-hot-btn"
+                onClick={onOpenNews}
+                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden"
+                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
+              >
+                {/* Glowing flame aura */}
+                <span className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-orange-400/40 to-red-600/30 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse pointer-events-none" />
+
+                <span className="relative z-10 flex items-center gap-2">
+                  {/* Animated dancing burning flame */}
+                  <span className="relative flex items-center justify-center">
+                    <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
+                    <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
+                  </span>
+
+                  <span className="font-black tracking-wider uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
+                    {language === 'sw' ? 'Habari' : 'News'}
+                  </span>
+
+                  <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black uppercase tracking-wider animate-pulse shadow-sm">
+                    🔥 HOT
+                  </span>
+                </span>
+              </button>
+            )}
+
+            {onOpenAdmin && (
+              <button
+                id="nav-admin-portal-btn"
+                onClick={onOpenAdmin}
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer"
+                title="Lango la Utawala & Udahili (Administration)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-950" />
+                  <span>Administration</span>
+                </span>
+              </button>
+            )}
+
             <button
               id="nav-parent-portal-btn"
               onClick={onOpenParentPortal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#102A43] border border-[#102A43]/25 hover:border-[#102A43] hover:bg-[#FFFFF0] rounded-md transition-colors cursor-pointer"
+              className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
             >
-              <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span>Parent Portal</span>
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Parent Portal</span>
+              </span>
             </button>
 
             <button
               id="nav-staff-portal-btn"
               onClick={onOpenStaffPortal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#102A43] hover:bg-[#0A1C2E] rounded-md transition-colors shadow-xs cursor-pointer"
+              className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
             >
-              <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span>Staff Portal</span>
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Staff Portal</span>
+              </span>
             </button>
 
             {user ? (
               <div className="flex items-center gap-2">
-                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F5EBD7] rounded text-xs text-[#704214] border border-[#704214]/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                  <span className="font-semibold truncate max-w-[110px]">{userProfile?.fullName || user.email?.split('@')[0]}</span>
+                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-[#F5EBD7] rounded-full text-xs text-[#704214] border border-[#704214]/20 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" />
+                  <span className="font-bold truncate max-w-[110px]">{userProfile?.fullName || user.email?.split('@')[0]}</span>
                   <span className="text-[10px] uppercase font-bold text-[#704214]/70">({userProfile?.role || 'user'})</span>
                 </div>
                 <button
                   onClick={() => logout()}
-                  className="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-semibold text-[#704214] hover:bg-[#F5EBD7] rounded border border-[#704214]/20 transition-colors cursor-pointer"
+                  className="liquid-btn liquid-btn-sepia inline-flex items-center gap-1 px-3 py-2 text-xs font-bold cursor-pointer"
                   title="Ondoka kwenye mfumo (Logout)"
                 >
-                  <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>Toka</span>
+                  <span className="relative z-10 flex items-center gap-1">
+                    <LogOut className="w-3.5 h-3.5 text-[#C9A227]" />
+                    <span>Toka</span>
+                  </span>
                 </button>
               </div>
             ) : (
               <button
                 id="nav-login-btn"
                 onClick={onOpenLogin}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#704214] bg-[#F5EBD7] hover:bg-white border border-[#704214]/25 rounded-md transition-colors cursor-pointer shadow-2xs"
+                className="liquid-btn liquid-btn-sepia inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
                 title="Ingia kwenye Mfumo (Login)"
               >
-                <LogIn className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Ingia</span>
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <LogIn className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <span>Ingia</span>
+                </span>
               </button>
             )}
           </div>
@@ -247,15 +354,80 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             <div className="pt-6 mt-4 border-t border-slate-200 flex flex-col gap-2.5">
+              {onOpenNews && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenNews();
+                  }}
+                  className="fire-news-btn liquid-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <span className="relative flex items-center justify-center">
+                      <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
+                      <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
+                    </span>
+                    <span className="drop-shadow-xs">🔥 Habari Mpya &amp; Matangazo (Hot News)</span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black animate-pulse">
+                      HOT
+                    </span>
+                  </span>
+                </button>
+              )}
+
+              {onOpenAdmin && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAdmin();
+                  }}
+                  className="liquid-btn liquid-btn-gold w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black cursor-pointer shadow-md"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-950 shrink-0" />
+                    <span>🏛️ Administration (Utawala &amp; Udahili)</span>
+                  </span>
+                </button>
+              )}
+
+              {onOpenWelcome && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenWelcome();
+                  }}
+                  className="liquid-btn liquid-btn-frosted !text-stone-900 !bg-stone-100 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer border border-slate-300 shadow-xs"
+                >
+                  <span className="relative z-10">✨ Welcome Screen (Embossed Login)</span>
+                </button>
+              )}
+
+              {onOpenAcademicPortal && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAcademicPortal();
+                  }}
+                  className="liquid-btn liquid-btn-gold w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black cursor-pointer shadow-md"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-amber-950 shrink-0" />
+                    <span>🎓 Portal ya Taaluma (Academic Portal)</span>
+                  </span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   if (onOpenParentPortal) onOpenParentPortal();
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#102A43] border border-[#102A43]/30 rounded-md hover:bg-[#FFFFF0] transition-colors cursor-pointer"
+                className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
               >
-                <Users className="w-4 h-4 text-[#C9A227]" />
-                <span>Parent Portal</span>
+                <span className="relative z-10 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#C9A227]" />
+                  <span>Parent Portal</span>
+                </span>
               </button>
 
               <button
@@ -263,10 +435,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   if (onOpenStaffPortal) onOpenStaffPortal();
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-[#102A43] rounded-md hover:bg-[#0A1C2E] transition-colors cursor-pointer shadow-xs"
+                className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
               >
-                <Lock className="w-4 h-4 text-[#C9A227]" />
-                <span>Staff Portal</span>
+                <span className="relative z-10 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#C9A227]" />
+                  <span>Staff Portal</span>
+                </span>
               </button>
 
               {user ? (
@@ -275,10 +449,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#704214] bg-[#F5EBD7] rounded-md hover:bg-[#F5EBD7]/80 transition-colors cursor-pointer"
+                  className="liquid-btn liquid-btn-sepia w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4 text-[#C9A227]" />
-                  <span>Toka ({userProfile?.fullName || user.email?.split('@')[0]})</span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    <LogOut className="w-4 h-4 text-[#C9A227]" />
+                    <span>Toka ({userProfile?.fullName || user.email?.split('@')[0]})</span>
+                  </span>
                 </button>
               ) : (
                 <button
@@ -286,22 +462,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     if (onOpenLogin) onOpenLogin();
                   }}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#704214] bg-[#F5EBD7] border border-[#704214]/25 rounded-md hover:bg-white transition-colors cursor-pointer"
+                  className="liquid-btn liquid-btn-sepia w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
                 >
-                  <LogIn className="w-4 h-4 text-[#C9A227]" />
-                  <span>Ingia kwenye Akaunti (Login)</span>
-                </button>
-              )}
-
-              {onOpenAdmissions && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAdmissions();
-                  }}
-                  className="w-full text-center px-4 py-2.5 text-xs font-semibold text-[#102A43] bg-[#FFFFF0] border border-[#C9A227]/40 rounded-md hover:bg-white transition-colors cursor-pointer"
-                >
-                  Apply for Admissions
+                  <span className="relative z-10 flex items-center gap-2">
+                    <LogIn className="w-4 h-4 text-[#C9A227]" />
+                    <span>Ingia kwenye Akaunti (Login)</span>
+                  </span>
                 </button>
               )}
             </div>

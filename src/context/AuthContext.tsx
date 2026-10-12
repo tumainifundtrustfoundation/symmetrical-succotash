@@ -33,8 +33,8 @@ interface AuthContextType {
   loading: boolean;
   authMessage: AuthMessage | null;
   setAuthMessage: (msg: AuthMessage | null) => void;
-  activeView: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website';
-  setActiveView: (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website') => void;
+  activeView: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome';
+  setActiveView: (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome') => void;
   activeRoleDashboard: UserRole;
   setActiveRoleDashboard: (role: UserRole) => void;
   login: (email: string, password: string, rememberMe?: boolean, preferredRole?: UserRole) => Promise<{ success: boolean; error?: string }>;
@@ -65,7 +65,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<AuthMessage | null>(null);
-  const [activeView, setActiveView] = useState<'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website'>('website');
+  const [activeView, setActiveView] = useState<'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome'>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/welcome' || hash === '#welcome') return 'welcome';
+      if (path === '/login' || hash === '#login') return 'login';
+      if (path === '/signup' || hash === '#signup') return 'signup';
+      const savedView = sessionStorage.getItem('uomboni_view');
+      if (!savedView && !hash) return 'welcome';
+    }
+    return 'website';
+  });
   const [activeRoleDashboard, setActiveRoleDashboard] = useState<UserRole>('student');
 
   // Handle URL hash / path on initial load
@@ -74,7 +85,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
 
-      if (path === '/login' || hash === '#login') {
+      if (path === '/welcome' || hash === '#welcome') {
+        setActiveView('welcome');
+      } else if (path === '/login' || hash === '#login') {
         setActiveView('login');
       } else if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') {
         setActiveView('signup');

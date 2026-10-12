@@ -684,10 +684,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [alerts, setAlerts] = useState<UrgentAlert[]>(() => {
     const loaded = safeGetStorage<UrgentAlert[]>('uomboni_alerts', INITIAL_ALERTS);
-    if (!Array.isArray(loaded) || loaded.length === 0) {
-      return INITIAL_ALERTS;
-    }
-    return loaded;
+    const source = (Array.isArray(loaded) && loaded.length > 0) ? loaded : INITIAL_ALERTS;
+    return source.filter((a) => a.id !== 'alert-flyer-001' && !a.messageSw?.toLowerCase().includes('pre-form'));
   });
 
   const [resultsPdfDocuments, setResultsPdfDocuments] = useState<ResultsPdfDocument[]>(() => {

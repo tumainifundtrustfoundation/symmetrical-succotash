@@ -21,7 +21,7 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-20 sm:py-24 bg-[#FFFFF0]">
+    <section id="contact" className="py-12 sm:py-16 bg-[#FFFFF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
           <span className="text-xs font-semibold text-[#C9A227] tracking-wider block mb-2 uppercase">

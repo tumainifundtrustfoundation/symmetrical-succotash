@@ -51,6 +51,7 @@ interface TeacherStaffPortalModalProps {
   onOpenAdminPortal?: () => void;
   onOpenBursarPortal?: () => void;
   onOpenStaffGate?: () => void;
+  onOpenAcademicPortal?: () => void;
 }
 
 export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = ({
@@ -59,6 +60,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
   onOpenAdminPortal,
   onOpenBursarPortal,
   onOpenStaffGate,
+  onOpenAcademicPortal,
 }) => {
   const { language } = useLanguage();
   const { students, teachers, timetable, studentNotices, studentResults } = useData();
@@ -406,6 +408,19 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                   ★ Somo: {authenticatedTeacher.subjects.join(', ')}
                 </span>
               </div>
+            )}
+
+            {onOpenAcademicPortal && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenAcademicPortal();
+                }}
+                className="px-2.5 py-1 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="Fungua Ofisi Kuu ya Taaluma na Mitihani"
+              >
+                <span>🎓 Ofisi ya Taaluma</span>
+              </button>
             )}
 
             {authenticatedTeacher ? (

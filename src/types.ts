@@ -185,7 +185,7 @@ export interface JoiningDocument {
   descriptionSw: string;
   descriptionEn: string;
   fileSize: string;
-  targetGroup: 'Kidato cha Kwanza (Form One)' | 'Uhamisho (Form Two/Three)' | 'Wanafunzi Wote' | 'Afya na Bima';
+  targetGroup: 'Kidato cha Kwanza (Form One)' | 'Uhamisho (Form Two/Three)' | 'Wanafunzi Wote' | 'Afya na Bima' | string;
   downloadCount: number;
   imageUrl?: string;
   pdfContentPreview: {
@@ -205,6 +205,8 @@ export interface GalleryPhoto {
   fallbackUrl?: string;
   filename?: string;
   date: string;
+  descriptionSw?: string;
+  descriptionEn?: string;
 }
 
 export interface ParentInquiry {

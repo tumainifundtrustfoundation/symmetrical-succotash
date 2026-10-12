@@ -372,16 +372,6 @@ export const SAVED_GALLERY: GalleryPhoto[] = [
 
 export const SAVED_ALERTS: UrgentAlert[] = [
   {
-    "id": "alert-flyer-001",
-    "messageSw": "🔥 UDAHILI WA PRE-FORM ONE NA KIDATO CHA 1 & 3 (2026/2027): Pre-Form One inaanza 21/09/2026! Fomu za maombi zinapatikana Ofisini Marangu, Moshi Bookshop & Ngarenaro. Ada nafuu kwa awamu!",
-    "messageEn": "🔥 ADMISSIONS OPEN 2026/2027: Pre-Form One commences 21/09/2026! Form 1 & 3 application forms available at School Office Marangu, Moshi Bookshop & Ngarenaro.",
-    "active": true,
-    "priority": "high",
-    "linkTextSw": "Maelezo ya Udahili",
-    "linkTextEn": "Admission Info",
-    "linkAction": "admissions"
-  },
-  {
     "id": "alert-001",
     "messageSw": "📢 Udahili wa Kidato cha Kwanza (2026) na Uhamisho wa Kidato cha 2 & 3 Unaendelea. Pakua fomu na maelekezo ya kujiunga sasa!",
     "messageEn": "📢 Form One 2026 Admissions & Form 2/3 Transfers are actively underway. Download Joining Instructions & Application forms now!",
@@ -3191,44 +3181,45 @@ export const SAVED_STUDENTS: StudentProfile[] = [
 export const SAVED_JOINING_DOCS: JoiningDocument[] = [
   {
     "id": "doc-flyer-2026",
-    "titleSw": "Muhtasari Rasmi wa Udahili 2026/2027 (Pre-Form One, Kidato cha 1 & 3)",
-    "titleEn": "Official Admission Announcement 2026/2027 (Pre-Form 1, Form 1 & 3)",
-    "descriptionSw": "Tangazo rasmi linaloainisha tarehe ya kuanza Pre-Form One (21/09/2026), fomu za kujiunga na mawasiliano ya ofisi Marangu, Moshi na Ngarenaro.",
-    "descriptionEn": "Official admissions announcement detailing Pre-Form One opening date (21/09/2026), registration forms and contact channels in Marangu, Moshi and Ngarenaro.",
+    "titleSw": "Muhtasari Rasmi wa Udahili 2026/2027 (Kidato cha 1 & 3)",
+    "titleEn": "Official Admission Announcement 2026/2027 (Form 1 & 3)",
+    "descriptionSw": "Tangazo rasmi linaloainisha tarehe za kuanza, fomu za kujiunga na mawasiliano ya ofisi Marangu, Moshi na Ngarenaro.",
+    "descriptionEn": "Official admissions announcement detailing Form 1 & 3 intake dates, registration forms and contact channels in Marangu, Moshi and Ngarenaro.",
     "fileSize": "195 KB (PDF Document)",
     "targetGroup": "Wanafunzi Wote",
     "downloadCount": 2350,
     "pdfContentPreview": {
       "header": "SHULE YA SEKONDARI UOMBONI - TANGAZO RASMI LA UDAHILI 2026/2027\nS.L.P 361 MARANGU, MOSHI (NECTA S0486)",
       "requirements": [
-        "Pre-Form One inaanza rasmi tarehe 21/09/2026.",
         "Nafasi za Kidato cha 1 na Kidato cha 3 (2026/2027) ziko wazi kwa wavulana na wasichana (Bweni & Kutwa).",
         "Fomu za kujiunga zinapatikana: Shuleni Marangu, Moshi Bookshop, na Ngarenaro.",
         "Mawasiliano: 0752 000 939 | 0782 558 127 | 0745 548 225 | 0754 532 949"
       ],
       "feesSummary": "Ada nafuu sana inayolipwa kwa awamu ili kumwezesha mzazi.",
-      "reportingDate": "Kuanzia 21/09/2026 (Pre-Form One)"
+      "reportingDate": "Januari 2026"
     }
   },
   {
     "id": "doc-001",
-    "titleSw": "Fomu Rasmi ya Maelekezo ya Kujiunga Kidato cha Kwanza (Form One Joining Instructions 2026)",
-    "titleEn": "Official Form One 2026 Joining Instructions & Admission Pack",
-    "descriptionSw": "Muongozo kamili unaoainisha ada ya shule, mahitaji ya bweni, orodha ya vifaa, muundo wa sare za shule na tarehe rasmi ya kuripoti kwa wateule wote wa kidato cha kwanza.",
-    "descriptionEn": "Comprehensive admission package detailing fees breakdown, boarding checklist, school uniform guidelines and reporting schedule for incoming Form One students.",
+    "titleSw": "Fomu Rasmi ya Kujiunga na Shule 2027 (Official Joining Instructions 2027)",
+    "titleEn": "Official School Joining Instructions Form 2027",
+    "descriptionSw": "Fomu rasmi ya kujiunga na Shule ya Sekondari Uomboni (2027). Inaainisha ada ya bweni (TZS 1,600,000/=), sare na vifaa shuleni (TZS 224,000/=), akaunti za benki (CRDB, NMB, Mkombozi) na mahitaji ya bweni.",
+    "descriptionEn": "Official admission prospectus for 2027 academic year. Features boarding fees (TZS 1,600,000/=), uniforms & supplies (TZS 224,000/=), bank accounts (CRDB, NMB, Mkombozi) and boarding gear.",
     "fileSize": "1.4 MB (PDF Document)",
     "targetGroup": "Kidato cha Kwanza (Form One)",
-    "downloadCount": 1420,
+    "downloadCount": 3840,
     "pdfContentPreview": {
-      "header": "SHULE YA SEKONDARI UOMBONI\nS.L.P 361 MARANGU - MOSHI VIJIJINI, KILIMANJARO (NECTA S0486)\nFOMU YA MAELEKEZO YA KUJIUNGA NA KIDATO CHA KWANZA (2026)",
+      "header": "JIMBO KATOLIKI MOSHI - SHULE YA SEKONDARI UOMBONI\nS.L.P 361, MARANGU - KILIMANJARO\nMAWASILIANO: Mkuu wa Shule: 0782 558 127 | Makamu: 0752 717 191/0785 402 452 | Mhasibu: 0752 000 939\nYAH: FOMU YA KUJIUNGA NA SHULE 2027",
       "requirements": [
-        "Sare za shule: Suruali/Sketi za rangi ya kijivu, mashati ya mikono mifupi ya bluu bahari, tai ya shule, sweta ya bluu yenye nembo.",
-        "Vifaa vya Taaluma: Mathematical Set ya Oxford, Kamusi ya Kiswahili & Oxford English Dictionary, Daftari kubwa (Counter Books) 12, Kalamu na Rula.",
-        "Mahitaji ya Bweni: Godoro la 2.5ft x 6ft, Shuka 2 za bluu bahari, Chandalua cha duara, Ndoo 2 za maji, Sanduku la chuma lenye kufuli.",
-        "Fomu ya Uchunguzi wa Afya (Medical Form) iliyojazwa na kugongwa muhuri na daktari wa Hospitali ya Serikali au Teule (DDH)."
+        "Shule itafunguliwa tarehe 07/01/2027, Wanafunzi wafike shuleni tarehe 07/01/2027 na masomo yataanza rasmi baada ya usahili kukamilika.",
+        "Mahali Shule Ilipo: Mkoani Kilimanjaro, Wilaya ya Moshi Vijijini, Kata ya Marangu-Magharibi, Kijiji cha Kiraracha, karibu na Parokia ya Bikira Maria Malkia wa Rozari Takatifu - Uomboni.",
+        "Malipo ya Bweni (kulala): Ada Muhula wa Kwanza TZS 800,000/=, Ada Muhula wa Pili TZS 800,000/= (Jumla TZS 1,600,000/=).",
+        "Sare na Vifaa vya Shule (TZS 224,000/=): Suruali 2/sketi 2 na shati 2 (70,000/=), T-shirt (15,000/=), Sweta (15,000/=), Kitambulisho (6,000/=), Nembo (5,000/=), Afya (25,000/=), Track suit (23,000/=), Ndoo, sahani, kijiko, kikombe (10,000/=), Godoro 2½×3×6 (55,000/=).",
+        "Akaunti za Benki: 01J1079051400 CRDB, 40302507439 NMB, na 0051150397901 MKOMBOZI. Mwanafunzi aje na pay-in-slip yenye majina matatu na kidato.",
+        "Mahitaji ya Bweni: Viatu jozi 2 vyeusi vya kamba, soksi ndefu nyeupe (wasichana), shuka 2 za pink/blue bahari & blanket zito 1, mto 1 & foronya 2, taulo 1, kanga/kitenge pea 1 (wasichana), nguo za michezo, tranka na kufuli, daftari 12 za counter book, jembe na ufagio 1, kamusi ya kingereza, rimu ya A4 isiyo na mistari."
       ],
-      "feesSummary": "Ada ya Bweni kwa Mwaka: TZS 1,300,000/= (Inalipwa kwa awamu 2 au 4). Ada ya Kutwa: TZS 600,000/= kwa mwaka.",
-      "reportingDate": "Jumapili, Tarehe 11 Januari 2026 (Kuanzia saa 2:00 Asubuhi hadi 11:00 Jioni)."
+      "feesSummary": "Ada ya Bweni: TZS 1,600,000/= + Sare na Vifaa Shuleni: TZS 224,000/= (Jumla Kuu: TZS 1,824,000/=). Hatupokei fedha taslimu shuleni.",
+      "reportingDate": "Tarehe 07/01/2027 (Kufunguliwa kwa Shule na Kuripoti)"
     }
   },
   {

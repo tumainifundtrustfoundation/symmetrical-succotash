@@ -88,6 +88,9 @@ interface AdminPortalModalProps {
   onClose: () => void;
   onOpenBursar?: () => void;
   onOpenAcademic?: (role: 'teacher' | 'academic_master') => void;
+  onOpenJoiningInstructions?: () => void;
+  onOpenVituMuhimu?: () => void;
+  onOpenAdmissions?: () => void;
 }
 
 export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
@@ -95,6 +98,9 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   onClose,
   onOpenBursar,
   onOpenAcademic,
+  onOpenJoiningInstructions,
+  onOpenVituMuhimu,
+  onOpenAdmissions,
 }) => {
   const { language } = useLanguage();
   const {
@@ -1325,6 +1331,9 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                     {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                <p className="mt-1.5 text-[11px] text-slate-400">
+                  {language === 'sw' ? 'Nenosiri la mfumo wa utawala: "admin" au "uomboni"' : 'Passcode for administration: "admin" or "uomboni"'}
+                </p>
               </div>
 
               {/* Main Login Button */}
@@ -1948,6 +1957,39 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                         <UserPlus className="w-4 h-4" />
                         <span>{language === 'sw' ? 'Sajili Ombi la Mwanafunzi' : 'New Application Entry'}</span>
                       </button>
+
+                      {onOpenJoiningInstructions && (
+                        <button
+                          onClick={onOpenJoiningInstructions}
+                          className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-transform hover:scale-102 cursor-pointer"
+                          title="Fungua Fomu Rasmi ya Kujiunga 2027 (Joining Instructions)"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>{language === 'sw' ? 'Fomu ya Kujiunga 2027' : 'Joining Instructions 2027'}</span>
+                        </button>
+                      )}
+
+                      {onOpenVituMuhimu && (
+                        <button
+                          onClick={onOpenVituMuhimu}
+                          className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs flex items-center gap-2 shadow-md border border-amber-400/30 transition-transform hover:scale-102 cursor-pointer"
+                          title="Orodha ya Vitu Muhimu (Essential Requirements Checklist)"
+                        >
+                          <PackageCheck className="w-4 h-4" />
+                          <span>{language === 'sw' ? 'Vitu Muhimu (Mahitaji)' : 'Essential Requirements'}</span>
+                        </button>
+                      )}
+
+                      {onOpenAdmissions && (
+                        <button
+                          onClick={onOpenAdmissions}
+                          className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-transform hover:scale-102 cursor-pointer"
+                          title="Fomu ya Maombi ya Mtandaoni (Apply Online Form)"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span>{language === 'sw' ? 'Fomu ya Maombi Mtandaoni' : 'Online Application Form'}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -2057,7 +2099,6 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                           <option value="Form 1">Kidato cha 1 (Form 1)</option>
                           <option value="Form 2 Transfer">Hamisho Form 2</option>
                           <option value="Form 3 Transfer">Hamisho Form 3</option>
-                          <option value="Pre-Form 1">Pre-Form 1</option>
                         </select>
                       </div>
 

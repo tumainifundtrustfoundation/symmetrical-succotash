@@ -137,6 +137,47 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
     };
   }
 
+  if (
+    cleanHash === 'joining-instructions' ||
+    cleanHash === 'joining' ||
+    cleanHash === 'fomu-kujiunga' ||
+    cleanHash === 'fomu' ||
+    cleanHash === 'maelekezo-kujiunga'
+  ) {
+    return {
+      title: 'Fomu Rasmi ya Kujiunga na Shule 2027 (Joining Instructions) | Uomboni Secondary School',
+      description:
+        'Fomu rasmi na maelekezo ya kujiunga na Shule ya Sekondari Uomboni (2027): Tarehe ya kufunguliwa 07/01/2027, mchanganuo wa ada ya bweni (TZS 1,600,000/=), sare na vifaa (TZS 224,000/=), akaunti za benki (CRDB, NMB, Mkombozi) na mahitaji ya bweni.',
+      keywords: [
+        'Fomu ya Kujiunga Uomboni 2027',
+        'Joining Instructions Uomboni 2027',
+        'Ada ya Shule Uomboni',
+        'Akaunti za Benki Uomboni',
+        'Mahitaji ya Bweni Uomboni',
+        'Form One Joining Instructions 2027',
+      ],
+      canonicalUrl: `${BASE_URL}/#joining-instructions`,
+      ogImage: DEFAULT_IMAGE,
+    };
+  }
+
+  if (cleanHash === 'vitu-muhimu' || cleanHash === 'mahitaji' || cleanHash === 'vitu' || cleanHash === 'requirements') {
+    return {
+      title: 'Vitu Muhimu vya Kujiunga na Shule | Uomboni Secondary School',
+      description:
+        'Orodha rasmi ya vitu muhimu vya kujiunga na Shule ya Sekondari Uomboni (NECTA S0486): Vifaa vya masomo na daftari, sare za shule, mahitaji ya bweni, sanduku la bati, nyaraka za usajili na vitu vilivyopigwa marufuku.',
+      keywords: [
+        'Vitu Muhimu Uomboni',
+        'Mahitaji ya Kujiunga Uomboni',
+        'Orodha ya Vitu vya Shule Uomboni',
+        'Sare za Shule Uomboni',
+        'Vifaa vya Bweni Uomboni Secondary',
+      ],
+      canonicalUrl: `${BASE_URL}/#vitu-muhimu`,
+      ogImage: DEFAULT_IMAGE,
+    };
+  }
+
   if (isAdmissionsOpen || cleanHash === 'admissions' || cleanHash === 'kujiunga') {
     return {
       title: 'Udahili & Maombi ya Kujiunga 2026/2027 | Uomboni Secondary School',
@@ -177,6 +218,17 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
   }
 
   // 2. Active Views (Dedicated full-screen pages)
+  if (activeView === 'welcome' || cleanHash === 'welcome' || cleanHash === 'karibu') {
+    return {
+      title: 'Welcome Screen (Animated Embossed Login) | Uomboni Secondary School',
+      description:
+        'Karibu Shule ya Sekondari Uomboni (NECTA S0486), Marangu - Moshi. Lango rasmi la kuingia kwenye mifumo ya shule na kutembelea tovuti rasmi ya shule.',
+      keywords: ['Welcome Uomboni', 'Animated Embossed Login Uomboni', 'Karibu Uomboni Secondary'],
+      canonicalUrl: `${BASE_URL}/#welcome`,
+      ogImage: DEFAULT_IMAGE,
+    };
+  }
+
   if (activeView === 'portal' || cleanHash === 'portal' || cleanHash === 'dashboard') {
     return {
       title: 'School Portal & Dashboard | Uomboni Secondary School (NECTA S0486)',

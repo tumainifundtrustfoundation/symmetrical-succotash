@@ -204,7 +204,7 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-bold text-amber-950 text-xs">
-                        {language === 'sw' ? 'Pre-Form One (21/09/2026) & Kidato cha 1 & 3 (2026–2027)' : 'Pre-Form One (21/09/2026) & Form 1 & 3 (2026–2027)'}
+                        {language === 'sw' ? 'Udahili wa Kidato cha 1 & 3 (2026–2027)' : 'Form 1 & 3 Admissions (2026–2027)'}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-bold">
                         {language === 'sw' ? 'Ada Nafuu kwa Awamu' : 'Installment Fees'}
@@ -281,7 +281,6 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({ isOpen, onClose })
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white"
                     >
                       <option value="Form 1">Kidato cha 1 (Form One 2026)</option>
-                      <option value="Pre-Form 1">Pre-Form One (Maandalizi)</option>
                       <option value="Form 2 Transfer">Uhamisho Kidato cha 2 (Form 2 Transfer)</option>
                       <option value="Form 3 Transfer">Uhamisho Kidato cha 3 (Form 3 Transfer)</option>
                     </select>

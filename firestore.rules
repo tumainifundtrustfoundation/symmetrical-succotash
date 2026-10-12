@@ -36,7 +36,7 @@ service cloud.firestore {
     }
 
     function isAcademicMaster() {
-      return isAdmin() || (
+      return isAdmin() || hasRole('academic_master') || hasRole('teacher') || (
         isAuthenticated() && request.auth.token.email != null && (
           request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
           request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
@@ -229,7 +229,7 @@ service cloud.firestore {
     // ====================================================
     match /academicDirectives/{directiveDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(directiveDocId) && (isAcademicMaster() || isAdmin());
+      allow create, update, delete: if isValidId(directiveDocId) && (isAcademicMaster() || isAdmin() || isStaff());
     }
 
     // ====================================================

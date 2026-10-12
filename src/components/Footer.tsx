@@ -12,14 +12,20 @@ import {
   Facebook,
   Youtube,
   MessageCircle,
-  FileText
+  FileText,
+  Flame
 } from 'lucide-react';
 
 interface FooterProps {
   onNavigate?: (sectionId: string) => void;
   onOpenStaffPortal?: () => void;
   onOpenParentPortal?: () => void;
+  onOpenAcademicPortal?: () => void;
+  onOpenAdmin?: () => void;
+  onOpenNews?: () => void;
   onOpenAdmissions?: () => void;
+  onOpenJoiningInstructions?: () => void;
+  onOpenVituMuhimu?: () => void;
   onOpenResults?: () => void;
 }
 
@@ -27,7 +33,12 @@ export const Footer: React.FC<FooterProps> = ({
   onNavigate,
   onOpenStaffPortal,
   onOpenParentPortal,
+  onOpenAcademicPortal,
+  onOpenAdmin,
+  onOpenNews,
   onOpenAdmissions,
+  onOpenJoiningInstructions,
+  onOpenVituMuhimu,
   onOpenResults,
 }) => {
   const scrollToTop = () => {
@@ -138,23 +149,41 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               </li>
               <li>
+                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                  Academics
+                </button>
+              </li>
+              <li>
                 <button onClick={() => handleNav('teachers')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
                   Our Teachers
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('students')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Student Life
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('news')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  News &amp; Events
+                <button
+                  onClick={() => {
+                    if (onOpenNews) onOpenNews();
+                    else handleNav('news');
+                  }}
+                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer group"
+                >
+                  <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-500 animate-bounce" />
+                  <span>Habari Mpya (Hot News)</span>
                 </button>
               </li>
               <li>
                 <button onClick={() => handleNav('gallery')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Photo Gallery
+                  Photo Gallery (Picha)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onOpenAdmin) onOpenAdmin();
+                    else handleNav('about');
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold"
+                >
+                  Administration (Utawala)
                 </button>
               </li>
               <li>
@@ -201,68 +230,77 @@ export const Footer: React.FC<FooterProps> = ({
                   Languages &amp; Arts
                 </button>
               </li>
+              <li className="pt-1.5 border-t border-white/10">
+                <button
+                  onClick={() => {
+                    if (onOpenAcademicPortal) onOpenAcademicPortal();
+                    else handleNav('academics');
+                  }}
+                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer"
+                >
+                  <span>🎓 Portal ya Taaluma (Broadsheets)</span>
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Col 4: Admissions & Results (2 cols) */}
+          {/* Col 4: Administration & Examination Results (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Admissions &amp; Results
+              Administration &amp; Results
             </h4>
             <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
               <li>
                 <button
                   onClick={() => {
-                    if (onOpenAdmissions) onOpenAdmissions();
-                    else handleNav('admissions');
+                    if (onOpenAdmin) onOpenAdmin();
+                    else handleNav('about');
                   }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-amber-300 font-bold flex items-center gap-1.5"
                 >
-                  Form 1 Enrollment
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    if (onOpenAdmissions) onOpenAdmissions();
-                    else handleNav('admissions');
-                  }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
-                >
-                  Student Transfers
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    if (onOpenAdmissions) onOpenAdmissions();
-                    else handleNav('admissions');
-                  }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
-                >
-                  Joining Instructions
+                  <span>🏛️ Jopo la Utawala (Administration)</span>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => {
                     if (onOpenResults) onOpenResults();
-                    else handleNav('results');
+                    else handleNav('academics');
                   }}
                   className="hover:text-[#C9A227] transition-colors cursor-pointer"
                 >
-                  NECTA Results (S0486)
+                  Matokeo ya NECTA (S0486)
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => {
                     if (onOpenResults) onOpenResults();
-                    else handleNav('results');
+                    else handleNav('academics');
                   }}
                   className="hover:text-[#C9A227] transition-colors cursor-pointer"
                 >
-                  School Results
+                  Matokeo ya Mitihani ya Shule
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onOpenStaffPortal) onOpenStaffPortal();
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                >
+                  Lango la Walimu (Staff Portal)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onOpenParentPortal) onOpenParentPortal();
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                >
+                  Lango la Wazazi (Parent Portal)
                 </button>
               </li>
             </ul>

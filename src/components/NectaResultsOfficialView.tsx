@@ -96,40 +96,40 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
     downloadClassBroadsheetPdf(currentResults, title);
   };
 
-  // Helper for division cell styling
+  // Helper for division cell styling (Ivory & Red theme)
   const getDivColor = (div: string) => {
     const d = (div || '').toUpperCase();
     if (d.includes('I') && !d.includes('II') && !d.includes('III') && !d.includes('IV')) {
-      return 'font-black text-emerald-800 bg-emerald-50';
+      return 'font-black text-red-700 bg-red-100/90';
     }
     if (d.includes('II') && !d.includes('III')) {
-      return 'font-black text-blue-800 bg-blue-50';
+      return 'font-black text-red-800 bg-red-50';
     }
     if (d.includes('III')) {
-      return 'font-bold text-amber-800 bg-amber-50';
+      return 'font-bold text-stone-800 bg-[#FAF7EE]';
     }
     if (d.includes('IV')) {
-      return 'font-semibold text-orange-800 bg-orange-50';
+      return 'font-semibold text-stone-700 bg-[#FAF7EE]';
     }
     if (d.includes('ABS')) {
-      return 'font-bold text-red-800 bg-red-50';
+      return 'font-bold text-red-900 bg-red-100';
     }
-    return 'font-bold text-red-700 bg-red-50/70';
+    return 'font-bold text-red-800 bg-red-50/70';
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden space-y-6 print:border-none print:shadow-none print:p-0">
+    <div className="bg-[#FFFDF8] rounded-3xl border-2 border-red-200/80 shadow-md overflow-hidden space-y-6 print:border-none print:shadow-none print:p-0">
       {/* 1. TOP CONTROLS & FILTER BAR */}
-      <div className="p-4 bg-slate-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
+      <div className="p-4 bg-[#FAF7EE] text-stone-900 border-b-2 border-red-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
         <div className="flex flex-wrap items-center gap-3">
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-stone-600 block mb-1">
               {language === 'sw' ? 'Chagua Kidato' : 'Select Form'}
             </label>
             <select
               value={selectedForm}
               onChange={(e) => setSelectedForm(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-hidden focus:border-amber-400 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs font-bold text-stone-900 focus:outline-hidden focus:border-red-600 cursor-pointer"
             >
               {availableForms.map((f) => (
                 <option key={f} value={f}>
@@ -141,13 +141,13 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
           </div>
 
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+            <label className="text-[10px] uppercase font-bold text-stone-600 block mb-1">
               {language === 'sw' ? 'Aina ya Mtihani' : 'Exam Type'}
             </label>
             <select
               value={selectedExam}
               onChange={(e) => setSelectedExam(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-hidden focus:border-amber-400 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs font-bold text-stone-900 focus:outline-hidden focus:border-red-600 cursor-pointer"
             >
               {availableExams.map((ex) => (
                 <option key={ex} value={ex}>
@@ -161,15 +161,15 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
           {/* Academic Master Controls if authorized */}
           {isAcademicMasterView && (
             <div className="pt-3 sm:pt-0">
-              <label className="text-[10px] uppercase font-bold text-amber-400 block mb-1">
+              <label className="text-[10px] uppercase font-bold text-red-800 block mb-1">
                 {language === 'sw' ? 'Usimamizi wa Mkuu wa Taaluma' : 'Academic Master Control'}
               </label>
               <div className="flex items-center gap-2">
                 <div
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-emerald-950/80 text-emerald-300 border border-emerald-500/40"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-[#FFFDF8] text-red-900 border border-red-300"
                   title="Majina ya wanafunzi yanaonekana wazi kwenye orodha zote za portal"
                 >
-                  <Eye className="w-3.5 h-3.5 text-amber-400" />
+                  <Eye className="w-3.5 h-3.5 text-red-700" />
                   <span>
                     {language === 'sw'
                       ? 'Majina Yote Yanaonekana Kwenye Portal'
@@ -179,20 +179,20 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
 
                 <button
                   onClick={() => publishResultsToParents(!isResultsPublishedToParents)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer border ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer border shadow-sm ${
                     isResultsPublishedToParents
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500'
-                      : 'bg-red-600 hover:bg-red-500 text-white border-red-500 animate-pulse'
+                      ? 'bg-red-700 hover:bg-red-800 text-[#FFFFF0] border-red-800'
+                      : 'bg-stone-800 hover:bg-stone-900 text-[#FFFFF0] border-stone-800'
                   }`}
                 >
                   {isResultsPublishedToParents ? (
                     <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#FFFFF0]" />
                       <span>{language === 'sw' ? 'Yameruhusiwa kwa Wazazi' : 'Live to Parents'}</span>
                     </>
                   ) : (
                     <>
-                      <Lock className="w-3.5 h-3.5 text-white" />
+                      <Lock className="w-3.5 h-3.5 text-[#FFFFF0]" />
                       <span>{language === 'sw' ? 'Ruhusu Matokeo kwa Wazazi' : 'Publish to Parents'}</span>
                     </>
                   )}
@@ -206,17 +206,17 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownloadBroadsheet}
-            className="px-3 py-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-emerald-600 transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
             title="Pakua Broadsheet ya Matokeo PDF"
           >
-            <Download className="w-3.5 h-3.5 text-amber-300" />
+            <Download className="w-3.5 h-3.5" />
             <span>PDF Broadsheet</span>
           </button>
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-[#FFFDF8] hover:bg-[#FAF7EE] text-stone-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-red-300 transition-all"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5 text-red-700" />
             <span>{language === 'sw' ? 'Chapisha' : 'Print'}</span>
           </button>
         </div>
@@ -224,17 +224,17 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
 
       {/* 2. PARENT SEARCH & CHILD IDENTIFICATION GATE */}
       <div className="px-6 pt-2 print:hidden">
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-slate-50 to-emerald-50 border-2 border-amber-300/80 shadow-xs space-y-3">
+        <div className="p-4 rounded-3xl bg-[#FAF7EE] border-2 border-red-200/80 shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-amber-900 font-black text-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+            <div className="flex items-center gap-2 text-red-950 font-black text-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
               <span>
                 {language === 'sw'
                   ? 'UTAMBUZI WA MTOTO WAKO NA ORODHA YA MATOKEO:'
                   : 'IDENTIFY YOUR CHILD & RESULTS LIST:'}
               </span>
             </div>
-            <span className="text-[11px] text-slate-600 font-medium">
+            <span className="text-[11px] text-stone-600 font-medium">
               {language === 'sw'
                 ? 'Majina yote ya wanafunzi yanaonekana wazi; weka jina au namba kuangazia mtoto wako'
                 : 'All candidate names are clearly displayed; search name or exam number to highlight your child'}
@@ -243,7 +243,7 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-red-700 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={parentChildQuery}
@@ -253,21 +253,21 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                     ? 'Weka namba ya mtihani au jina la mtoto wako (mfano: S0486/0002 au Baraka)...'
                     : 'Enter candidate number or student name (e.g. S0486/0002 or Baraka)...'
                 }
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 shadow-xs"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FFFDF8] border border-red-300 text-xs font-bold text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-red-600 shadow-xs"
               />
             </div>
 
             {/* Quick selector of sample students for convenience */}
             {currentResults.length > 0 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                <span className="text-slate-500 text-[10px] uppercase font-bold shrink-0">
+                <span className="text-stone-500 text-[10px] uppercase font-bold shrink-0">
                   {language === 'sw' ? 'Mifano:' : 'Quick Select:'}
                 </span>
                 {currentResults.slice(0, 4).map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setParentChildQuery(formatCno(c.examNumber))}
-                    className="px-2 py-1 rounded-lg bg-white hover:bg-amber-100 text-slate-800 hover:text-amber-950 text-[11px] font-mono font-bold border border-slate-200 transition-all cursor-pointer whitespace-nowrap shadow-xs"
+                    className="px-2 py-1 rounded-lg bg-[#FFFDF8] hover:bg-red-50 text-red-900 text-[11px] font-mono font-bold border border-red-200 transition-all cursor-pointer whitespace-nowrap shadow-xs"
                   >
                     {formatCno(c.examNumber)}
                   </button>
@@ -278,21 +278,21 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
 
           {/* Matched Child Notification Banner */}
           {matchedChildResult ? (
-            <div className="p-3 bg-emerald-900 text-white rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in duration-200">
+            <div className="p-3 bg-red-700 text-[#FFFFF0] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in duration-200">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 font-black flex items-center justify-center text-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#FFFFF0] text-red-700 font-black flex items-center justify-center text-sm shadow-xs">
                   ★
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase text-amber-300 tracking-wider">
+                    <span className="text-xs font-black uppercase text-red-100 tracking-wider">
                       {language === 'sw' ? 'MTOTO WAKO AMETAMBULIKA:' : 'YOUR CHILD IDENTIFIED:'}
                     </span>
-                    <span className="font-mono text-xs font-bold text-emerald-200">
+                    <span className="font-mono text-xs font-bold text-[#FFFFF0]">
                       {formatCno(matchedChildResult.examNumber)}
                     </span>
                   </div>
-                  <h4 className="text-sm font-black text-white">
+                  <h4 className="text-sm font-black text-[#FFFFF0]">
                     {matchedChildResult.studentName} ({matchedChildResult.form} - {matchedChildResult.division}, Pts: {matchedChildResult.points}, {matchedChildResult.averageMarks}%)
                   </h4>
                 </div>
@@ -307,14 +307,14 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                       setSelectedStudentForModal(matchedChildResult);
                     }
                   }}
-                  className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#FFFFF0] hover:bg-red-50 text-red-900 text-xs font-black flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  <FileText className="w-3.5 h-3.5 text-red-700" />
                   <span>{language === 'sw' ? 'Tazama Ripoti Rasmi (PDF)' : 'Official PDF Slip'}</span>
                 </button>
                 <button
                   onClick={() => setParentChildQuery('')}
-                  className="px-2.5 py-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-800 text-slate-300 text-xs font-bold cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl bg-red-800 hover:bg-red-900 text-[#FFFFF0] text-xs font-bold cursor-pointer"
                 >
                   ✕
                 </button>
@@ -322,8 +322,8 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
             </div>
           ) : (
             parentChildQuery.trim() && (
-              <div className="p-2.5 bg-amber-100/90 text-amber-950 rounded-xl text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+              <div className="p-2.5 bg-red-50 text-red-950 rounded-xl text-xs flex items-center gap-2 border border-red-200">
+                <AlertCircle className="w-4 h-4 text-red-700 shrink-0" />
                 <span>
                   {language === 'sw'
                     ? `Hakuna mwanafunzi aliyelingana na "${parentChildQuery}" katika ${selectedForm} - ${selectedExam}. Tafadhali thibitisha namba ya mtihani.`
@@ -337,16 +337,16 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
 
       {/* 3. UNPUBLISHED WARNING IF ACADEMIC MASTER HAS NOT APPROVED YET */}
       {!isResultsPublishedToParents && (
-        <div className="mx-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 space-y-2">
+        <div className="mx-6 p-4 rounded-3xl bg-[#FAF7EE] border-2 border-red-300 text-stone-900 space-y-2">
           <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-amber-700" />
-            <h4 className="text-sm font-black uppercase tracking-wide text-amber-900">
+            <Lock className="w-5 h-5 text-red-700" />
+            <h4 className="text-sm font-black uppercase tracking-wide text-red-900">
               {language === 'sw'
                 ? 'MATOKEO YANAFANYIWA UCHAKATAJI NA UHAKIKI WA MWISHO NA OFISI YA MKUU WA TAALUMA'
                 : 'RESULTS PENDING FINAL VERIFICATION & AUTHORIZATION BY THE ACADEMIC MASTER'}
             </h4>
           </div>
-          <p className="text-xs text-amber-800 leading-relaxed">
+          <p className="text-xs text-stone-700 leading-relaxed">
             {language === 'sw'
               ? 'Walimu wameingiza alama za masomo, na matokeo haya yanachakatwa na kuhakikiwa na Wakuu wa Taaluma (Mwl. Yohana Bahati na Madam Adela Manyanga). Yakishathibitishwa na kuruhusiwa, yataonekana rasmi hapa kwa wazazi wote.'
               : 'Subject teachers have entered marks and the results are undergoing official compilation and review by the Academic Masters (Mwl. Yohana Bahati & Madam Adela Manyanga). Once approved and unlocked, they will immediately be accessible to parents.'}
@@ -355,9 +355,9 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
             <div className="pt-2">
               <button
                 onClick={() => publishResultsToParents(true)}
-                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-black flex items-center gap-2 cursor-pointer shadow-md"
+                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-black flex items-center gap-2 cursor-pointer shadow-md"
               >
-                <Unlock className="w-4 h-4 text-amber-300" />
+                <Unlock className="w-4 h-4 text-[#FFFFF0]" />
                 <span>{language === 'sw' ? 'Ruhusu Matokeo Haya Yaende kwa Wazazi Sasa' : 'Authorize & Release to Parents Now'}</span>
               </button>
             </div>
