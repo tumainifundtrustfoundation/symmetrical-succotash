@@ -265,8 +265,11 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 
   try {
     const userRef = doc(db, 'users', uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
+    const snap = await Promise.race([
+      getDoc(userRef),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('firestore_timeout')), 1500))
+    ]);
+    if (snap && snap.exists()) {
       return snap.data() as UserProfile;
     }
     return null;

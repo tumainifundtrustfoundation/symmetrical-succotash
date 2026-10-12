@@ -364,6 +364,17 @@ export const AdmissionsSection: React.FC<AdmissionsSectionProps> = ({
 
             <button
               onClick={() => {
+                if (onOpenAdmissions) onOpenAdmissions();
+              }}
+              className="w-full sm:w-auto px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold text-xs sm:text-sm border border-emerald-300 transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
+              title="Fomu Rasmi ya Upimaji Afya ya Daktari"
+            >
+              <FileCheck className="w-4 h-4 text-emerald-700" />
+              <span>Fomu ya Afya (Medical)</span>
+            </button>
+
+            <button
+              onClick={() => {
                 if (onOpenVituMuhimu) onOpenVituMuhimu();
               }}
               className="w-full sm:w-auto px-4 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"

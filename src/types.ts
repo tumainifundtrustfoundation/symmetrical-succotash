@@ -380,7 +380,10 @@ export interface OnlineApplication {
   studentName: string;
   gender: 'M' | 'F';
   dob?: string;
+  dateOfBirth?: string;
+  nationality?: string;
   applyingFor: 'Form 1' | 'Form 2 Transfer' | 'Form 3 Transfer' | 'Pre-Form 1' | string;
+  academicYear?: string; // e.g. '2026/2027'
   entryType: 'Bweni (Boarding)' | 'Kutwa (Day)' | string;
   previousSchool?: string;
   premNumber?: string; // Namba ya PREM au Namba ya Mtihani wa Darasa la Saba (Primary PREM or PSLE Examination Number)
@@ -389,6 +392,21 @@ export interface OnlineApplication {
   parentPhone: string;
   parentEmail?: string;
   parentAddress?: string;
+  parentRelationship?: string; // Father, Mother, Guardian
+  documents?: {
+    birthCertificateName?: string;
+    psleResultSlipName?: string;
+    previousSchoolReportName?: string;
+    medicalReportName?: string;
+  };
+  medicalInfo?: {
+    allergies?: string;
+    chronicConditions?: string;
+    regularMedication?: string;
+    bloodGroup?: string;
+    emergencyContact?: string;
+  };
+  parentConsentDeclared?: boolean;
   status: 'Inasubiri Uhakiki' | 'Imethibitishwa' | 'Inashughulikiwa' | 'Imekataliwa';
   submissionDate: string;
   adminNotes?: string;
@@ -587,6 +605,73 @@ export interface FirestoreSchoolSettings {
   logoURL?: string;
   motto: string;
   website: string;
+}
+
+// ==========================================
+// 1. SCHOOL VIDEO MANAGEMENT SYSTEM TYPES
+// ==========================================
+export interface SchoolVideo {
+  id: string;
+  title: string;
+  titleSw?: string;
+  description: string;
+  descriptionSw?: string;
+  youtubeUrl: string;
+  videoId: string;
+  embedUrl: string;
+  thumbnailUrl: string;
+  published: boolean;
+  featured?: boolean;
+  category?: 'Academic' | 'Campus Life' | 'Events & Graduation' | 'Sports' | 'Mass & Spiritual' | string;
+  publishedDate: string; // ISO string or YYYY-MM-DD
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+}
+
+// ==========================================
+// 4. OFFICIAL MEDICAL EXAMINATION FORM TYPES
+// ==========================================
+export interface StudentMedicalRecord {
+  applicationNumber: string;
+  studentName: string;
+  dateOfBirth?: string;
+  gender: 'M' | 'F';
+  bloodGroup?: string;
+  // Parent/Guardian health statement
+  knownAllergies?: string;
+  chronicConditions?: string; // Asthma, Epilepsy, Sickle Cell, etc.
+  pastSurgeries?: string;
+  regularMedications?: string;
+  dietaryRestrictions?: string;
+  physicalDisabilities?: string;
+  parentConsentConfirmed?: boolean;
+  parentConsentDate?: string;
+  // Healthcare Professional Clinical Examination
+  clinicalExam?: {
+    isClinicianCertified: boolean;
+    clinicianName: string;
+    clinicianQualification: string; // e.g. MD, AMO, CO
+    facilityName: string; // Hospital / Health Centre
+    facilityRegistrationNo?: string;
+    examinationDate: string;
+    heightCm?: number;
+    weightKg?: number;
+    bloodPressure?: string;
+    pulseRate?: string;
+    visionLeft?: string;
+    visionRight?: string;
+    hearingCondition?: string;
+    chestAndLungs?: string;
+    cardiovascularSystem?: string;
+    abdomen?: string;
+    skinCondition?: string;
+    mentalHealthAssessment?: string;
+    clinicalFitnessRecommendation: 'FIT_FOR_BOARDING' | 'FIT_WITH_CARE_RESTRICTIONS' | 'REQUIRES_FURTHER_INVESTIGATION';
+    specialClinicalNotes?: string;
+    stampAndSignatureVerified: boolean;
+  };
+  confidentialityNote?: string;
 }
 
 

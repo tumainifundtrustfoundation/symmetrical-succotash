@@ -69,11 +69,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       const path = window.location.pathname.toLowerCase();
-      if (path === '/welcome' || hash === '#welcome') return 'welcome';
-      if (path === '/login' || hash === '#login') return 'login';
-      if (path === '/signup' || hash === '#signup') return 'signup';
+      if (path === '/welcome' || hash === '#welcome' || hash === '#karibu') return 'welcome';
+      if (path === '/login' || hash === '#login' || hash === '#ingia') return 'login';
+      if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') return 'signup';
+      if (path === '/forgot-password' || hash === '#forgot-password') return 'forgot-password';
+      if (path === '/verify-email' || hash === '#verify-email') return 'verify-email';
+      if (path.includes('-dashboard') || hash === '#portal' || hash === '#dashboard') return 'portal';
       const savedView = sessionStorage.getItem('uomboni_view');
-      if (!savedView && !hash) return 'welcome';
+      if (savedView === 'portal' && localStorage.getItem('uomboni_active_session')) {
+        return 'portal';
+      }
     }
     return 'website';
   });
@@ -85,9 +90,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
 
-      if (path === '/welcome' || hash === '#welcome') {
+      if (path === '/welcome' || hash === '#welcome' || hash === '#karibu') {
         setActiveView('welcome');
-      } else if (path === '/login' || hash === '#login') {
+      } else if (path === '/login' || hash === '#login' || hash === '#ingia') {
         setActiveView('login');
       } else if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') {
         setActiveView('signup');
@@ -117,23 +122,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  // Synchronize authentication state from Firebase
+  // Synchronize authentication state from Firebase with safety timeout
   useEffect(() => {
+    let timerCleared = false;
+    // Guaranteed safety timeout: Never block user screen for more than 500ms
+    const safetyTimeout = setTimeout(() => {
+      if (!timerCleared) {
+        setLoading(false);
+      }
+    }, 500);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      timerCleared = true;
+      clearTimeout(safetyTimeout);
       setUser(firebaseUser);
       if (firebaseUser) {
-        try {
-          const profile = await syncUserProfile(firebaseUser);
-          setUserProfile(profile);
-          setActiveRoleDashboard(profile.role);
-          try {
-            localStorage.setItem('uomboni_active_session', JSON.stringify({ user: firebaseUser, profile }));
-          } catch (e) {}
-          // If in an auth screen, transition to portal
-          setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'portal' : prev));
-        } catch (err) {
-          console.error("Error setting up user profile:", err);
-        }
+        // Sync profile asynchronously without stalling the page render
+        syncUserProfile(firebaseUser)
+          .then((profile) => {
+            setUserProfile(profile);
+            setActiveRoleDashboard(profile.role);
+            try {
+              localStorage.setItem('uomboni_active_session', JSON.stringify({ user: firebaseUser, profile }));
+            } catch (e) {}
+            // If in an auth login/signup screen, transition to portal
+            setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'portal' : prev));
+          })
+          .catch((err) => {
+            console.warn("Async user profile sync note:", err?.message || err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       } else {
         // Fallback to local session cache if present
         try {
@@ -153,16 +173,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (e) {
           setUserProfile(null);
         }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      unsubscribe();
+    };
   }, []);
 
   // Update browser history when view changes
-  const handleSetActiveView = (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website') => {
+  const handleSetActiveView = (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome') => {
     setActiveView(view);
+    try {
+      sessionStorage.setItem('uomboni_view', view);
+    } catch (e) {}
     if (view === 'website') {
       window.history.pushState(null, '', '/');
     } else if (view === 'portal') {

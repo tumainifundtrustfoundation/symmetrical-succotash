@@ -2456,6 +2456,299 @@ export function printOfficialJoiningInstructions2027Directly(customData?: {
   }
 }
 
+/**
+ * ===================================================================
+ * 4. OFFICIAL MEDICAL EXAMINATION FORM (FOMU YA UPIMAJI WA AFYA)
+ * Form for prospective and continuing students requiring clinician review
+ * ===================================================================
+ */
+export function generateOfficialMedicalExaminationFormPdfDoc(params?: {
+  studentName?: string;
+  applicationNumber?: string;
+  dateOfBirth?: string;
+  gender?: 'M' | 'F' | string;
+  parentName?: string;
+  parentPhone?: string;
+  premNumber?: string;
+}): jsPDF {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
 
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
 
+  // Outer framing
+  doc.setDrawColor(16, 42, 67); // Navy
+  doc.setLineWidth(0.8);
+  doc.rect(margin - 2, margin - 2, contentWidth + 4, 275);
+  doc.setDrawColor(201, 162, 39); // Gold
+  doc.setLineWidth(0.3);
+  doc.rect(margin - 0.8, margin - 0.8, contentWidth + 1.6, 272.6);
 
+  // Top header banner
+  doc.setFillColor(16, 42, 67);
+  doc.rect(margin, margin, contentWidth, 32, 'F');
+
+  doc.setTextColor(253, 224, 71);
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('JIMBO KATOLIKI MOSHI • CATHOLIC DIOCESE OF MOSHI', pageWidth / 2, margin + 6.5, { align: 'center' });
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SHULE YA SEKONDARI UOMBONI', pageWidth / 2, margin + 14, { align: 'center' });
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(226, 232, 240);
+  doc.text('S.L.P 361 MARANGU, MOSHI VIJIJINI • KITUO CHA NECTA: S0486 • SIMU: +255 782 558 127', pageWidth / 2, margin + 20, { align: 'center' });
+
+  doc.setFillColor(201, 162, 39);
+  doc.roundedRect(pageWidth / 2 - 55, margin + 23, 110, 6.5, 1.5, 1.5, 'F');
+  doc.setTextColor(16, 42, 67);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FOMU RASMI YA KUPIMA AFYA YA MWANAFUNZI (MEDICAL FORM)', pageWidth / 2, margin + 27.5, { align: 'center' });
+
+  let y = margin + 36;
+
+  // IMPORTANT NOTICE BOX
+  doc.setFillColor(254, 242, 242);
+  doc.setDrawColor(248, 113, 113);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, y, contentWidth, 11, 1.5, 1.5, 'FD');
+
+  doc.setTextColor(153, 27, 27);
+  doc.setFontSize(6.8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ANGALIZO MUHIMU KWA AFISA WA AFYA (CLINICIAN):', margin + 3, y + 4);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Fomu hii lazima ijazwe na Daktari au Afisa wa Afya aliyesajiliwa kutoka Hospitali/Kituo cha Afya kinachotambulika na Serikali.', margin + 3, y + 8);
+
+  y += 14;
+
+  // SECTION A: STUDENT & ADMISSION IDENTIFICATION
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(16, 42, 67);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SEHEMU A: TAARIFA ZA UTAMBULISHO WA MWANAFUNZI (STUDENT DETAILS)', margin + 3, y + 4);
+
+  y += 7.5;
+  doc.setFontSize(7.2);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(51, 65, 85);
+
+  const studentNameVal = params?.studentName || '____________________________________________________';
+  const appNoVal = params?.applicationNumber || 'APP-2026-________';
+  const premVal = params?.premNumber || '____________________';
+
+  doc.text(`1. Jina Kamili la Mwanafunzi:`, margin + 2, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(studentNameVal, margin + 46, y);
+
+  doc.setTextColor(51, 65, 85);
+  doc.text(`Namba ya Udahili:`, margin + 125, y);
+  doc.setTextColor(16, 42, 67);
+  doc.text(appNoVal, margin + 152, y);
+
+  y += 6;
+  doc.setTextColor(51, 65, 85);
+  doc.text(`2. Tarehe ya Kuzaliwa:`, margin + 2, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(params?.dateOfBirth || '_____ / _____ / ________', margin + 36, y);
+
+  doc.setTextColor(51, 65, 85);
+  doc.text(`Jinsia:`, margin + 80, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(params?.gender === 'F' ? 'Kike (Female)' : params?.gender === 'M' ? 'Kiume (Male)' : 'Kiume [  ]   Kike [  ]', margin + 92, y);
+
+  doc.setTextColor(51, 65, 85);
+  doc.text(`PREM / Mtihani La Saba:`, margin + 125, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(premVal, margin + 162, y);
+
+  y += 6;
+  doc.setTextColor(51, 65, 85);
+  doc.text(`3. Jina la Mzazi / Mlezi:`, margin + 2, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(params?.parentName || '____________________________________________________', margin + 40, y);
+
+  doc.setTextColor(51, 65, 85);
+  doc.text(`Simu ya Mzazi:`, margin + 125, y);
+  doc.setTextColor(15, 23, 42);
+  doc.text(params?.parentPhone || '+255 __________________', margin + 148, y);
+
+  y += 9;
+
+  // SECTION B: PARENT/GUARDIAN HEALTH STATEMENT
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(16, 42, 67);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SEHEMU B: HISTORIA YA AFYA KUTOKA KWA MZAZI / MLEZI (PARENT DECLARATION)', margin + 3, y + 4);
+
+  y += 7.5;
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(51, 65, 85);
+
+  const parentQuestions = [
+    '• Mwanafunzi amewahi kuugua magonjwa sugu (Pumu, Kifafa, Kisukari, Sickle Cell n.k)? Ndiyo [  ] Hapana [  ]',
+    '• Mzio (Allergies) wowote wa chakula au dawa za hospitali: ____________________________________________________',
+    '• Upasuaji wowote aliowahi kufanyiwa: __________________________________________________________________________',
+    '• Dawa anazotumia mara kwa mara: _______________________________________________________________________________',
+  ];
+
+  parentQuestions.forEach((q) => {
+    doc.text(q, margin + 2, y);
+    y += 5.5;
+  });
+
+  doc.setFont('helvetica', 'italic');
+  doc.text('Sahihi ya Mzazi/Mlezi: __________________________________   Tarehe: _____ / _____ / 2026', margin + 2, y + 1);
+  y += 8.5;
+
+  // SECTION C: CLINICAL PHYSICAL EXAMINATION (FOR REGISTERED CLINICIAN ONLY)
+  doc.setFillColor(16, 42, 67);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SEHEMU C: VIPIMO VYA DAKTARI / AFISA AFYA (PHYSICAL MEDICAL EXAMINATION)', margin + 3, y + 4);
+
+  y += 8;
+  doc.setFontSize(7);
+  doc.setTextColor(51, 65, 85);
+  doc.setFont('helvetica', 'bold');
+
+  // Table of clinical parameters
+  const examParams = [
+    ['1. Kimo (Height / cm): ____________', '2. Uzito (Weight / kg): ____________', '3. Kundi la Damu (Blood Group): ______'],
+    ['4. Shinikizo la Damu (BP): _________', '5. Mapigo ya Moyo (Pulse): _________', '6. Joto la Mwili (Temp / °C): _________'],
+    ['7. Macho / Visual Acuity (R): ______', '(L): ______ Color Vision: _________', '8. Masikio & Usikivu (Hearing): _______'],
+    ['9. Kifua & Mapafu (Lungs): ________', '10. Mfumo wa Moyo (CVS): _________', '11. Tumbo & Spleen/Liver: _____________'],
+    ['12. Ngozi (Skin Conditions): _______', '13. Mkojo (Urinalysis Alb/Sugar): __', '14. Damu (Hb / Stool analysis): ________'],
+  ];
+
+  examParams.forEach((row) => {
+    doc.text(row[0], margin + 2, y);
+    doc.text(row[1], margin + 65, y);
+    doc.text(row[2], margin + 125, y);
+    y += 5.8;
+  });
+
+  y += 2;
+  doc.text('15. Maoni Maalum ya Kitabibu (Specific Clinical Findings):', margin + 2, y);
+  y += 4;
+  doc.setDrawColor(203, 213, 225);
+  doc.line(margin + 2, y, margin + contentWidth - 4, y);
+  y += 5;
+  doc.line(margin + 2, y, margin + contentWidth - 4, y);
+  y += 6;
+
+  // SECTION D: CLINICAL RECOMMENDATION & OFFICIAL STAMP
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  doc.setTextColor(16, 42, 67);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SEHEMU D: MAPENDEKEZO NA UTHIBITISHO WA KITABIBU (CLINICIAN CERTIFICATION)', margin + 3, y + 4);
+
+  y += 8;
+  doc.setFontSize(7.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(15, 23, 42);
+
+  doc.text('Ninathibitisha kuwa nimemfanyia uchunguzi kamili wa kimatibabu mwanafunzi aliyetajwa hapo juu na maoni yangu ni:', margin + 2, y);
+  y += 5.5;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('[  ] ANAFAA KUJIUNGA NA SHULE YA BWENI NA SHUGHULI ZA MICHEZO (Fit for Boarding & Sports)', margin + 5, y);
+  y += 5;
+  doc.text('[  ] ANAFAA KWA MASHARTI MAALUM YA KUTIBIWA / KUTOZIDISHA MAZOEZI (Fit with Medical Restrictions)', margin + 5, y);
+  y += 5;
+  doc.text('[  ] ANAHITAJI UCHUNGUZI ZAIDI WA HOSPITALI KUBWA YA RUFAA (Requires Further Investigation)', margin + 5, y);
+
+  y += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Jina la Daktari / Afisa wa Afya: __________________________________________________', margin + 2, y);
+  doc.text('Kada (MD/AMO/CO): ____________________', margin + 120, y);
+
+  y += 6;
+  doc.text('Kituo cha Afya / Hospitali: ______________________________________________________', margin + 2, y);
+  doc.text('Tarehe: _____ / _____ / 2026', margin + 120, y);
+
+  y += 6;
+  doc.text('Sahihi ya Daktari: ______________________________________________________________', margin + 2, y);
+
+  // Clinician Stamp Box on right
+  const stampBoxX = pageWidth - margin - 46;
+  doc.setDrawColor(16, 42, 67);
+  doc.setLineDashPattern([1.5, 1.5], 0);
+  doc.rect(stampBoxX, y - 8, 44, 22);
+  doc.setLineDashPattern([], 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('MUHURI RASMI WA HOSPITALI', stampBoxX + 22, y - 1, { align: 'center' });
+  doc.setFontSize(5.8);
+  doc.text('(Official Health Facility Stamp)', stampBoxX + 22, y + 3, { align: 'center' });
+
+  // Confidentiality footer note
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(
+    'Taarifa za afya zinatunzwa kwa usiri mkubwa kwa mujibu wa sera za shule na maadili ya kitaaluma ya utabibu.',
+    pageWidth / 2,
+    283,
+    { align: 'center' }
+  );
+
+  return doc;
+}
+
+export function downloadOfficialMedicalExaminationFormPdf(params?: {
+  studentName?: string;
+  applicationNumber?: string;
+  dateOfBirth?: string;
+  gender?: 'M' | 'F' | string;
+  parentName?: string;
+  parentPhone?: string;
+  premNumber?: string;
+}) {
+  const doc = generateOfficialMedicalExaminationFormPdfDoc(params);
+  const fileName = params?.studentName
+    ? `FOMU_YA_AFYA_${params.studentName.replace(/\s+/g, '_').toUpperCase()}.pdf`
+    : 'FOMU_YA_AFYA_UOMBONI_SECONDARY.pdf';
+  doc.save(fileName);
+}
+
+export function printOfficialMedicalExaminationFormDirectly(params?: {
+  studentName?: string;
+  applicationNumber?: string;
+  dateOfBirth?: string;
+  gender?: 'M' | 'F' | string;
+  parentName?: string;
+  parentPhone?: string;
+  premNumber?: string;
+}) {
+  const doc = generateOfficialMedicalExaminationFormPdfDoc(params);
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const printWindow = window.open(url, '_blank');
+  if (printWindow) {
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
+  }
+}

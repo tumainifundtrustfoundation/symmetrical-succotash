@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+Sitemap: https://symmetrical-succotash-teal.vercel.app/sitemap.xml
 Sitemap: https://uombonisecondaryschool.netlify.app/sitemap.xml

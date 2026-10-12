@@ -275,5 +275,32 @@ service cloud.firestore {
       allow create: if (isAuthenticated() || request.auth == null) && isValidId(logId);
       allow update, delete: if false;
     }
+
+    // ====================================================
+    // SCHOOL VIDEOS COLLECTION
+    // Public can view published videos; only admin can add/edit/delete
+    // ====================================================
+    match /school_videos/{videoId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(videoId) && isAdmin();
+    }
+
+    // ====================================================
+    // ONLINE ADMISSION APPLICATIONS & MEDICAL RECORDS
+    // Applicants can submit; only authorized staff/admin can review
+    // Sensitive medical records are strictly protected
+    // ====================================================
+    match /onlineApplications/{appId} {
+      allow get: if isStaff() || isAdmin();
+      allow list: if isStaff() || isAdmin();
+      allow create: if isValidId(appId);
+      allow update, delete: if isValidId(appId) && (isStaff() || isAdmin());
+    }
+
+    match /studentMedicalRecords/{recordId} {
+      allow get, list: if isStaff() || isAdmin();
+      allow create: if isValidId(recordId);
+      allow update, delete: if isValidId(recordId) && (isStaff() || isAdmin());
+    }
   }
 }

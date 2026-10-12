@@ -72,15 +72,22 @@ import {
   Database,
   Radio,
   Megaphone,
+  Film,
 } from 'lucide-react';
 import { parseExcelResultsFile, downloadExcelTemplate, exportResultsToExcel } from '../utils/excelService';
-import { downloadStudentResultSlipPdf, downloadClassBroadsheetPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
+import {
+  downloadStudentResultSlipPdf,
+  downloadClassBroadsheetPdf,
+  downloadAdmissionVerificationLetterPdf,
+  downloadOfficialMedicalExaminationFormPdf,
+} from '../utils/pdfService';
 import { processImageFile } from '../utils/imageUploadHelper';
 import { AdminStudentCouncilTab } from './admin/AdminStudentCouncilTab';
 import { AdminSchoolProfileTab } from './admin/AdminSchoolProfileTab';
 import { AdminBankAccountsTab } from './admin/AdminBankAccountsTab';
 import { AdminEventsTab } from './admin/AdminEventsTab';
 import { AdminSystemArchitectureTab } from './admin/AdminSystemArchitectureTab';
+import { AdminVideosTab } from './admin/AdminVideosTab';
 import { SystemArchitectureModal } from './SystemArchitectureModal';
 
 interface AdminPortalModalProps {
@@ -205,6 +212,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     | 'feedback'
     | 'alerts'
     | 'galleryPhotos'
+    | 'videos'
     | 'logoSettings'
     | 'systemArchitecture'
   >('applications');
@@ -1869,6 +1877,24 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
               </button>
 
               <button
+                onClick={() => setActiveTab('videos')}
+                id="admin-tab-videos"
+                className={`w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer text-left border ${
+                  activeTab === 'videos'
+                    ? 'bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 text-red-300 border-red-500/40 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border-transparent font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Film className={`w-4 h-4 ${activeTab === 'videos' ? 'text-red-400' : 'text-slate-400'}`} />
+                  <span>{language === 'sw' ? 'Video za Shule (YouTube)' : 'School Videos'}</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/60 text-red-300 border border-red-700/50 font-mono font-bold">
+                  YOUTUBE
+                </span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('logoSettings')}
                 id="admin-tab-logo-settings"
                 className={`w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer text-left border ${
@@ -2528,7 +2554,55 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                         />
                       </div>
 
-                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                      {/* Sensitive Medical Info & Document Preview (Authorized Staff Only) */}
+                      {(selectedAppForDetail.medicalInfo || selectedAppForDetail.documents) && (
+                        <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-amber-950 flex items-center gap-1.5 text-[11px]">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Taarifa za Afya & Nyaraka (Authorized Staff Only):</span>
+                            </span>
+                            {selectedAppForDetail.medicalInfo?.bloodGroup && (
+                              <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-mono font-bold text-[10px]">
+                                Kundi la Damu: {selectedAppForDetail.medicalInfo.bloodGroup}
+                              </span>
+                            )}
+                          </div>
+                          {selectedAppForDetail.medicalInfo && (
+                            <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-700">
+                              <div><strong>Mizio (Allergies):</strong> {selectedAppForDetail.medicalInfo.allergies || 'Hakuna'}</div>
+                              <div><strong>Magonjwa Sugu:</strong> {selectedAppForDetail.medicalInfo.chronicConditions || 'Hakuna'}</div>
+                              <div><strong>Dawa za Mara kwa Mara:</strong> {selectedAppForDetail.medicalInfo.regularMedication || 'Hakuna'}</div>
+                              <div><strong>Namba ya Dharura:</strong> {selectedAppForDetail.medicalInfo.emergencyContact || 'Hakuna'}</div>
+                            </div>
+                          )}
+                          {selectedAppForDetail.documents && (
+                            <div className="pt-1.5 border-t border-amber-200 text-[10px] text-slate-600">
+                              <strong>Nyaraka Zilizotajwa:</strong> Cheti cha Kuzaliwa: {selectedAppForDetail.documents.birthCertificateName || 'Ndiyo'} • Cheti cha Darasa 7: {selectedAppForDetail.documents.psleResultSlipName || 'Ndiyo'}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            downloadOfficialMedicalExaminationFormPdf({
+                              studentName: selectedAppForDetail.studentName,
+                              applicationNumber: selectedAppForDetail.applicationNumber,
+                              gender: selectedAppForDetail.gender,
+                              parentName: selectedAppForDetail.parentName,
+                              parentPhone: selectedAppForDetail.parentPhone,
+                              premNumber: selectedAppForDetail.premNumber,
+                            });
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-emerald-200"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Fomu ya Afya (PDF)</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => {
@@ -2540,7 +2614,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                           className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                         >
                           <Printer className="w-3.5 h-3.5" />
-                          <span>Pakua PDF</span>
+                          <span>Barua ya Udahili (PDF)</span>
                         </button>
 
                         <button
@@ -6807,6 +6881,13 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* TAB: SCHOOL VIDEOS (YOUTUBE EMBEDS & MANAGEMENT) */}
+              {activeTab === 'videos' && (
+                <div className="p-4 sm:p-6">
+                  <AdminVideosTab />
                 </div>
               )}
 

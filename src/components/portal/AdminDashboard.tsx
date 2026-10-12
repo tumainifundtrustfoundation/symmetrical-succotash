@@ -179,7 +179,11 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (err: any) {
       if (err?.code === 'permission-denied') {
-        handleFirestoreError(err, OperationType.LIST, 'users');
+        try {
+          handleFirestoreError(err, OperationType.LIST, 'users');
+        } catch (e) {
+          console.warn('Admin users fetch note:', e);
+        }
       }
       setUsersList(fallbackUsersList);
     } finally {
