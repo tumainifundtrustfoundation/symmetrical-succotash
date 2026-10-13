@@ -22,7 +22,7 @@ import { sendResetPassword } from '../../lib/firebase';
 import { checkServerSecurityStatus } from '../../services/authSecurityClient';
 
 export const LoginPage: React.FC = () => {
-  const { login, loginWithGoogleAuth, loginWithDemoRole, loading: authLoading, setActiveView } = useAuth();
+  const { login, loginWithGoogleAuth, loading: authLoading, setActiveView } = useAuth();
   const { language } = useLanguage();
 
   const [identifier, setIdentifier] = useState('');
@@ -37,9 +37,6 @@ export const LoginPage: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [resetFeedback, setResetFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  // Demo Accounts Drawer
-  const [showDemoAccounts, setShowDemoAccounts] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,21 +150,6 @@ export const LoginPage: React.FC = () => {
       });
     } finally {
       setIsSendingReset(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (role: 'student' | 'teacher' | 'parent' | 'admin') => {
-    setIsSubmitting(true);
-    setErrorMessage('');
-    try {
-      const res = await loginWithDemoRole(role);
-      if (!res.success) {
-        setErrorMessage(res.error || 'Kuingia kumeshindwa');
-      }
-    } catch (e: any) {
-      setErrorMessage('Hitilafu ya kuingia');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -357,59 +339,12 @@ export const LoginPage: React.FC = () => {
             <span>Endelea na Google</span>
           </button>
 
-          {/* Quick Demo Accounts Drawer Trigger */}
-          <button
-            type="button"
-            onClick={() => setShowDemoAccounts(!showDemoAccounts)}
-            className="neumorph-pill-small px-4 py-2.5 flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-800 cursor-pointer"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-            <span>Akaunti za Majaribio (Demo Roles)</span>
-          </button>
-        </div>
-
-        {/* Demo Accounts Panel */}
-        {showDemoAccounts && (
-          <div className="mt-4 p-4 rounded-3xl bg-[#ebf0f7] shadow-[inset_4px_4px_8px_#cad5e2,inset_-4px_-4px_8px_#ffffff] max-w-md w-full animate-in zoom-in-95 duration-200">
-            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 text-center">
-              Chagua Jukumu la Kuingia Haraka:
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('admin')}
-                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-emerald-700 cursor-pointer"
-              >
-                👑 Mkuu wa Shule / Admin
-                <span className="block text-[10px] text-slate-500 font-normal">Udhibiti Kamili</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('teacher')}
-                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-blue-700 cursor-pointer"
-              >
-                👨‍🏫 Mwalimu / Academic
-                <span className="block text-[10px] text-slate-500 font-normal">Matokeo &amp; Vipindi</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('parent')}
-                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-amber-700 cursor-pointer"
-              >
-                👨‍👩‍👧 Mzazi / Mlezi
-                <span className="block text-[10px] text-slate-500 font-normal">Ripoti za Mwanafunzi</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('student')}
-                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-purple-700 cursor-pointer"
-              >
-                🎓 Mwanafunzi
-                <span className="block text-[10px] text-slate-500 font-normal">Matokeo &amp; Notisi</span>
-              </button>
-            </div>
+          {/* Secure Production Badge */}
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Uthibitisho Salama wa Supabase &amp; NECTA S0486</span>
           </div>
-        )}
+        </div>
 
       </main>
 

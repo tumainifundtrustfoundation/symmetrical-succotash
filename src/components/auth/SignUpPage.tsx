@@ -13,8 +13,6 @@ import {
   CheckCircle2,
   GraduationCap,
   Users,
-  Briefcase,
-  UserCheck,
   ChevronLeft,
   Check,
   X,
@@ -27,7 +25,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { UserRole } from '../../lib/firebase';
 
-type SignupRole = 'student' | 'parent' | 'teacher' | 'staff';
+type SignupRole = 'student' | 'parent';
 
 export const SignUpPage: React.FC = () => {
   const { signUp, loginWithGoogleAuth, loading, authMessage, setAuthMessage, setActiveView } = useAuth();
@@ -142,8 +140,6 @@ export const SignUpPage: React.FC = () => {
   const rolesConfig: { id: SignupRole; label: string; sub: string; icon: React.ElementType }[] = [
     { id: 'student', label: 'Student', sub: 'Mwanafunzi', icon: GraduationCap },
     { id: 'parent', label: 'Parent/Guardian', sub: 'Mzazi / Mlezi', icon: Users },
-    { id: 'teacher', label: 'Teacher', sub: 'Mwalimu', icon: Briefcase },
-    { id: 'staff', label: 'Staff', sub: 'Mfanyakazi', icon: UserCheck },
   ];
 
   return (
@@ -248,7 +244,7 @@ export const SignUpPage: React.FC = () => {
             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
               {language === 'sw' ? 'Chagua Aina ya Akaunti Yako' : 'Select Account Type'}
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {rolesConfig.map((item) => {
                 const Icon = item.icon;
                 const isSelected = selectedRole === item.id;
@@ -257,19 +253,24 @@ export const SignUpPage: React.FC = () => {
                     key={item.id}
                     type="button"
                     onClick={() => setSelectedRole(item.id)}
-                    className={`p-2.5 rounded-xl border text-left flex flex-col items-center text-center transition-all cursor-pointer ${
+                    className={`p-3 rounded-xl border text-left flex flex-col items-center text-center transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-emerald-950/80 border-emerald-400 text-white shadow-md shadow-emerald-950/50'
                         : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mb-1 ${isSelected ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <Icon className={`w-5 h-5 mb-1.5 ${isSelected ? 'text-amber-400' : 'text-slate-400'}`} />
                     <span className="text-xs font-bold leading-tight">{item.label}</span>
                     <span className="text-[10px] opacity-70 leading-tight mt-0.5">{item.sub}</span>
                   </button>
                 );
               })}
             </div>
+            <p className="mt-2 text-[10px] text-slate-400 italic">
+              {language === 'sw'
+                ? 'ℹ️ Kumbuka: Akaunti za Walimu na Wafanyakazi (Staff) husajiliwa na kusimamiwa na Mkuu wa Shule pekee kwa sababu za kiusalama.'
+                : 'ℹ️ Note: Teacher and Staff accounts are provisioned exclusively by the Administrator for security compliance.'}
+            </p>
           </div>
 
           {/* Sign Up Form */}

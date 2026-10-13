@@ -138,16 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
-            {onOpenWelcome && (
-              <button
-                onClick={onOpenWelcome}
-                className="liquid-btn liquid-btn-frosted hidden lg:inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 cursor-pointer"
-                title="Welcome Screen (Animated Embossed Login)"
-              >
-                <span className="relative z-10 flex items-center gap-1">✨ Welcome Screen</span>
-              </button>
-            )}
-            {onOpenAcademicPortal && (
+            {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
                 className="liquid-btn liquid-btn-gold hidden sm:inline-flex items-center gap-1.5 text-[11px] font-black px-3.5 py-1 cursor-pointer"
@@ -252,11 +243,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {onOpenAdmin && (
+            {/* Privileged Portals: strictly hidden until authenticated with verified role */}
+            {user && userProfile?.role === 'admin' && onOpenAdmin && (
               <button
                 id="nav-admin-portal-btn"
                 onClick={onOpenAdmin}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer"
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer shadow-xs"
                 title="Lango la Utawala & Udahili (Administration)"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
@@ -266,27 +258,46 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            <button
-              id="nav-parent-portal-btn"
-              onClick={onOpenParentPortal}
-              className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Parent Portal</span>
-              </span>
-            </button>
+            {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
+              <button
+                id="nav-academic-portal-btn"
+                onClick={onOpenAcademicPortal}
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer shadow-xs"
+                title="Lango la Taaluma na Mitihani (Academic Portal)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <GraduationCap className="w-3.5 h-3.5 text-amber-950" />
+                  <span>Portal ya Taaluma</span>
+                </span>
+              </button>
+            )}
 
-            <button
-              id="nav-staff-portal-btn"
-              onClick={onOpenStaffPortal}
-              className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Staff Portal</span>
-              </span>
-            </button>
+            {user && (userProfile?.role === 'teacher' || userProfile?.role === 'staff' || userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenStaffPortal && (
+              <button
+                id="nav-staff-portal-btn"
+                onClick={onOpenStaffPortal}
+                className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer shadow-xs"
+                title="Lango la Watumishi na Walimu (Staff Portal)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <span>Staff Portal</span>
+                </span>
+              </button>
+            )}
+
+            {user && (userProfile?.role === 'parent' || userProfile?.role === 'admin') && onOpenParentPortal && (
+              <button
+                id="nav-parent-portal-btn"
+                onClick={onOpenParentPortal}
+                className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <span>Parent Portal</span>
+                </span>
+              </button>
+            )}
 
             {user ? (
               <div className="flex items-center gap-2">
@@ -377,7 +388,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {onOpenAdmin && (
+              {/* Role-guarded mobile portal buttons: hidden until authenticated with verified role */}
+              {user && userProfile?.role === 'admin' && onOpenAdmin && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -392,19 +404,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {onOpenWelcome && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenWelcome();
-                  }}
-                  className="liquid-btn liquid-btn-frosted !text-stone-900 !bg-stone-100 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer border border-slate-300 shadow-xs"
-                >
-                  <span className="relative z-10">✨ Welcome Screen (Embossed Login)</span>
-                </button>
-              )}
-
-              {onOpenAcademicPortal && (
+              {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -419,31 +419,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenParentPortal) onOpenParentPortal();
-                }}
-                className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#C9A227]" />
-                  <span>Parent Portal</span>
-                </span>
-              </button>
+              {user && (userProfile?.role === 'teacher' || userProfile?.role === 'staff' || userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenStaffPortal && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenStaffPortal();
+                  }}
+                  className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#C9A227]" />
+                    <span>Staff Portal</span>
+                  </span>
+                </button>
+              )}
 
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenStaffPortal) onOpenStaffPortal();
-                }}
-                className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-[#C9A227]" />
-                  <span>Staff Portal</span>
-                </span>
-              </button>
+              {user && (userProfile?.role === 'parent' || userProfile?.role === 'admin') && onOpenParentPortal && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenParentPortal();
+                  }}
+                  className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#C9A227]" />
+                    <span>Parent Portal</span>
+                  </span>
+                </button>
+              )}
 
               {user ? (
                 <button

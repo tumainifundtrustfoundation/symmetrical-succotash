@@ -27,6 +27,7 @@ interface FooterProps {
   onOpenJoiningInstructions?: () => void;
   onOpenVituMuhimu?: () => void;
   onOpenResults?: () => void;
+  onOpenLogin?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -40,6 +41,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenJoiningInstructions,
   onOpenVituMuhimu,
   onOpenResults,
+  onOpenLogin,
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -177,13 +179,10 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    if (onOpenAdmin) onOpenAdmin();
-                    else handleNav('about');
-                  }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold"
+                  onClick={() => handleNav('about')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-[#FFFFF0]/90 font-medium"
                 >
-                  Administration (Utawala)
+                  Uongozi wa Shule (School Leadership)
                 </button>
               </li>
               <li>
@@ -230,35 +229,31 @@ export const Footer: React.FC<FooterProps> = ({
                   Languages &amp; Arts
                 </button>
               </li>
-              <li className="pt-1.5 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    if (onOpenAcademicPortal) onOpenAcademicPortal();
-                    else handleNav('academics');
-                  }}
-                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer"
-                >
-                  <span>🎓 Portal ya Taaluma (Broadsheets)</span>
-                </button>
-              </li>
+              {onOpenAcademicPortal && (
+                <li className="pt-1.5 border-t border-white/10">
+                  <button
+                    onClick={onOpenAcademicPortal}
+                    className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span>🎓 Portal ya Taaluma (Broadsheets)</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
-          {/* Col 4: Administration & Examination Results (2 cols) */}
+          {/* Col 4: Leadership & Examination Results (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Administration &amp; Results
+              Leadership &amp; Results
             </h4>
             <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
               <li>
                 <button
-                  onClick={() => {
-                    if (onOpenAdmin) onOpenAdmin();
-                    else handleNav('about');
-                  }}
-                  className="hover:text-white transition-colors cursor-pointer text-amber-300 font-bold flex items-center gap-1.5"
+                  onClick={() => handleNav('about')}
+                  className="hover:text-white transition-colors cursor-pointer text-[#FFFFF0]/90 font-medium flex items-center gap-1.5"
                 >
-                  <span>🏛️ Jopo la Utawala (Administration)</span>
+                  <span>🏛️ Utawala na Bodi ya Shule</span>
                 </button>
               </li>
               <li>
@@ -285,53 +280,87 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    if (onOpenStaffPortal) onOpenStaffPortal();
-                  }}
+                  onClick={() => handleNav('teachers')}
                   className="hover:text-[#C9A227] transition-colors cursor-pointer"
                 >
-                  Lango la Walimu (Staff Portal)
+                  Jopo la Walimu na Idara
                 </button>
               </li>
-              <li>
-                <button
-                  onClick={() => {
-                    if (onOpenParentPortal) onOpenParentPortal();
-                  }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
-                >
-                  Lango la Wazazi (Parent Portal)
-                </button>
-              </li>
+              {onOpenStaffPortal && (
+                <li>
+                  <button
+                    onClick={onOpenStaffPortal}
+                    className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold"
+                  >
+                    Lango la Walimu (Staff Portal)
+                  </button>
+                </li>
+              )}
+              {onOpenParentPortal && (
+                <li>
+                  <button
+                    onClick={onOpenParentPortal}
+                    className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold"
+                  >
+                    Lango la Wazazi (Parent Portal)
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
-          {/* Col 5: Parents & Portals (2 cols) */}
+          {/* Col 5: Community & Staff Access (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Parents &amp; Portals
+              Ufikiaji wa Mfumo
             </h4>
             <div className="space-y-2 pt-1">
-              <button
-                onClick={onOpenParentPortal}
-                className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
-              >
-                <span>Parent Portal</span>
-                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-              </button>
+              {onOpenAdmin && (
+                <button
+                  onClick={onOpenAdmin}
+                  className="w-full text-left px-3 py-2 rounded-md bg-amber-400/20 hover:bg-amber-400/30 text-xs font-bold text-amber-200 flex items-center justify-between transition-colors cursor-pointer border border-amber-300/30"
+                  title="Administration Portal"
+                >
+                  <span>Administration Dashboard</span>
+                  <Lock className="w-3.5 h-3.5 text-amber-300" />
+                </button>
+              )}
 
-              <button
-                onClick={onOpenStaffPortal}
-                className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
-                title="Chumba cha Walimu (Private Staffroom) — Lango la Ndani la Watumishi"
-              >
-                <span>Chumba cha Walimu (Staffroom)</span>
-                <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
-              </button>
+              {onOpenStaffPortal && (
+                <button
+                  onClick={onOpenStaffPortal}
+                  className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                  title="Chumba cha Walimu (Private Staffroom)"
+                >
+                  <span>Chumba cha Walimu (Staffroom)</span>
+                  <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
+                </button>
+              )}
+
+              {onOpenParentPortal && (
+                <button
+                  onClick={onOpenParentPortal}
+                  className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span>Parent Portal</span>
+                  <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                </button>
+              )}
+
+              {!onOpenAdmin && !onOpenStaffPortal && (
+                <button
+                  onClick={onOpenLogin || (() => { window.location.hash = '#login'; })}
+                  className="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-300 flex items-center justify-between transition-colors cursor-pointer border border-white/10"
+                  title="Kuingia kwenye mfumo wa shule kwa watumishi walioidhinishwa"
+                >
+                  <span>Ufikiaji Watumishi (Staff Sign In)</span>
+                  <Lock className="w-3 h-3 text-slate-400" />
+                </button>
+              )}
             </div>
 
             <p className="text-[11px] text-[#FFFFF0]/60 pt-2 leading-relaxed">
-              Official school records and teacher entries are strictly access-controlled.
+              Mfumo na kumbukumbu rasmi za wanafunzi na watumishi zinalindwa kwa mujibu wa taratibu za kiusalama.
             </p>
           </div>
         </div>
