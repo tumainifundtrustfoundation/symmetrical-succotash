@@ -27,6 +27,7 @@ interface NavbarProps {
   onOpenAcademicPortal?: () => void;
   onOpenAdmin?: () => void;
   onOpenNews?: () => void;
+  onOpenAdmissionDocuments?: () => void;
   onOpenAdmissions?: () => void;
   onOpenJoiningInstructions?: () => void;
   onOpenVituMuhimu?: () => void;
@@ -42,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAcademicPortal,
   onOpenAdmin,
   onOpenNews,
+  onOpenAdmissionDocuments,
   onOpenAdmissions,
   onOpenJoiningInstructions,
   onOpenVituMuhimu,
@@ -88,15 +90,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navLinks = [
-    { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'academics', label: 'Academics' },
-    { id: 'teachers', label: 'Teachers' },
-    { id: 'videos', label: '🎬 Videos' },
-    { id: 'gallery', label: 'Gallery' },
-    { id: 'news', label: '🔥 News' },
-    { id: 'location', label: '📍 Location' },
-    { id: 'contact', label: 'Contact' },
+    { id: 'home', label: language === 'sw' ? 'Mwanzo' : 'Home' },
+    { id: 'about', label: language === 'sw' ? 'Kuhusu' : 'About' },
+    { id: 'academics', label: language === 'sw' ? 'Taaluma' : 'Academics' },
+    { id: 'teachers', label: language === 'sw' ? 'Walimu' : 'Teachers' },
+    { id: 'videos', label: language === 'sw' ? '🎬 Video' : '🎬 Videos' },
+    { id: 'campus-tour', label: language === 'sw' ? '🏫 Majengo' : '🏫 Campus Tour' },
+    { id: 'gallery', label: language === 'sw' ? 'Picha' : 'Gallery' },
+    { id: 'faq', label: language === 'sw' ? 'Maswali (FAQ)' : 'FAQ' },
+    { id: 'news', label: language === 'sw' ? '🔥 Habari' : '🔥 News' },
+    { id: 'location', label: language === 'sw' ? '📍 Mahali' : '📍 Location' },
+    { id: 'contact', label: language === 'sw' ? 'Mawasiliano' : 'Contact' },
   ];
 
   return (
@@ -215,12 +219,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {onOpenNews && (
+            {(onOpenAdmissionDocuments || onOpenAdmissions) && (
               <button
-                id="nav-news-hot-btn"
-                onClick={onOpenNews}
-                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden"
-                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
+                id="nav-admission-btn"
+                onClick={onOpenAdmissionDocuments || onOpenAdmissions}
+                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden shadow-lg hover:scale-[1.03] active:scale-[0.98]"
+                title="Student Admission Documents & Official Forms"
               >
                 {/* Glowing flame aura */}
                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-orange-400/40 to-red-600/30 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse pointer-events-none" />
@@ -233,11 +237,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
 
                   <span className="font-black tracking-wider uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
-                    {language === 'sw' ? 'Habari' : 'News'}
-                  </span>
-
-                  <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black uppercase tracking-wider animate-pulse shadow-sm">
-                    🔥 HOT
+                    STUDENT ADMISSION
                   </span>
                 </span>
               </button>
@@ -367,11 +367,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             <div className="pt-6 mt-4 border-t border-slate-200 flex flex-col gap-2.5">
-              {onOpenNews && (
+              {(onOpenAdmissionDocuments || onOpenAdmissions) && (
                 <button
+                  id="mobile-nav-admission-btn"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    onOpenNews();
+                    if (onOpenAdmissionDocuments) onOpenAdmissionDocuments();
+                    else if (onOpenAdmissions) onOpenAdmissions();
                   }}
                   className="fire-news-btn liquid-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer"
                 >
@@ -380,10 +382,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
                       <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
                     </span>
-                    <span className="drop-shadow-xs">🔥 Habari Mpya &amp; Matangazo (Hot News)</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black animate-pulse">
-                      HOT
-                    </span>
+                    <span className="drop-shadow-xs font-black uppercase tracking-wider">STUDENT ADMISSION</span>
                   </span>
                 </button>
               )}

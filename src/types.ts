@@ -674,5 +674,32 @@ export interface StudentMedicalRecord {
   confidentialityNote?: string;
 }
 
+// ==========================================
+// 5. OFFICIAL STUDENT ADMISSION DOCUMENTS
+// ==========================================
+export interface AdmissionDocument {
+  id: string;
+  code: string; // e.g. "UOM-ADM-01"
+  titleSw: string;
+  titleEn: string;
+  descriptionSw: string;
+  descriptionEn: string;
+  category: 'admission' | 'medical' | 'parent' | 'joining' | 'rules' | 'checklist' | 'other';
+  academicYear: string; // e.g. "2026/2027"
+  fileType: 'PDF' | 'DOCX' | 'IMAGE';
+  fileSize: string; // e.g. "245 KB"
+  fileName: string;
+  fileData?: string; // base64 data URL for uploaded files
+  downloadType: 'generator' | 'uploaded';
+  generatorKey?: 'admission_form' | 'medical_form' | 'parent_form' | 'joining_instructions' | 'school_rules' | 'checklist';
+  published: boolean;
+  downloadsCount: number;
+  featured?: boolean;
+  order?: number;
+  uploadedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { SchoolLogo } from './SchoolLogo';
+import { useLanguage } from '../context/LanguageContext';
 import {
   MapPin,
   Phone,
@@ -26,6 +27,7 @@ interface FooterProps {
   onOpenAdmissions?: () => void;
   onOpenJoiningInstructions?: () => void;
   onOpenVituMuhimu?: () => void;
+  onOpenMedicalForm?: () => void;
   onOpenResults?: () => void;
   onOpenLogin?: () => void;
 }
@@ -40,9 +42,11 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenAdmissions,
   onOpenJoiningInstructions,
   onOpenVituMuhimu,
+  onOpenMedicalForm,
   onOpenResults,
   onOpenLogin,
 }) => {
+  const { language } = useLanguage();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -78,7 +82,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             <p className="text-xs text-amber-300 font-bold tracking-wide">
-              Motto: “ELIMU NI MAISHA” — Tujendelee Sisi Wenyewe
+              Motto: “TUJIENDELEZE SISI WENYEWE”
             </p>
             <p className="text-xs text-[#FFFFF0]/80 leading-relaxed max-w-sm">
               A registered Catholic Ordinary Level (Forms 1–4) day and boarding secondary school under the Catholic Diocese of Moshi. Dedicated to academic excellence, discipline, and moral integrity.
@@ -170,6 +174,11 @@ export const Footer: React.FC<FooterProps> = ({
                 >
                   <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-500 animate-bounce" />
                   <span>Habari Mpya (Hot News)</span>
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleNav('campus-tour')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                  {language === 'sw' ? '🏫 Majengo & Ziara ya Shule' : '🏫 Campus Tour & Buildings'}
                 </button>
               </li>
               <li>
@@ -309,58 +318,110 @@ export const Footer: React.FC<FooterProps> = ({
             </ul>
           </div>
 
-          {/* Col 5: Community & Staff Access (2 cols) */}
+          {/* Col 5: School Guidelines & Resources (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Ufikiaji wa Mfumo
+              Miongozo &amp; Huduma
             </h4>
-            <div className="space-y-2 pt-1">
-              {onOpenAdmin && (
+            <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
+              <li>
                 <button
-                  onClick={onOpenAdmin}
-                  className="w-full text-left px-3 py-2 rounded-md bg-amber-400/20 hover:bg-amber-400/30 text-xs font-bold text-amber-200 flex items-center justify-between transition-colors cursor-pointer border border-amber-300/30"
-                  title="Administration Portal"
+                  onClick={() => {
+                    if (onOpenJoiningInstructions) onOpenJoiningInstructions();
+                    else handleNav('admissions');
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
                 >
-                  <span>Administration Dashboard</span>
-                  <Lock className="w-3.5 h-3.5 text-amber-300" />
+                  Fomu za Kujiunga &amp; Maagizo
                 </button>
-              )}
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onOpenMedicalForm) onOpenMedicalForm();
+                    else window.location.hash = '#medical';
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left text-emerald-300 font-medium"
+                >
+                  Fomu ya Afya ya Mwanafunzi (PDF)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    if (onOpenVituMuhimu) onOpenVituMuhimu();
+                    else handleNav('admissions');
+                  }}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
+                >
+                  Orodha ya Vifaa &amp; Sare (Checklist)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNav('fees')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
+                >
+                  Mwongozo wa Malipo ya Ada
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNav('faq')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left text-amber-300 font-semibold"
+                >
+                  Maswali Yanayoulizwa (FAQ)
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNav('about')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
+                >
+                  Taratibu na Malezi ya Wanafunzi
+                </button>
+              </li>
+            </ul>
 
-              {onOpenStaffPortal && (
-                <button
-                  onClick={onOpenStaffPortal}
-                  className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
-                  title="Chumba cha Walimu (Private Staffroom)"
-                >
-                  <span>Chumba cha Walimu (Staffroom)</span>
-                  <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
-                </button>
-              )}
+            {/* Privileged Portals: Only visible when an authorized staff member is signed in */}
+            {(onOpenAdmin || onOpenStaffPortal || onOpenParentPortal) && (
+              <div className="space-y-2 pt-2 border-t border-white/10">
+                {onOpenAdmin && (
+                  <button
+                    onClick={onOpenAdmin}
+                    className="w-full text-left px-3 py-2 rounded-md bg-amber-400/20 hover:bg-amber-400/30 text-xs font-bold text-amber-200 flex items-center justify-between transition-colors cursor-pointer border border-amber-300/30"
+                    title="Administration Portal"
+                  >
+                    <span>Administration Dashboard</span>
+                    <Lock className="w-3.5 h-3.5 text-amber-300" />
+                  </button>
+                )}
 
-              {onOpenParentPortal && (
-                <button
-                  onClick={onOpenParentPortal}
-                  className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
-                >
-                  <span>Parent Portal</span>
-                  <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                </button>
-              )}
+                {onOpenStaffPortal && (
+                  <button
+                    onClick={onOpenStaffPortal}
+                    className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                    title="Chumba cha Walimu (Private Staffroom)"
+                  >
+                    <span>Chumba cha Walimu (Staffroom)</span>
+                    <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
+                  </button>
+                )}
 
-              {!onOpenAdmin && !onOpenStaffPortal && (
-                <button
-                  onClick={onOpenLogin || (() => { window.location.hash = '#login'; })}
-                  className="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 text-xs font-medium text-slate-300 flex items-center justify-between transition-colors cursor-pointer border border-white/10"
-                  title="Kuingia kwenye mfumo wa shule kwa watumishi walioidhinishwa"
-                >
-                  <span>Ufikiaji Watumishi (Staff Sign In)</span>
-                  <Lock className="w-3 h-3 text-slate-400" />
-                </button>
-              )}
-            </div>
+                {onOpenParentPortal && (
+                  <button
+                    onClick={onOpenParentPortal}
+                    className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
+                  >
+                    <span>Parent Portal</span>
+                    <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                  </button>
+                )}
+              </div>
+            )}
 
             <p className="text-[11px] text-[#FFFFF0]/60 pt-2 leading-relaxed">
-              Mfumo na kumbukumbu rasmi za wanafunzi na watumishi zinalindwa kwa mujibu wa taratibu za kiusalama.
+              Shule ya Sekondari Uomboni inazingatia viwango vya juu vya maadili, nidhamu na ubora wa elimu.
             </p>
           </div>
         </div>
@@ -375,6 +436,13 @@ export const Footer: React.FC<FooterProps> = ({
 
           <div className="flex items-center gap-6">
             <span>NECTA Registration: S0486</span>
+            <button
+              onClick={onOpenLogin || (() => { window.location.hash = '#login'; })}
+              className="text-[#FFFFF0]/30 hover:text-[#C9A227] transition-colors cursor-pointer text-[11px]"
+              title="Watumishi Sign In"
+            >
+              Watumishi
+            </button>
             <button
               onClick={scrollToTop}
               className="inline-flex items-center gap-1 text-[#FFFFF0] hover:text-[#C9A227] transition-colors cursor-pointer"

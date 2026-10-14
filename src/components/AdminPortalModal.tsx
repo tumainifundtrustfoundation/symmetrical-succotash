@@ -88,6 +88,7 @@ import { AdminBankAccountsTab } from './admin/AdminBankAccountsTab';
 import { AdminEventsTab } from './admin/AdminEventsTab';
 import { AdminSystemArchitectureTab } from './admin/AdminSystemArchitectureTab';
 import { AdminVideosTab } from './admin/AdminVideosTab';
+import { AdminAdmissionDocumentsTab } from './admin/AdminAdmissionDocumentsTab';
 import { SystemArchitectureModal } from './SystemArchitectureModal';
 
 interface AdminPortalModalProps {
@@ -195,6 +196,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   const [authErrorMessage, setAuthErrorMessage] = useState('');
   const [activeTab, setActiveTab] = useState<
     | 'applications'
+    | 'admissionDocuments'
     | 'students'
     | 'assets'
     | 'teachers'
@@ -1538,6 +1540,24 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                     {applications.length}
                   </span>
                 </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('admissionDocuments')}
+                id="admin-tab-admission-docs"
+                className={`w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer text-left border ${
+                  activeTab === 'admissionDocuments'
+                    ? 'bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 text-emerald-300 border-emerald-500/40 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border-transparent font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className={`w-4 h-4 ${activeTab === 'admissionDocuments' ? 'text-amber-400' : 'text-slate-400'}`} />
+                  <span>{language === 'sw' ? 'Nyaraka za Udahili (PDFs)' : 'Admission Documents'}</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                  FORMS
+                </span>
               </button>
 
               <div className="hidden md:block text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest px-2 pt-3 pb-1 border-t border-slate-900 mt-1">
@@ -6888,6 +6908,13 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
               {activeTab === 'videos' && (
                 <div className="p-4 sm:p-6">
                   <AdminVideosTab />
+                </div>
+              )}
+
+              {/* TAB: OFFICIAL ADMISSION DOCUMENTS MANAGEMENT */}
+              {activeTab === 'admissionDocuments' && (
+                <div className="p-4 sm:p-6">
+                  <AdminAdmissionDocumentsTab />
                 </div>
               )}
 

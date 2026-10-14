@@ -83,8 +83,13 @@ export const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({ onNavigate
 
   return (
     <section id="quick-stats" className="relative -mt-8 sm:-mt-12 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-[#0b2545] text-white rounded-xl p-6 sm:p-8 border border-blue-900 shadow-lg">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-blue-800/60">
+      <div className="liquid-panel text-white p-6 sm:p-8 relative">
+        {/* Specular fluid light lines and ambient refraction glows */}
+        <div className="absolute top-0 inset-x-10 h-px bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent pointer-events-none" />
+        <div className="absolute -top-20 left-1/4 w-72 h-32 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 right-1/4 w-72 h-32 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-white/15">
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
@@ -95,19 +100,19 @@ export const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({ onNavigate
                 } group`}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-12 h-12 rounded-lg ${stat.bgGradient} ${stat.borderColor} border flex items-center justify-center`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  <div className="w-12 h-12 rounded-xl backdrop-blur-md bg-white/10 border border-white/25 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.45),0_4px_12px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:bg-white/15 group-hover:border-cyan-300/60">
+                    <Icon className={`w-6 h-6 ${stat.color} drop-shadow-[0_2px_6px_rgba(255,255,255,0.3)]`} />
                   </div>
-                  <span className={`text-3xl sm:text-4xl font-bold ${stat.color} tracking-tight font-mono`}>
+                  <span className={`text-3xl sm:text-4xl font-extrabold ${stat.color} tracking-tight font-mono drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]`}>
                     {stat.value}
                   </span>
                 </div>
 
-                <h3 className="text-sm sm:text-base font-bold text-white tracking-wide">
+                <h3 className="text-sm sm:text-base font-bold text-white tracking-wide drop-shadow-xs">
                   {language === 'sw' ? stat.labelSw : stat.labelEn}
                 </h3>
 
-                <p className="text-xs text-blue-200/80 mt-1 font-medium">
+                <p className="text-xs text-blue-100/80 mt-1 font-medium">
                   {language === 'sw' ? stat.subSw : stat.subEn}
                 </p>
               </div>
@@ -115,11 +120,13 @@ export const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({ onNavigate
           })}
         </div>
 
-        {/* Small bottom note */}
-        <div className="mt-6 pt-5 border-t border-blue-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-200/80">
+        {/* Liquid bottom divider and action note */}
+        <div className="relative z-10 mt-6 pt-5 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-100/90">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-300 shrink-0" />
-            <span>
+            <div className="w-5 h-5 rounded-full bg-cyan-400/20 border border-cyan-300/40 flex items-center justify-center shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+            </div>
+            <span className="font-medium tracking-wide">
               {language === 'sw'
                 ? 'Shule inatambulika rasmi na Wizara ya Elimu, Sayansi na Teknolojia (NECTA S0486)'
                 : 'Accredited by the Ministry of Education, Science & Technology (NECTA S0486)'}
@@ -129,7 +136,7 @@ export const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({ onNavigate
           {onNavigate && (
             <button
               onClick={() => onNavigate('academics')}
-              className="text-white hover:text-blue-200 font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="liquid-btn liquid-btn-frosted text-white hover:text-amber-200 font-bold px-4 py-2 inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             >
               <span>{language === 'sw' ? 'Tazama Matokeo ya NECTA na Mitihani →' : 'View NECTA & Academic Results →'}</span>
             </button>

@@ -21,6 +21,10 @@ import {
   verifySessionToken,
   terminateSession,
 } from "./server/authSecurity";
+import {
+  handleGetPrivateBlob,
+  handlePutPrivateBlob,
+} from "./server/vercelBlobService";
 
 dotenv.config();
 
@@ -456,6 +460,12 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
       });
     }
   });
+
+  // =========================================================================
+  // VERCEL PRIVATE BLOB STORAGE ENDPOINTS (PUT & SECURE STREAMING GET)
+  // =========================================================================
+  app.get("/api/blob", handleGetPrivateBlob);
+  app.post("/api/blob/upload", handlePutPrivateBlob);
 
   // Vite middleware in dev or static files in production
   if (process.env.NODE_ENV !== "production") {

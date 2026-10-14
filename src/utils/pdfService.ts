@@ -2462,15 +2462,21 @@ export function printOfficialJoiningInstructions2027Directly(customData?: {
  * Form for prospective and continuing students requiring clinician review
  * ===================================================================
  */
-export function generateOfficialMedicalExaminationFormPdfDoc(params?: {
+export interface MedicalExaminationPdfParams {
   studentName?: string;
   applicationNumber?: string;
   dateOfBirth?: string;
+  age?: string | number;
   gender?: 'M' | 'F' | string;
+  form?: string;
+  academicYear?: string;
   parentName?: string;
   parentPhone?: string;
+  address?: string;
   premNumber?: string;
-}): jsPDF {
+}
+
+export function generateOfficialMedicalExaminationFormPdfDoc(params?: MedicalExaminationPdfParams): jsPDF {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -2478,269 +2484,841 @@ export function generateOfficialMedicalExaminationFormPdfDoc(params?: {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
-  const margin = 14;
-  const contentWidth = pageWidth - margin * 2;
+  const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+  const margin = 12;
+  const contentWidth = pageWidth - margin * 2; // 186mm
 
-  // Outer framing
-  doc.setDrawColor(16, 42, 67); // Navy
-  doc.setLineWidth(0.8);
-  doc.rect(margin - 2, margin - 2, contentWidth + 4, 275);
-  doc.setDrawColor(201, 162, 39); // Gold
+  // Colors
+  const deepBlue = [11, 37, 69]; // #0B2545 Primary Deep Navy
+  const emeraldGreen = [4, 120, 87]; // #047857 Health Emerald
+  const slateDark = [15, 23, 42]; // #0F172A Body text
+  const slateMuted = [71, 85, 105]; // #475569 Muted text
+  const tableBorder = [203, 213, 225]; // #CBD5E1 Table grid
+
+  const studentNameVal = params?.studentName || '';
+  const appNoVal = params?.applicationNumber || 'APP-2026-________';
+  const dobVal = params?.dateOfBirth || '';
+  const ageVal = params?.age ? `${params.age}` : '';
+  const sexVal = params?.gender || '';
+  const formVal = params?.form || 'Form 1 (Kidato cha I)';
+  const academicYearVal = params?.academicYear || '2026 / 2027';
+  const parentNameVal = params?.parentName || '';
+  const parentPhoneVal = params?.parentPhone || '';
+  const addressVal = params?.address || '';
+  const premVal = params?.premNumber || '';
+
+  // Helper for Section Titles
+  const drawSectionHeader = (yPos: number, sectionNumber: number, titleEn: string, titleSw: string, bg: number[] = deepBlue) => {
+    doc.setFillColor(bg[0], bg[1], bg[2]);
+    doc.roundedRect(margin, yPos, contentWidth, 5.6, 1, 1, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text(
+      `SECTION ${sectionNumber}: ${titleEn.toUpperCase()} • SEHEMU ${sectionNumber}: ${titleSw.toUpperCase()}`,
+      margin + 3,
+      yPos + 3.9
+    );
+  };
+
+  // Helper for Double Framing
+  const drawPageBorder = () => {
+    // Outer Deep Blue Frame
+    doc.setDrawColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+    doc.setLineWidth(0.7);
+    doc.rect(margin - 2.5, margin - 2.5, contentWidth + 5, 277);
+
+    // Inner Emerald Green Accent Frame
+    doc.setDrawColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+    doc.setLineWidth(0.3);
+    doc.rect(margin - 1.2, margin - 1.2, contentWidth + 2.4, 274.4);
+  };
+
+  // ==========================================
+  // PAGE 1: STUDENT INFO, MEDICAL HISTORY, PARENT DECLARATION
+  // ==========================================
+  drawPageBorder();
+
+  // Top School Header Container
+  doc.setFillColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.rect(margin, margin, contentWidth, 27, 'F');
+
+  // Reserved Space for School Logo (Top Left)
+  const logoBoxX = margin + 2.5;
+  const logoBoxY = margin + 2.5;
+  const logoBoxSize = 22;
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, 2, 2, 'F');
+  doc.setDrawColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+  doc.setLineWidth(0.6);
+  doc.roundedRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, 2, 2, 'S');
+
+  // Decorative Crest lines inside Logo Box
+  doc.setDrawColor(11, 37, 69);
   doc.setLineWidth(0.3);
-  doc.rect(margin - 0.8, margin - 0.8, contentWidth + 1.6, 272.6);
-
-  // Top header banner
-  doc.setFillColor(16, 42, 67);
-  doc.rect(margin, margin, contentWidth, 32, 'F');
-
-  doc.setTextColor(253, 224, 71);
-  doc.setFontSize(8.5);
+  doc.circle(logoBoxX + logoBoxSize / 2, logoBoxY + 7.5, 4.5);
   doc.setFont('helvetica', 'bold');
-  doc.text('JIMBO KATOLIKI MOSHI • CATHOLIC DIOCESE OF MOSHI', pageWidth / 2, margin + 6.5, { align: 'center' });
+  doc.setFontSize(5);
+  doc.setTextColor(4, 120, 87);
+  doc.text('SCHOOL LOGO', logoBoxX + logoBoxSize / 2, logoBoxY + 14.5, { align: 'center' });
+  doc.setFontSize(4.2);
+  doc.setTextColor(11, 37, 69);
+  doc.text('NEMBO YA SHULE', logoBoxX + logoBoxSize / 2, logoBoxY + 17.5, { align: 'center' });
+  doc.setFontSize(4);
+  doc.setTextColor(100, 116, 139);
+  doc.text('UOMBONI SEC', logoBoxX + logoBoxSize / 2, logoBoxY + 20.2, { align: 'center' });
+
+  // School Details Header Text (Right of Logo)
+  const textCenterX = margin + (contentWidth + logoBoxSize) / 2;
+
+  doc.setTextColor(253, 224, 71); // Gold
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('JIMBO KATOLIKI MOSHI • CATHOLIC DIOCESE OF MOSHI', textCenterX, margin + 5.5, { align: 'center' });
 
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('SHULE YA SEKONDARI UOMBONI', pageWidth / 2, margin + 14, { align: 'center' });
+  doc.text('SHULE YA SEKONDARI UOMBONI • UOMBONI SECONDARY SCHOOL', textCenterX, margin + 12, { align: 'center' });
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(226, 232, 240);
-  doc.text('S.L.P 361 MARANGU, MOSHI VIJIJINI • KITUO CHA NECTA: S0486 • SIMU: +255 782 558 127', pageWidth / 2, margin + 20, { align: 'center' });
+  doc.text('Moshi – Marangu, Kilimanjaro, Tanzania • S.L.P. 361 Marangu • Kituo cha NECTA Na: S0486', textCenterX, margin + 17.5, { align: 'center' });
 
-  doc.setFillColor(201, 162, 39);
-  doc.roundedRect(pageWidth / 2 - 55, margin + 23, 110, 6.5, 1.5, 1.5, 'F');
-  doc.setTextColor(16, 42, 67);
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FOMU RASMI YA KUPIMA AFYA YA MWANAFUNZI (MEDICAL FORM)', pageWidth / 2, margin + 27.5, { align: 'center' });
-
-  let y = margin + 36;
-
-  // IMPORTANT NOTICE BOX
-  doc.setFillColor(254, 242, 242);
-  doc.setDrawColor(248, 113, 113);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(margin, y, contentWidth, 11, 1.5, 1.5, 'FD');
-
-  doc.setTextColor(153, 27, 27);
   doc.setFontSize(6.8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('ANGALIZO MUHIMU KWA AFISA WA AFYA (CLINICIAN):', margin + 3, y + 4);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Fomu hii lazima ijazwe na Daktari au Afisa wa Afya aliyesajiliwa kutoka Hospitali/Kituo cha Afya kinachotambulika na Serikali.', margin + 3, y + 8);
+  doc.setTextColor(209, 250, 229);
+  doc.text('Simu / Tel: +255 782 558 127 / +255 754 492 841 • Barua Pepe: info@uombonisecondary.sc.tz', textCenterX, margin + 22.5, { align: 'center' });
 
-  y += 14;
-
-  // SECTION A: STUDENT & ADMISSION IDENTIFICATION
-  doc.setFillColor(241, 245, 249);
-  doc.rect(margin, y, contentWidth, 5.5, 'F');
-  doc.setTextColor(16, 42, 67);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SEHEMU A: TAARIFA ZA UTAMBULISHO WA MWANAFUNZI (STUDENT DETAILS)', margin + 3, y + 4);
-
-  y += 7.5;
-  doc.setFontSize(7.2);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(51, 65, 85);
-
-  const studentNameVal = params?.studentName || '____________________________________________________';
-  const appNoVal = params?.applicationNumber || 'APP-2026-________';
-  const premVal = params?.premNumber || '____________________';
-
-  doc.text(`1. Jina Kamili la Mwanafunzi:`, margin + 2, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(studentNameVal, margin + 46, y);
-
-  doc.setTextColor(51, 65, 85);
-  doc.text(`Namba ya Udahili:`, margin + 125, y);
-  doc.setTextColor(16, 42, 67);
-  doc.text(appNoVal, margin + 152, y);
-
-  y += 6;
-  doc.setTextColor(51, 65, 85);
-  doc.text(`2. Tarehe ya Kuzaliwa:`, margin + 2, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(params?.dateOfBirth || '_____ / _____ / ________', margin + 36, y);
-
-  doc.setTextColor(51, 65, 85);
-  doc.text(`Jinsia:`, margin + 80, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(params?.gender === 'F' ? 'Kike (Female)' : params?.gender === 'M' ? 'Kiume (Male)' : 'Kiume [  ]   Kike [  ]', margin + 92, y);
-
-  doc.setTextColor(51, 65, 85);
-  doc.text(`PREM / Mtihani La Saba:`, margin + 125, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(premVal, margin + 162, y);
-
-  y += 6;
-  doc.setTextColor(51, 65, 85);
-  doc.text(`3. Jina la Mzazi / Mlezi:`, margin + 2, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(params?.parentName || '____________________________________________________', margin + 40, y);
-
-  doc.setTextColor(51, 65, 85);
-  doc.text(`Simu ya Mzazi:`, margin + 125, y);
-  doc.setTextColor(15, 23, 42);
-  doc.text(params?.parentPhone || '+255 __________________', margin + 148, y);
-
-  y += 9;
-
-  // SECTION B: PARENT/GUARDIAN HEALTH STATEMENT
-  doc.setFillColor(241, 245, 249);
-  doc.rect(margin, y, contentWidth, 5.5, 'F');
-  doc.setTextColor(16, 42, 67);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SEHEMU B: HISTORIA YA AFYA KUTOKA KWA MZAZI / MLEZI (PARENT DECLARATION)', margin + 3, y + 4);
-
-  y += 7.5;
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(51, 65, 85);
-
-  const parentQuestions = [
-    '• Mwanafunzi amewahi kuugua magonjwa sugu (Pumu, Kifafa, Kisukari, Sickle Cell n.k)? Ndiyo [  ] Hapana [  ]',
-    '• Mzio (Allergies) wowote wa chakula au dawa za hospitali: ____________________________________________________',
-    '• Upasuaji wowote aliowahi kufanyiwa: __________________________________________________________________________',
-    '• Dawa anazotumia mara kwa mara: _______________________________________________________________________________',
-  ];
-
-  parentQuestions.forEach((q) => {
-    doc.text(q, margin + 2, y);
-    y += 5.5;
-  });
-
-  doc.setFont('helvetica', 'italic');
-  doc.text('Sahihi ya Mzazi/Mlezi: __________________________________   Tarehe: _____ / _____ / 2026', margin + 2, y + 1);
-  y += 8.5;
-
-  // SECTION C: CLINICAL PHYSICAL EXAMINATION (FOR REGISTERED CLINICIAN ONLY)
-  doc.setFillColor(16, 42, 67);
-  doc.rect(margin, y, contentWidth, 5.5, 'F');
+  // Title Ribbon
+  let y = margin + 28.5;
+  doc.setFillColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+  doc.rect(margin, y, contentWidth, 7, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(7.5);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
-  doc.text('SEHEMU C: VIPIMO VYA DAKTARI / AFISA AFYA (PHYSICAL MEDICAL EXAMINATION)', margin + 3, y + 4);
+  doc.text('STUDENT MEDICAL EXAMINATION FORM • FOMU YA UCHUNGUZI WA AFYA YA MWANAFUNZI', pageWidth / 2, y + 4.8, { align: 'center' });
 
-  y += 8;
-  doc.setFontSize(7);
-  doc.setTextColor(51, 65, 85);
+  // Confidentiality Notice Box
+  y += 8.5;
+  doc.setFillColor(240, 253, 244); // light emerald-50
+  doc.setDrawColor(167, 243, 208); // emerald-200
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, y, contentWidth, 8, 1, 1, 'FD');
+
+  doc.setTextColor(4, 120, 87);
+  doc.setFontSize(6.2);
   doc.setFont('helvetica', 'bold');
+  doc.text('ILANI YA USIRI NA MAAGIZO (CONFIDENTIALITY NOTICE & CLINICIAN INSTRUCTIONS):', margin + 3, y + 3.2);
 
-  // Table of clinical parameters
-  const examParams = [
-    ['1. Kimo (Height / cm): ____________', '2. Uzito (Weight / kg): ____________', '3. Kundi la Damu (Blood Group): ______'],
-    ['4. Shinikizo la Damu (BP): _________', '5. Mapigo ya Moyo (Pulse): _________', '6. Joto la Mwili (Temp / °C): _________'],
-    ['7. Macho / Visual Acuity (R): ______', '(L): ______ Color Vision: _________', '8. Masikio & Usikivu (Hearing): _______'],
-    ['9. Kifua & Mapafu (Lungs): ________', '10. Mfumo wa Moyo (CVS): _________', '11. Tumbo & Spleen/Liver: _____________'],
-    ['12. Ngozi (Skin Conditions): _______', '13. Mkojo (Urinalysis Alb/Sugar): __', '14. Damu (Hb / Stool analysis): ________'],
-  ];
-
-  examParams.forEach((row) => {
-    doc.text(row[0], margin + 2, y);
-    doc.text(row[1], margin + 65, y);
-    doc.text(row[2], margin + 125, y);
-    y += 5.8;
-  });
-
-  y += 2;
-  doc.text('15. Maoni Maalum ya Kitabibu (Specific Clinical Findings):', margin + 2, y);
-  y += 4;
-  doc.setDrawColor(203, 213, 225);
-  doc.line(margin + 2, y, margin + contentWidth - 4, y);
-  y += 5;
-  doc.line(margin + 2, y, margin + contentWidth - 4, y);
-  y += 6;
-
-  // SECTION D: CLINICAL RECOMMENDATION & OFFICIAL STAMP
-  doc.setFillColor(241, 245, 249);
-  doc.rect(margin, y, contentWidth, 5.5, 'F');
-  doc.setTextColor(16, 42, 67);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SEHEMU D: MAPENDEKEZO NA UTHIBITISHO WA KITABIBU (CLINICIAN CERTIFICATION)', margin + 3, y + 4);
-
-  y += 8;
-  doc.setFontSize(7.2);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(15, 23, 42);
-
-  doc.text('Ninathibitisha kuwa nimemfanyia uchunguzi kamili wa kimatibabu mwanafunzi aliyetajwa hapo juu na maoni yangu ni:', margin + 2, y);
-  y += 5.5;
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('[  ] ANAFAA KUJIUNGA NA SHULE YA BWENI NA SHUGHULI ZA MICHEZO (Fit for Boarding & Sports)', margin + 5, y);
-  y += 5;
-  doc.text('[  ] ANAFAA KWA MASHARTI MAALUM YA KUTIBIWA / KUTOZIDISHA MAZOEZI (Fit with Medical Restrictions)', margin + 5, y);
-  y += 5;
-  doc.text('[  ] ANAHITAJI UCHUNGUZI ZAIDI WA HOSPITALI KUBWA YA RUFAA (Requires Further Investigation)', margin + 5, y);
-
-  y += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.text('Jina la Daktari / Afisa wa Afya: __________________________________________________', margin + 2, y);
-  doc.text('Kada (MD/AMO/CO): ____________________', margin + 120, y);
-
-  y += 6;
-  doc.text('Kituo cha Afya / Hospitali: ______________________________________________________', margin + 2, y);
-  doc.text('Tarehe: _____ / _____ / 2026', margin + 120, y);
-
-  y += 6;
-  doc.text('Sahihi ya Daktari: ______________________________________________________________', margin + 2, y);
-
-  // Clinician Stamp Box on right
-  const stampBoxX = pageWidth - margin - 46;
-  doc.setDrawColor(16, 42, 67);
-  doc.setLineDashPattern([1.5, 1.5], 0);
-  doc.rect(stampBoxX, y - 8, 44, 22);
-  doc.setLineDashPattern([], 0);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.8);
-  doc.setTextColor(100, 116, 139);
-  doc.text('MUHURI RASMI WA HOSPITALI', stampBoxX + 22, y - 1, { align: 'center' });
   doc.setFontSize(5.8);
-  doc.text('(Official Health Facility Stamp)', stampBoxX + 22, y + 3, { align: 'center' });
-
-  // Confidentiality footer note
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(6.5);
-  doc.setTextColor(100, 116, 139);
   doc.text(
-    'Taarifa za afya zinatunzwa kwa usiri mkubwa kwa mujibu wa sera za shule na maadili ya kitaaluma ya utabibu.',
-    pageWidth / 2,
-    283,
-    { align: 'center' }
+    'Fomu hii lazima ijazwe na Daktari aliyesajiliwa kutoka Hospitali/Kituo cha Afya kinachotambulika kisheria. Taarifa za afya zinatunzwa kwa usiri mkubwa.',
+    margin + 3,
+    y + 6.2
+  );
+
+  // -------------------------------------------------------------
+  // 1. SECTION 1: STUDENT INFORMATION / TAARIFA ZA MWANAFUNZI
+  // -------------------------------------------------------------
+  y += 9.5;
+  drawSectionHeader(y, 1, 'Student Information', 'Taarifa za Utambulisho wa Mwanafunzi', deepBlue);
+
+  y += 6.5;
+  // Student Info Box
+  const infoBoxHeight = 31;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.setLineWidth(0.25);
+  doc.rect(margin, y, contentWidth, infoBoxHeight, 'FD');
+
+  doc.setFontSize(6.8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+
+  // Line 1: Full Name & App No
+  doc.text('1. Full Name / Jina Kamili la Mwanafunzi:', margin + 3, y + 4.8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(studentNameVal ? studentNameVal.toUpperCase() : '____________________________________________________________________', margin + 50, y + 4.8);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Reg / App No:', margin + 130, y + 4.8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(appNoVal, margin + 150, y + 4.8);
+
+  // Line 2: Date of Birth, Age, Sex
+  const row2Y = y + 10.8;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('2. Date of Birth / Tarehe ya Kuzaliwa:', margin + 3, row2Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(dobVal || '_____ / _____ / ________', margin + 46, row2Y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Age / Umri:', margin + 85, row2Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(ageVal ? `${ageVal} Yrs / Miaka` : '_______ Yrs / Miaka', margin + 100, row2Y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Sex / Jinsia:', margin + 130, row2Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  const isMale = sexVal === 'M' || sexVal === 'Male' || sexVal === 'Kiume';
+  const isFemale = sexVal === 'F' || sexVal === 'Female' || sexVal === 'Kike';
+  doc.text(`[${isMale ? 'X' : '  '}] Male / Kiume       [${isFemale ? 'X' : '  '}] Female / Kike`, margin + 148, row2Y);
+
+  // Line 3: Class, Academic Year, PREM
+  const row3Y = y + 16.8;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('3. Class / Kidato:', margin + 3, row3Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(formVal, margin + 26, row3Y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Academic Year / Mwaka:', margin + 75, row3Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(academicYearVal, margin + 107, row3Y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('PREM / Exam No:', margin + 130, row3Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(premVal || '____________________', margin + 155, row3Y);
+
+  // Line 4: Parent Name & Phone
+  const row4Y = y + 22.8;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('4. Parent / Guardian Name (Mzazi / Mlezi):', margin + 3, row4Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(parentNameVal || '____________________________________________________', margin + 54, row4Y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Phone / Simu:', margin + 130, row4Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(parentPhoneVal || '+255 __________________', margin + 149, row4Y);
+
+  // Line 5: Address
+  const row5Y = y + 28.5;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('5. Residential & Postal Address (Anwani ya Makazi):', margin + 3, row5Y);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(addressVal || 'S.L.P. ____________, Mji / Kijiji: ________________________, Mkoa: ________________________', margin + 63, row5Y);
+
+  // -------------------------------------------------------------
+  // 2. SECTION 2: MEDICAL HISTORY / HISTORIA YA AFYA NA MATIBABU
+  // -------------------------------------------------------------
+  y += infoBoxHeight + 3.5;
+  drawSectionHeader(y, 2, 'Medical History', 'Historia ya Afya na Magonjwa', emeraldGreen);
+
+  y += 6.5;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6.2);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    'To be completed by Parent/Guardian or Clinician. Put [X] in appropriate box. (Ijazwe na Mzazi akishirikiana na Daktari. Weka alama [X] panapohusika):',
+    margin + 2,
+    y
+  );
+
+  y += 2.5;
+
+  // Medical History Table
+  const medHistHeaderY = y;
+  doc.setFillColor(241, 245, 249);
+  doc.rect(margin, medHistHeaderY, contentWidth, 5, 'F');
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.rect(margin, medHistHeaderY, contentWidth, 5, 'S');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Na.', margin + 2, medHistHeaderY + 3.5);
+  doc.text('Medical Condition / Ugonjwa au Hali ya Kiafya', margin + 10, medHistHeaderY + 3.5);
+  doc.text('Status / Hali', margin + 98, medHistHeaderY + 3.5);
+  doc.text('Clinical Details / If YES, specify severity & medications', margin + 128, medHistHeaderY + 3.5);
+
+  const medicalConditions = [
+    {
+      no: '1',
+      en: 'Allergies (Penicillin, Sulfa, antibiotics, specific foods, insect stings)',
+      sw: 'Mzio wa dawa (mf. Penicillin, Sulfa) au vyakula maalum',
+    },
+    {
+      no: '2',
+      en: 'Asthma or chronic / recurrent chest tightness, wheezing, cough',
+      sw: 'Pumu au tatizo sugu la kubanwa kifua na kukosa pumzi',
+    },
+    {
+      no: '3',
+      en: 'Epilepsy, convulsions, fainting spells, fits, loss of consciousness',
+      sw: 'Kifafa, degedege, kizunguzungu au kupoteza fahamu',
+    },
+    {
+      no: '4',
+      en: 'Diabetes mellitus (Sugar condition) / Juvenile diabetes',
+      sw: 'Ugonjwa wa Kisukari (kutumia vidonge au sindano za Insulin)',
+    },
+    {
+      no: '5',
+      en: 'Heart conditions, rheumatic heart disease, murmur, palpitations',
+      sw: 'Magonjwa ya moyo, homa ya baridi yabisi au shinikizo la damu',
+    },
+    {
+      no: '6',
+      en: 'Sickle cell disease or sickle cell trait',
+      sw: 'Selimundu (Sickle Cell Disease / Sickle Cell Trait)',
+    },
+    {
+      no: '7',
+      en: 'Regular / long-term prescription medication in use',
+      sw: 'Dawa za kudumu anazotumia kila siku au mara kwa mara',
+    },
+    {
+      no: '8',
+      en: 'Previous surgical operations, bone fractures, or major hospital admissions',
+      sw: 'Upasuaji wowote aliowahi kufanyiwa au kulazwa hospitalini',
+    },
+    {
+      no: '9',
+      en: 'Other relevant medical conditions, sight/hearing/physical disabilities',
+      sw: 'Magonjwa au changamoto nyinginezo za kiafya / ulemavu',
+    },
+  ];
+
+  y = medHistHeaderY + 5;
+  const rowHeight = 10.5;
+
+  medicalConditions.forEach((item, index) => {
+    // Alternate row background
+    if (index % 2 === 1) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(margin, y, contentWidth, rowHeight, 'F');
+    }
+    doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+    doc.rect(margin, y, contentWidth, rowHeight, 'S');
+
+    // Vertical column dividers
+    doc.line(margin + 8, y, margin + 8, y + rowHeight);
+    doc.line(margin + 95, y, margin + 95, y + rowHeight);
+    doc.line(margin + 125, y, margin + 125, y + rowHeight);
+
+    // Number
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+    doc.text(item.no, margin + 3.5, y + 4.5);
+
+    // Condition text
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+    doc.text(item.en, margin + 10, y + 4);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.6);
+    doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+    doc.text(item.sw, margin + 10, y + 8);
+
+    // Checkboxes
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.3);
+    doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+    doc.text('[   ] Yes / Ndiyo', margin + 97, y + 4.2);
+    doc.text('[   ] No / Hapana', margin + 97, y + 8.2);
+
+    // Details space (dotted lines)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.8);
+    doc.setTextColor(148, 163, 184);
+    doc.text('...........................................................................', margin + 127, y + 4.2);
+    doc.text('...........................................................................', margin + 127, y + 8.2);
+
+    y += rowHeight;
+  });
+
+  // -------------------------------------------------------------
+  // 7. SECTION 7: PARENT/GUARDIAN DECLARATION / TAMKO LA MZAZI
+  // -------------------------------------------------------------
+  y += 3;
+  drawSectionHeader(y, 7, 'Parent / Guardian Declaration', 'Tamko na Ridhaa ya Mzazi au Mlezi', deepBlue);
+
+  y += 6.5;
+  const parentDeclHeight = 27;
+  doc.setFillColor(254, 252, 232); // amber-50
+  doc.setDrawColor(251, 191, 36); // amber-400
+  doc.setLineWidth(0.3);
+  doc.rect(margin, y, contentWidth, parentDeclHeight, 'FD');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.8);
+  doc.setTextColor(15, 23, 42);
+  doc.text(
+    'I certify that the medical history provided above is accurate and complete to the best of my knowledge. In case of an emergency at school, I authorize',
+    margin + 3,
+    y + 3.8
+  );
+  doc.text(
+    'the school administration to arrange immediate medical care for my child. (Ninathibitisha kwamba taarifa nilizotoa hapo juu ni za kweli na sahihi).',
+    margin + 3,
+    y + 7.0
+  );
+
+  // Declaration lines
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Parent / Guardian Name (Jina la Mzazi):', margin + 3, y + 13);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(parentNameVal || '__________________________________________________________________________', margin + 48, y + 13);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Signature / Sahihi:', margin + 3, y + 19);
+  doc.setFont('helvetica', 'normal');
+  doc.text('__________________________________', margin + 26, y + 19);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Date / Tarehe:', margin + 74, y + 19);
+  doc.setFont('helvetica', 'normal');
+  doc.text('_____ / _____ / 20____', margin + 92, y + 19);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Phone / Simu:', margin + 128, y + 19);
+  doc.setFont('helvetica', 'normal');
+  doc.text(parentPhoneVal || '+255 __________________', margin + 146, y + 19);
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(5.5);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    '* Tafadhali ambatanisha nakala ya kadi ya kliniki au ripoti ya matibabu ikiwa mwanafunzi anatumia dawa za kudumu.',
+    margin + 3,
+    y + 24.5
+  );
+
+  // Page 1 Footer
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    'Uomboni Secondary School • Student Medical Examination Form • NECTA Centre No: S0486 • Page 1 of 2',
+    margin,
+    pageHeight - 9
+  );
+  doc.text(
+    'Moshi – Marangu, Kilimanjaro, Tanzania',
+    pageWidth - margin,
+    pageHeight - 9,
+    { align: 'right' }
+  );
+
+  // ==========================================
+  // PAGE 2: PHYSICAL EXAMINATION, INVESTIGATIONS, ASSESSMENT, CLINICIAN DETAILS
+  // ==========================================
+  doc.addPage();
+  drawPageBorder();
+
+  // Page 2 Header Banner
+  doc.setFillColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.rect(margin, margin, contentWidth, 14, 'F');
+
+  doc.setTextColor(253, 224, 71);
+  doc.setFontSize(7.2);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SHULE YA SEKONDARI UOMBONI • UOMBONI SECONDARY SCHOOL', margin + 4, margin + 5.2);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8.8);
+  doc.text('STUDENT MEDICAL EXAMINATION FORM (PART 2: CLINICAL ASSESSMENT & CERTIFICATION)', margin + 4, margin + 10.5);
+
+  doc.setFontSize(6.8);
+  doc.setTextColor(209, 250, 229);
+  doc.text('PAGE 2 OF 2 • OFFICIAL CLINICAL REPORT', pageWidth - margin - 4, margin + 10.5, { align: 'right' });
+
+  // Student Reference Strip on Page 2
+  y = margin + 15.5;
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.setLineWidth(0.25);
+  doc.rect(margin, y, contentWidth, 6, 'FD');
+
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Student Full Name / Jina la Mwanafunzi:', margin + 3, y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(studentNameVal ? studentNameVal.toUpperCase() : '____________________________________________', margin + 50, y + 4.2);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Class / Kidato:', margin + 120, y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text(formVal, margin + 138, y + 4.2);
+
+  // -------------------------------------------------------------
+  // 3. SECTION 3: PHYSICAL EXAMINATION / UCHUNGUZI WA KIMWILI
+  // -------------------------------------------------------------
+  y += 7.5;
+  drawSectionHeader(y, 3, 'Physical Examination (Clinician Only)', 'Uchunguzi wa Kimwili wa Daktari', emeraldGreen);
+
+  y += 6.5;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    'Must be conducted and recorded by a Registered Medical Practitioner (Ifanywe na daktari aliyesajiliwa):',
+    margin + 2,
+    y
+  );
+
+  y += 2.5;
+
+  // Physical Exam Table
+  const physTableY = y;
+  const physRowHeight = 9.2;
+  const physTableHeight = physRowHeight * 5;
+
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.setLineWidth(0.25);
+  doc.rect(margin, physTableY, contentWidth, physTableHeight, 'S');
+
+  // Row 1: Vital Signs
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, physTableY, contentWidth, physRowHeight, 'F');
+  doc.line(margin, physTableY + physRowHeight, margin + contentWidth, physTableY + physRowHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('VITAL SIGNS / VIPIMO VYA MSINGI:', margin + 2.5, physTableY + 5.8);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.2);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Height: _____ cm', margin + 48, physTableY + 5.8);
+  doc.text('Weight: _____ kg', margin + 74, physTableY + 5.8);
+  doc.text('Temp: _____ °C', margin + 100, physTableY + 5.8);
+  doc.text('BP: _____/_____ mmHg', margin + 125, physTableY + 5.8);
+  doc.text('PR: _____ bpm', margin + 158, physTableY + 4.2);
+  doc.text('RR: _____ /min', margin + 158, physTableY + 7.8);
+
+  // Row 2: Vision & Hearing
+  const r2Y = physTableY + physRowHeight;
+  doc.line(margin, r2Y + physRowHeight, margin + contentWidth, r2Y + physRowHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('VISION & HEARING / UCHUNGUZI WA MACHO NA USIKIVU:', margin + 2.5, r2Y + 4.2);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.0);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Visual Acuity: Right (OD): 6 / _____   Left (OS): 6 / _____', margin + 2.5, r2Y + 7.8);
+  doc.text('Color Vision: [  ] Normal   [  ] Impaired', margin + 75, r2Y + 7.8);
+  doc.text('Hearing (Usikivu): R: [  ] Normal [  ] Impaired   L: [  ] Normal [  ] Impaired', margin + 125, r2Y + 7.8);
+
+  // Row 3: Respiratory & Cardiovascular Systems
+  const r3Y = r2Y + physRowHeight;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, r3Y, contentWidth, physRowHeight, 'F');
+  doc.line(margin, r3Y + physRowHeight, margin + contentWidth, r3Y + physRowHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('RESPIRATORY SYSTEM (Lungs / Chest):', margin + 2.5, r3Y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.0);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[  ] Normal / Hakuna shida     [  ] Abnormal / Hitilafu: ____________________________________', margin + 2.5, r3Y + 7.8);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('CARDIOVASCULAR SYSTEM (Heart / Circulation):', margin + 98, r3Y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[  ] Normal     [  ] Murmurs / Hitilafu: ______________________', margin + 98, r3Y + 7.8);
+
+  // Row 4: Abdomen & Skin
+  const r4Y = r3Y + physRowHeight;
+  doc.line(margin, r4Y + physRowHeight, margin + contentWidth, r4Y + physRowHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('ABDOMEN & ORGANS (Tumbo, Maini & Bandama):', margin + 2.5, r4Y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.0);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[  ] Normal / Hakuna uvimbe   [  ] Organomegaly / Hernia: _______________________________', margin + 2.5, r4Y + 7.8);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('SKIN & DERMATOLOGY (Ngozi na Makovu):', margin + 98, r4Y + 4.2);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[  ] Normal     [  ] Rashes / Chronic Ulcers: ________________', margin + 98, r4Y + 7.8);
+
+  // Row 5: General Health & Nutrition
+  const r5Y = r4Y + physRowHeight;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, r5Y, contentWidth, physRowHeight, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('GENERAL HEALTH & NUTRITION (Hali ya Afya kwa Ujumla):', margin + 2.5, r5Y + 4.2);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.0);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Pallor: [  ] Nil [  ] Present     Jaundice: [  ] Nil [  ] Present     Lymphadenopathy: [  ] Nil [  ] Enlarged', margin + 2.5, r5Y + 7.8);
+  doc.text('Physical Status: [  ] Excellent   [  ] Good   [  ] Fair   [  ] Poor', margin + 118, r5Y + 7.8);
+
+  // -------------------------------------------------------------
+  // 4. SECTION 4: MEDICAL INVESTIGATIONS / VIPIMO VYA MAABARA
+  // -------------------------------------------------------------
+  y = physTableY + physTableHeight + 3.5;
+  drawSectionHeader(y, 4, 'Medical Investigations', 'Vipimo vya Maabara (When Clinically Indicated)', deepBlue);
+
+  y += 6.5;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(6);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    'Basic diagnostic tests to be performed when clinically indicated to verify student fitness (Vipimo vya maabara inapobidi):',
+    margin + 2,
+    y
+  );
+
+  y += 2.5;
+
+  const labBoxHeight = 23;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.rect(margin, y, contentWidth, labBoxHeight, 'S');
+
+  doc.setFontSize(6.2);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+
+  // Lab row 1: Hb & Urinalysis
+  doc.text('1. Full Blood Picture / Hemoglobin (Hb):', margin + 3, y + 4.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Result: ________________ g/dL  (Normal: 11.5 - 16.5)', margin + 49, y + 4.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('2. Urinalysis (Mkojo):', margin + 105, y + 4.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Albumin: __________   Sugar: __________   Pus cells: __________', margin + 130, y + 4.5);
+
+  // Lab row 2: Stool & TB Screening
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('3. Stool Analysis (Kipimo cha Choo):', margin + 3, y + 10.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Ova / Cysts / Parasites: _________________________________', margin + 46, y + 10.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('4. TB Screening:', margin + 105, y + 10.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[  ] Negative    [  ] Positive / Suspected (CXR: ___________)', margin + 125, y + 10.5);
+
+  // Lab row 3: Other investigations
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('5. Other Clinical Investigations / Vipimo Vinginevyo (Blood Group, Sickling, etc.):', margin + 3, y + 16.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('Blood Group: ____________   Sickling Test: ____________   Additional Notes: ____________________________________', margin + 3, y + 20.5);
+
+  // -------------------------------------------------------------
+  // 5. SECTION 5: MEDICAL ASSESSMENT & RECOMMENDATIONS
+  // -------------------------------------------------------------
+  y += labBoxHeight + 3.5;
+  drawSectionHeader(y, 5, 'Medical Assessment & Advice', 'Tathmini ya Daktari na Ushauri', emeraldGreen);
+
+  y += 6.5;
+  const assessBoxHeight = 31;
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(167, 243, 208);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, y, contentWidth, assessBoxHeight, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('CLINICAL FITNESS TO ATTEND SCHOOL / UAMUZI WA KITABIBU KUHUSU UWEZO WA MWANAFUNZI:', margin + 3, y + 4.2);
+
+  // 3 Fitness Checkboxes
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.2);
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('[   ] 1. FIT (ANAFAA):', margin + 3, y + 8.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Student is medically FIT for full boarding life, regular academic routine, and physical education/sports.', margin + 28, y + 8.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('[   ] 2. FIT WITH RESTRICTIONS:', margin + 3, y + 13.0);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Fit with specific medical conditions / dietary needs (Anafaa akiwa na masharti maalum): __________________________', margin + 41, y + 13.0);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('[   ] 3. TEMPORARILY UNFIT:', margin + 3, y + 17.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Requires medical treatment or specialist referral prior to reporting to school: ____________________________________', margin + 39, y + 17.5);
+
+  // Medical Advice & Support Lines
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.2);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Medical Advice & Follow-Up (Ushauri wa Kitabibu):', margin + 3, y + 22.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('___________________________________________________________________________________________________________', margin + 56, y + 22.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('Special Support Required at School (Msaada Maalum Shuleni):', margin + 3, y + 27.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('___________________________________________________________________________________________________', margin + 68, y + 27.5);
+
+  // -------------------------------------------------------------
+  // 6. SECTION 6: MEDICAL PRACTITIONER DETAILS & OFFICIAL STAMP
+  // -------------------------------------------------------------
+  y += assessBoxHeight + 3.5;
+  drawSectionHeader(y, 6, 'Medical Practitioner Details & Official Stamp', 'Taarifa za Daktari na Muhuri Rasmi', deepBlue);
+
+  y += 6.5;
+  const docDetailsHeight = 36;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(tableBorder[0], tableBorder[1], tableBorder[2]);
+  doc.rect(margin, y, contentWidth, docDetailsHeight, 'S');
+
+  // Left Details Column (width = 118mm)
+  const colLeftW = 118;
+  doc.line(margin + colLeftW, y, margin + colLeftW, y + docDetailsHeight);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+
+  doc.text('1. Full Name of Medical Practitioner (Jina la Daktari):', margin + 3, y + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('______________________________________________________________________', margin + 3, y + 9.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('2. Professional Qualification / Cadre:', margin + 3, y + 14.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('MD / AMO / CO [                      ]   Reg No: _________________________', margin + 43, y + 14.5);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('3. Health Facility / Hospital Name (Kituo cha Afya):', margin + 3, y + 19.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(slateDark[0], slateDark[1], slateDark[2]);
+  doc.text('______________________________________________________________________', margin + 3, y + 24);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('4. Examination Date: _____ / _____ / 20____', margin + 3, y + 29.5);
+  doc.text('Signature / Sahihi: _______________________________', margin + 55, y + 29.5);
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(5.5);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text('Ninathibitisha kuwa nimemfanyia uchunguzi kamili wa kiafya mwanafunzi aliyetajwa hapo juu.', margin + 3, y + 34);
+
+  // Right Official Stamp Box (width = 68mm)
+  const stampBoxX = margin + colLeftW + 3;
+  const stampBoxY = y + 2.5;
+  const stampBoxW = contentWidth - colLeftW - 6;
+  const stampBoxH = docDetailsHeight - 5;
+
+  doc.setDrawColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+  doc.setLineDashPattern([1.5, 1.5], 0);
+  doc.rect(stampBoxX, stampBoxY, stampBoxW, stampBoxH);
+  doc.setLineDashPattern([], 0); // reset dash
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.4);
+  doc.setTextColor(deepBlue[0], deepBlue[1], deepBlue[2]);
+  doc.text('OFFICIAL HOSPITAL STAMP', stampBoxX + stampBoxW / 2, stampBoxY + 8, { align: 'center' });
+  doc.setTextColor(emeraldGreen[0], emeraldGreen[1], emeraldGreen[2]);
+  doc.text('MUHURI WA HOSPITALI', stampBoxX + stampBoxW / 2, stampBoxY + 12, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.4);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text('Kituo cha Afya cha Serikali au', stampBoxX + stampBoxW / 2, stampBoxY + 18, { align: 'center' });
+  doc.text('Hospitali Inayotambulika Kisheria', stampBoxX + stampBoxW / 2, stampBoxY + 22, { align: 'center' });
+  doc.setFont('helvetica', 'italic');
+  doc.text('[ Weka Muhuri Hapa / Stamp Here ]', stampBoxX + stampBoxW / 2, stampBoxY + 27, { align: 'center' });
+
+  // Page 2 Footer
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+  doc.setTextColor(slateMuted[0], slateMuted[1], slateMuted[2]);
+  doc.text(
+    'CONFIDENTIAL STUDENT HEALTH RECORD • Shule ya Sekondari Uomboni (S0486) • Moshi – Marangu, Kilimanjaro, Tanzania',
+    margin,
+    pageHeight - 9
+  );
+  doc.text(
+    'Ukurasa 2 kati ya 2 (Page 2 of 2)',
+    pageWidth - margin,
+    pageHeight - 9,
+    { align: 'right' }
   );
 
   return doc;
 }
 
-export function downloadOfficialMedicalExaminationFormPdf(params?: {
-  studentName?: string;
-  applicationNumber?: string;
-  dateOfBirth?: string;
-  gender?: 'M' | 'F' | string;
-  parentName?: string;
-  parentPhone?: string;
-  premNumber?: string;
-}) {
+export function downloadOfficialMedicalExaminationFormPdf(params?: MedicalExaminationPdfParams) {
   const doc = generateOfficialMedicalExaminationFormPdfDoc(params);
   const fileName = params?.studentName
-    ? `FOMU_YA_AFYA_${params.studentName.replace(/\s+/g, '_').toUpperCase()}.pdf`
+    ? `FOMU_YA_AFYA_${params.studentName.trim().replace(/\s+/g, '_').toUpperCase()}.pdf`
     : 'FOMU_YA_AFYA_UOMBONI_SECONDARY.pdf';
   doc.save(fileName);
 }
 
-export function printOfficialMedicalExaminationFormDirectly(params?: {
-  studentName?: string;
-  applicationNumber?: string;
-  dateOfBirth?: string;
-  gender?: 'M' | 'F' | string;
-  parentName?: string;
-  parentPhone?: string;
-  premNumber?: string;
-}) {
+export function printOfficialMedicalExaminationFormDirectly(params?: MedicalExaminationPdfParams) {
   const doc = generateOfficialMedicalExaminationFormPdfDoc(params);
   const blob = doc.output('blob');
   const url = URL.createObjectURL(blob);
@@ -2752,3 +3330,14 @@ export function printOfficialMedicalExaminationFormDirectly(params?: {
     };
   }
 }
+
+// Re-export official admission documents PDF generators
+export {
+  generateStudentAdmissionFormPdfDoc,
+  downloadStudentAdmissionFormPdf,
+  generateParentGuardianFormPdfDoc,
+  downloadParentGuardianFormPdf,
+  generateSchoolRulesAndRegulationsPdfDoc,
+  downloadSchoolRulesAndRegulationsPdf,
+} from './admissionFormsPdfService';
+export type { AdmissionFormPdfParams } from './admissionFormsPdfService';

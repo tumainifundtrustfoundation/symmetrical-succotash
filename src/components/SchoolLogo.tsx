@@ -19,7 +19,7 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
   const [imageError, setImageError] = useState(false);
 
   // Official school logo path - 100% original, unaltered identity directly from uploaded asset
-  const officialLogoPath = '/uomboni_official_logo.jpg';
+  const officialLogoPath = '/logo.uomboni.jpg';
   const logoSrc = (!imageError && customLogoUrl) ? customLogoUrl : officialLogoPath;
 
   const sizeMap: Record<string, string> = {

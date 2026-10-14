@@ -8,6 +8,7 @@ import { Hero } from './components/Hero';
 import { AboutSection } from './components/AboutSection';
 import { AcademicsSection } from './components/AcademicsSection';
 import { LeadershipTeachersSection } from './components/LeadershipTeachersSection';
+import { InteractiveCampusTour } from './components/InteractiveCampusTour';
 import { GallerySection } from './components/GallerySection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
@@ -24,6 +25,7 @@ import { AdmissionsSection } from './components/AdmissionsSection';
 import { FeePaymentSection } from './components/FeePaymentSection';
 import { VideoSection } from './components/VideoSection';
 import { MapSection } from './components/MapSection';
+import { FAQSection } from './components/FAQSection';
 
 // Modals statically imported for guaranteed availability and zero dynamic import fetch failures
 import { StaffSecurityGateModal } from './components/StaffSecurityGateModal';
@@ -210,6 +212,10 @@ function MainSchoolApp() {
         handleNavigate('videos');
       } else if (hash === '#location' || hash === '#ramani' || hash === '#map') {
         handleNavigate('location');
+      } else if (hash === '#faq' || hash === '#maswali' || hash === '#faqs' || hash === '#swali') {
+        handleNavigate('faq');
+      } else if (hash === '#campus-tour' || hash === '#tour' || hash === '#majengo' || hash === '#majengo-ya-shule') {
+        handleNavigate('campus-tour');
       }
     };
 
@@ -224,6 +230,8 @@ function MainSchoolApp() {
       'about',
       'academics',
       'teachers',
+      'campus-tour',
+      'faq',
       'gallery',
       'contact',
     ];
@@ -360,18 +368,34 @@ function MainSchoolApp() {
           onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
           onOpenVituMuhimu={() => setIsVituMuhimuModalOpen(true)}
           onOpenJoiningInstructions={() => setIsJoiningInstructionsModalOpen(true)}
+          onOpenMedicalForm={() => setIsMedicalModalOpen(true)}
         />
 
         {/* 7. Fee Payment, Banking & M-Pesa Info */}
         <FeePaymentSection onOpenBursar={() => handleOpenStaffGate('bursar')} />
 
-        {/* 8. Teachers (Meet Our Faculty) */}
+        {/* 8. Frequently Asked Questions (FAQ) - School Fees, Joining Instructions & Academic Schedules */}
+        <FAQSection
+          onOpenJoiningInstructions={() => setIsJoiningInstructionsModalOpen(true)}
+          onOpenVituMuhimu={() => setIsVituMuhimuModalOpen(true)}
+          onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
+          onOpenMedicalForm={() => setIsMedicalModalOpen(true)}
+          onNavigate={handleNavigate}
+        />
+
+        {/* 9. Teachers (Meet Our Faculty) */}
         <LeadershipTeachersSection />
 
         {/* 9. School Video Management Gallery & Spotlight */}
         <VideoSection />
 
-        {/* 10. Campus Photo Gallery */}
+        {/* 10. Interactive 3D Campus Tour (Library, Science Lab, Dormitories, Sports Field) */}
+        <InteractiveCampusTour
+          onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
+          onNavigate={handleNavigate}
+        />
+
+        {/* 11. Campus Photo Gallery */}
         <GallerySection />
 
         {/* 11. School Geographical Location & Verified Map */}
@@ -392,6 +416,7 @@ function MainSchoolApp() {
         onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
         onOpenJoiningInstructions={() => setIsJoiningInstructionsModalOpen(true)}
         onOpenVituMuhimu={() => setIsVituMuhimuModalOpen(true)}
+        onOpenMedicalForm={() => setIsMedicalModalOpen(true)}
         onOpenResults={() => setIsSchoolResultsOpen(true)}
         onOpenLogin={() => setActiveView('login')}
       />

@@ -42,8 +42,8 @@ interface AuthContextType {
   loading: boolean;
   authMessage: AuthMessage | null;
   setAuthMessage: (msg: AuthMessage | null) => void;
-  activeView: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome';
-  setActiveView: (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome') => void;
+  activeView: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome' | 'admission-documents';
+  setActiveView: (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome' | 'admission-documents') => void;
   activeRoleDashboard: UserRole;
   setActiveRoleDashboard: (role: UserRole) => void;
   login: (email: string, password: string, rememberMe?: boolean, preferredRole?: UserRole) => Promise<{ success: boolean; error?: string }>;

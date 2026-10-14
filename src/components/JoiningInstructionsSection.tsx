@@ -187,8 +187,8 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                     <div className="space-y-3 text-xs text-blue-100">
                       <div className="p-3.5 rounded-xl bg-blue-900/40 border border-blue-700/50">
                         <span className="text-[10px] font-mono uppercase text-amber-300 font-bold block">Kaulimbiu Kuu:</span>
-                        <p className="font-serif text-lg font-bold text-amber-300 mt-0.5">“ELIMU NI MAISHA”</p>
-                        <p className="text-[11px] text-blue-200">Tujendelee Sisi Wenyewe: Prayer · Education · Work</p>
+                        <p className="font-serif text-lg font-bold text-amber-300 mt-0.5">“TUJIENDELEZE SISI WENYEWE”</p>
+                        <p className="text-[11px] text-blue-200">Prayer · Education · Work (Sala, Elimu na Kazi)</p>
                       </div>
 
                       <div className="space-y-2 pt-1 text-[11px]">

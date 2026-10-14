@@ -3305,8 +3305,8 @@ export const SAVED_SCHOOL_PROFILE = {
     "+255 754 532 949"
   ],
   "location": "Marangu, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
-  "motto": "“ELIMU NI MAISHA” — PRAYER, EDUCATION AND WORK",
-  "mottoSw": "“ELIMU NI MAISHA” — SALA, ELIMU NA KAZI",
+  "motto": "“TUJIENDELEZE SISI WENYEWE” — PRAYER, EDUCATION AND WORK",
+  "mottoSw": "“TUJIENDELEZE SISI WENYEWE” — SALA, ELIMU NA KAZI",
   "slogan": "TUJIENDELEZE SISI WENYEWE (TUJENDELEE SISI WENYEWE)",
   "diocese": "Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)",
   "website": "www.uomboniss.ac.tz",

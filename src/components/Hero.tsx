@@ -83,25 +83,6 @@ export const Hero: React.FC<HeroProps> = ({
             </button>
           )}
 
-          {onOpenAdmissions ? (
-            <button
-              onClick={onOpenAdmissions}
-              id="hero-admissions-btn"
-              className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-lg shadow-amber-950/30 cursor-pointer flex items-center justify-center gap-2 group"
-            >
-              <FileText className="w-4 h-4 text-slate-950 group-hover:scale-110 transition-transform" />
-              <span>Udahili &amp; Fomu za Kujiunga</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onNavigate('admissions')}
-              className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer flex items-center justify-center gap-2"
-            >
-              <FileText className="w-4 h-4 text-slate-950" />
-              <span>Udahili &amp; Kujiunga</span>
-            </button>
-          )}
-
           <button
             onClick={() => onNavigate('fees')}
             id="hero-fees-btn"
