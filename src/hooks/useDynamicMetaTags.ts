@@ -12,6 +12,7 @@ export interface DynamicMetaOptions {
   activeSection?: string;
   activeView?: string;
   hash?: string;
+  pathname?: string;
   isNectaOpen?: boolean;
   isParentPortalOpen?: boolean;
   isStaffPortalOpen?: boolean;
@@ -24,8 +25,8 @@ export interface DynamicMetaOptions {
   language?: 'sw' | 'en';
 }
 
-const BASE_URL = 'https://uombonisecondaryschool.netlify.app';
-const DEFAULT_IMAGE = `${BASE_URL}/uomboni_flyer_2026.jpg`;
+const BASE_URL = 'https://www.uomboniss.sc.tz';
+const DEFAULT_IMAGE = `${BASE_URL}/uomboni_official_logo.jpg`;
 
 /**
  * Returns tailored SEO metadata for each section, portal modal, or system view.
@@ -35,6 +36,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
     activeSection = 'home',
     activeView,
     hash = '',
+    pathname = typeof window !== 'undefined' ? window.location.pathname : '',
     isNectaOpen,
     isParentPortalOpen,
     isStaffPortalOpen,
@@ -48,9 +50,10 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
   } = options;
 
   const cleanHash = hash.replace(/^#/, '').toLowerCase();
+  const cleanPath = pathname.toLowerCase().replace(/\/$/, '');
 
   // 1. Modals & Hash-triggered Portal Gateways (Highest Priority)
-  if (isNectaOpen || cleanHash === 'necta') {
+  if (isNectaOpen || cleanHash === 'necta' || cleanPath === '/necta') {
     return {
       title: 'Matokeo Rasmi ya NECTA (S0486) | Uomboni Secondary School',
       description:
@@ -62,7 +65,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         'CSEE Results Uomboni',
         'NECTA Marangu Moshi',
       ],
-      canonicalUrl: `${BASE_URL}/#necta`,
+      canonicalUrl: `${BASE_URL}/results`,
       ogImage: DEFAULT_IMAGE,
     };
   }
@@ -142,7 +145,9 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
     cleanHash === 'joining' ||
     cleanHash === 'fomu-kujiunga' ||
     cleanHash === 'fomu' ||
-    cleanHash === 'maelekezo-kujiunga'
+    cleanHash === 'maelekezo-kujiunga' ||
+    cleanPath === '/joining-instructions' ||
+    cleanPath === '/joining'
   ) {
     return {
       title: 'Fomu Rasmi ya Kujiunga na Shule 2027 (Joining Instructions) | Uomboni Secondary School',
@@ -156,12 +161,19 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         'Mahitaji ya Bweni Uomboni',
         'Form One Joining Instructions 2027',
       ],
-      canonicalUrl: `${BASE_URL}/#joining-instructions`,
+      canonicalUrl: `${BASE_URL}/joining-instructions`,
       ogImage: DEFAULT_IMAGE,
     };
   }
 
-  if (cleanHash === 'vitu-muhimu' || cleanHash === 'mahitaji' || cleanHash === 'vitu' || cleanHash === 'requirements') {
+  if (
+    cleanHash === 'vitu-muhimu' ||
+    cleanHash === 'mahitaji' ||
+    cleanHash === 'vitu' ||
+    cleanHash === 'requirements' ||
+    cleanPath === '/vitu-muhimu' ||
+    cleanPath === '/mahitaji'
+  ) {
     return {
       title: 'Vitu Muhimu vya Kujiunga na Shule | Uomboni Secondary School',
       description:
@@ -173,12 +185,12 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         'Sare za Shule Uomboni',
         'Vifaa vya Bweni Uomboni Secondary',
       ],
-      canonicalUrl: `${BASE_URL}/#vitu-muhimu`,
+      canonicalUrl: `${BASE_URL}/vitu-muhimu`,
       ogImage: DEFAULT_IMAGE,
     };
   }
 
-  if (isAdmissionsOpen || cleanHash === 'admissions' || cleanHash === 'kujiunga') {
+  if (isAdmissionsOpen || cleanHash === 'admissions' || cleanHash === 'kujiunga' || cleanPath === '/admissions') {
     return {
       title: 'Udahili & Maombi ya Kujiunga 2026/2027 | Uomboni Secondary School',
       description:
@@ -190,18 +202,18 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         'Form One Selection Uomboni',
         'Shule ya Bweni Marangu',
       ],
-      canonicalUrl: `${BASE_URL}/#admissions`,
+      canonicalUrl: `${BASE_URL}/admissions`,
       ogImage: DEFAULT_IMAGE,
     };
   }
 
-  if (isSchoolResultsOpen || cleanHash === 'results') {
+  if (isSchoolResultsOpen || cleanHash === 'results' || cleanPath === '/results') {
     return {
       title: 'Matokeo ya Mitihani ya Shule & Broadsheet | Uomboni Secondary School',
       description:
         'Kagua matokeo ya mitihani ya ndani ya muhula, tathmini ya mwezi, na mitihani ya utayari ya Kidato cha I, II, III na IV ya Shule ya Sekondari Uomboni.',
       keywords: ['Matokeo ya Shule Uomboni', 'Results Portal Uomboni', 'Terminal Exams Uomboni'],
-      canonicalUrl: `${BASE_URL}/#results`,
+      canonicalUrl: `${BASE_URL}/results`,
       ogImage: DEFAULT_IMAGE,
     };
   }
@@ -270,7 +282,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Fahamu historia ya Shule ya Sekondari Uomboni tangu kuanzishwa kwake, maono, dhamira, wito wa shule na mazingira tulivu ya kujisomea yaliyoko Marangu Magharibi, Moshi.',
         keywords: ['Kuhusu Uomboni', 'Historia ya Shule ya Uomboni', 'Marangu Magharibi Sekondari'],
-        canonicalUrl: `${BASE_URL}/#about`,
+        canonicalUrl: `${BASE_URL}/about`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -280,7 +292,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Mitaala ya NECTA kwa Kidato cha I - IV: Sayansi (Fizikia, Kemia, Baiolojia), Biashara na Sanaa. Maabara za kisasa, maktaba na maandalizi thabiti ya mitihani ya taifa.',
         keywords: ['Taaluma Uomboni', 'Masomo Uomboni', 'Mitaala NECTA', 'Sayansi na Biashara Uomboni'],
-        canonicalUrl: `${BASE_URL}/#academics`,
+        canonicalUrl: `${BASE_URL}/academics`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -290,7 +302,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Kutana na walimu wenye uzoefu, weledi wa juu na moyo wa kulea wanafunzi kimasomo na kimaadili katika Shule ya Sekondari Uomboni, Moshi Vijijini.',
         keywords: ['Walimu wa Uomboni', 'Uongozi wa Taaluma', 'Staff Directory Uomboni'],
-        canonicalUrl: `${BASE_URL}/#teachers`,
+        canonicalUrl: `${BASE_URL}/about`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -300,7 +312,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Ushirikiano thabiti kati ya wazazi na shule: Mikutano ya wazazi, malezi ya pamoja, maelezo ya ada na maendeleo ya wanafunzi wa Uomboni Secondary.',
         keywords: ['Wazazi Uomboni', 'Parents Association Uomboni', 'Mikutano ya Wazazi'],
-        canonicalUrl: `${BASE_URL}/#parents`,
+        canonicalUrl: `${BASE_URL}/portal`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -310,7 +322,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Mazingira safi ya mabweni, chakula bora, michezo, vilabu vya ubunifu na mijadala, na malezi ya kiroho kwa wanafunzi wa kutwa na bweni.',
         keywords: ['Maisha ya Wanafunzi Uomboni', 'Mabweni Uomboni', 'Michezo na Vilabu'],
-        canonicalUrl: `${BASE_URL}/#students`,
+        canonicalUrl: `${BASE_URL}/about`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -320,7 +332,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Bodi ya Shule na Uongozi Mkuu wa Shule ya Sekondari Uomboni wakiongoza kwa dira ya kutoa elimu bora yenye viwango vya juu vya kitaifa.',
         keywords: ['Bodi ya Shule Uomboni', 'Uongozi wa Shule Uomboni'],
-        canonicalUrl: `${BASE_URL}/#management`,
+        canonicalUrl: `${BASE_URL}/about`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -330,7 +342,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Nafasi za kujiunga na Kidato cha Kwanza hadi cha Nne. Maelezo ya fomu za kujiunga, michango, na taratibu zote za usajili Uomboni Secondary.',
         keywords: ['Udahili Uomboni', 'Joining Instructions Uomboni', 'Nafasi za Masomo Marangu'],
-        canonicalUrl: `${BASE_URL}/#admissions`,
+        canonicalUrl: `${BASE_URL}/admissions`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -340,7 +352,17 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Tazama matokeo ya NECTA CSEE, matokeo ya majaribio ya wilaya na mkoa, pamoja na ripoti za kina za maendeleo ya kila kidato.',
         keywords: ['Matokeo Uomboni', 'NECTA S0486', 'Broadsheet Uomboni'],
-        canonicalUrl: `${BASE_URL}/#results`,
+        canonicalUrl: `${BASE_URL}/results`,
+        ogImage: DEFAULT_IMAGE,
+      };
+
+    case 'fees':
+      return {
+        title: 'Ada ya Shule & Mchanganuo wa Benki | Uomboni Secondary School',
+        description:
+          'Mchanganuo wa ada ya shule ya bweni (TZS 1,600,000/=) na kutwa (TZS 850,000/=). Akaunti za CRDB, NMB na Mkombozi Bank za Shule ya Sekondari Uomboni.',
+        keywords: ['Ada ya Uomboni', 'School Fees Uomboni', 'CRDB Uomboni', 'NMB Uomboni'],
+        canonicalUrl: `${BASE_URL}/fees`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -350,7 +372,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Habari za hivi punde, kalenda ya mihula ya masomo, matukio ya kitaaluma, mahafali na matangazo rasmi ya Shule ya Sekondari Uomboni.',
         keywords: ['Habari za Uomboni', 'Kalenda ya Shule', 'Matukio Uomboni'],
-        canonicalUrl: `${BASE_URL}/#news`,
+        canonicalUrl: `${BASE_URL}/news`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -360,7 +382,7 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Picha za shule, mandhari maridadi ya Mlima Kilimanjaro na Marangu, majengo ya shule, maabara za sayansi na shughuli za wanafunzi.',
         keywords: ['Picha za Uomboni', 'School Gallery Uomboni', 'Mazingira ya Marangu'],
-        canonicalUrl: `${BASE_URL}/#gallery`,
+        canonicalUrl: `${BASE_URL}/gallery`,
         ogImage: DEFAULT_IMAGE,
       };
 
@@ -370,7 +392,17 @@ export function getSectionMetaData(options: DynamicMetaOptions): MetaTagConfig {
         description:
           'Wasiliana na uongozi wa Shule ya Sekondari Uomboni: Simu +255 782 558 127, barua pepe, eneo shule lililopo Marangu Magharibi, Moshi Vijijini.',
         keywords: ['Wasiliana na Uomboni', 'Mawasiliano Uomboni Secondary', 'Marangu Magharibi Moshi'],
-        canonicalUrl: `${BASE_URL}/#contact`,
+        canonicalUrl: `${BASE_URL}/contact`,
+        ogImage: DEFAULT_IMAGE,
+      };
+
+    case 'location':
+      return {
+        title: 'Mahali Tulipo & Ramani ya Shule | Uomboni Secondary School',
+        description:
+          'Eneo la Shule ya Sekondari Uomboni, Marangu Magharibi, Moshi Vijijini, Kilimanjaro. GPS Coordinates: -3.25685, 37.48725. Maelekezo kamili ya kufika shuleni.',
+        keywords: ['Mahali Tulipo Uomboni', 'GPS Uomboni Secondary', 'Marangu Moshi Directions'],
+        canonicalUrl: `${BASE_URL}/location`,
         ogImage: DEFAULT_IMAGE,
       };
 

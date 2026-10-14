@@ -5,112 +5,84 @@ export interface SitemapUrlEntry {
   priority?: number;
 }
 
+export const CANONICAL_SITE_URL = 'https://www.uomboniss.sc.tz';
+
 export const OFFICIAL_SITEMAP_ENTRIES: SitemapUrlEntry[] = [
   // 1. Root Homepage
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/',
+    loc: `${CANONICAL_SITE_URL}/`,
     changefreq: 'daily',
     priority: 1.0,
   },
-  // 2. High-Priority Official Results & National Exam Hub
+  // 2. Admissions & Joining Instructions
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#necta',
-    changefreq: 'daily',
+    loc: `${CANONICAL_SITE_URL}/admissions`,
+    changefreq: 'weekly',
     priority: 0.95,
   },
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#results',
+    loc: `${CANONICAL_SITE_URL}/joining-instructions`,
     changefreq: 'weekly',
     priority: 0.9,
   },
-  // 3. Portals & Intranets
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#portal',
-    changefreq: 'daily',
-    priority: 0.9,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#parent',
+    loc: `${CANONICAL_SITE_URL}/vitu-muhimu`,
     changefreq: 'weekly',
     priority: 0.85,
   },
+  // 3. Official Examination Results & NECTA S0486 Hub
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#staff',
+    loc: `${CANONICAL_SITE_URL}/results`,
     changefreq: 'weekly',
-    priority: 0.8,
+    priority: 0.95,
   },
+  // 4. School Curriculum & Academics
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#academic',
-    changefreq: 'weekly',
-    priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#bursar',
-    changefreq: 'monthly',
-    priority: 0.75,
-  },
-  // 4. Admissions & Joining Instructions
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#admissions',
-    changefreq: 'weekly',
-    priority: 0.9,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#joining',
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#fees',
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  // 5. School Curriculum & Academics
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#academics',
+    loc: `${CANONICAL_SITE_URL}/academics`,
     changefreq: 'weekly',
     priority: 0.85,
   },
+  // 5. School Fees & Bank Accounts
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#teachers',
+    loc: `${CANONICAL_SITE_URL}/fees`,
     changefreq: 'monthly',
-    priority: 0.75,
+    priority: 0.85,
   },
+  // 6. About School, History & Leadership
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#students',
-    changefreq: 'monthly',
-    priority: 0.75,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#about',
+    loc: `${CANONICAL_SITE_URL}/about`,
     changefreq: 'monthly',
     priority: 0.8,
   },
+  // 7. Physical Location, Directions & GPS
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#gallery',
+    loc: `${CANONICAL_SITE_URL}/location`,
     changefreq: 'monthly',
-    priority: 0.7,
+    priority: 0.8,
   },
+  // 8. Contact Information & Administration
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#news',
+    loc: `${CANONICAL_SITE_URL}/contact`,
+    changefreq: 'monthly',
+    priority: 0.8,
+  },
+  // 9. News, Events & Academic Calendar
+  {
+    loc: `${CANONICAL_SITE_URL}/news`,
     changefreq: 'weekly',
+    priority: 0.8,
+  },
+  // 10. Campus Tour & Photo Gallery
+  {
+    loc: `${CANONICAL_SITE_URL}/gallery`,
+    changefreq: 'monthly',
     priority: 0.75,
   },
+  // 11. Student & Parents Digital Portal
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#contact',
-    changefreq: 'monthly',
+    loc: `${CANONICAL_SITE_URL}/portal`,
+    changefreq: 'weekly',
     priority: 0.7,
-  },
-  // 6. Auth Entry Points
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#login',
-    changefreq: 'monthly',
-    priority: 0.6,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#signup',
-    changefreq: 'monthly',
-    priority: 0.5,
   },
 ];
 
@@ -140,7 +112,7 @@ export function generateSitemapXml(
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${xmlUrls}
 </urlset>
 `;

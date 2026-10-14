@@ -1,5 +1,26 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /bursar
+Disallow: /academic-master
 
-Sitemap: https://symmetrical-succotash-teal.vercel.app/sitemap.xml
-Sitemap: https://uombonisecondaryschool.netlify.app/sitemap.xml
+# Major Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Canonical XML Sitemap
+Sitemap: https://www.uomboniss.sc.tz/sitemap.xml
+

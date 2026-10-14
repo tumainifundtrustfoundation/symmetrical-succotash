@@ -76,6 +76,7 @@ function MainSchoolApp() {
   const [isTeacherStaffPortalOpen, setIsTeacherStaffPortalOpen] = useState(false);
   const [isParentPortalOpen, setIsParentPortalOpen] = useState(false);
   const [isAdmissionsModalOpen, setIsAdmissionsModalOpen] = useState(false);
+  const [admissionsInitialTab, setAdmissionsInitialTab] = useState<'form' | 'vitu-muhimu' | 'criteria' | 'fees'>('form');
   const [isNectaResultsOpen, setIsNectaResultsOpen] = useState(false);
   const [isSchoolResultsOpen, setIsSchoolResultsOpen] = useState(false);
   const [isVituMuhimuModalOpen, setIsVituMuhimuModalOpen] = useState(false);
@@ -121,6 +122,11 @@ function MainSchoolApp() {
     setIsAcademicPortalOpen(true);
   };
 
+  const handleOpenAdmissions = (tab: 'form' | 'vitu-muhimu' | 'criteria' | 'fees' = 'form') => {
+    setAdmissionsInitialTab(tab);
+    setIsAdmissionsModalOpen(true);
+  };
+
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
@@ -133,14 +139,16 @@ function MainSchoolApp() {
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash.toLowerCase();
-      setCurrentHash(hash);
-      if (hash === '#welcome' || hash === '#karibu') {
+      const pathname = window.location.pathname.toLowerCase().replace(/\/$/, '');
+      setCurrentHash(hash || pathname);
+
+      if (hash === '#welcome' || hash === '#karibu' || pathname === '/welcome') {
         setActiveView('welcome');
-      } else if (hash === '#login' || hash === '#ingia') {
+      } else if (hash === '#login' || hash === '#ingia' || pathname === '/login') {
         setActiveView('login');
-      } else if (hash === '#signup' || hash === '#register') {
+      } else if (hash === '#signup' || hash === '#register' || pathname === '/signup') {
         setActiveView('signup');
-      } else if (hash === '#portal' || hash === '#dashboard') {
+      } else if (hash === '#portal' || hash === '#dashboard' || pathname === '/portal') {
         setActiveView('portal');
       } else if (
         hash === '#admin' ||
@@ -148,20 +156,21 @@ function MainSchoolApp() {
         hash === '#s0486' ||
         hash === '#administration' ||
         hash === '#administrate' ||
-        hash === '#utawala'
+        hash === '#utawala' ||
+        pathname === '/admin'
       ) {
         if (isAdmin) {
           setIsAdminModalOpen(true);
         } else {
           setActiveView('login');
         }
-      } else if (hash === '#staff' || hash === '#teacher' || hash === '#walimu' || hash === '#staffportal') {
+      } else if (hash === '#staff' || hash === '#teacher' || hash === '#walimu' || hash === '#staffportal' || pathname === '/staff') {
         if (isStaffOrTeacher) {
           setIsTeacherStaffPortalOpen(true);
         } else {
           setActiveView('login');
         }
-      } else if (hash === '#bursar' || hash === '#mhasibu') {
+      } else if (hash === '#bursar' || hash === '#mhasibu' || pathname === '/bursar') {
         if (isAdmin || isStaffOrTeacher) {
           handleOpenStaffGate('bursar');
         } else {
@@ -173,55 +182,85 @@ function MainSchoolApp() {
         hash === '#portal-taaluma' ||
         hash === '#portal_taaluma' ||
         hash === '#mitihani' ||
-        hash === '#broadsheet'
+        hash === '#broadsheet' ||
+        pathname === '/academic'
       ) {
         if (isAcademicMaster) {
           handleOpenAcademicPortalWithRole('academic_master');
         } else {
           setActiveView('login');
         }
-      } else if (hash === '#parent' || hash === '#wazazi') {
+      } else if (hash === '#parent' || hash === '#wazazi' || pathname === '/parent') {
         if (isParent) {
           setIsParentPortalOpen(true);
         } else {
           setActiveView('login');
         }
-      } else if (hash === '#necta') {
+      } else if (hash === '#necta' || pathname === '/necta') {
         setIsNectaResultsOpen(true);
-      } else if (hash === '#architecture' || hash === '#tech') {
+      } else if (hash === '#architecture' || hash === '#tech' || pathname === '/architecture') {
         setIsArchitectureModalOpen(true);
-      } else if (hash === '#admissions' || hash === '#kujiunga') {
-        setIsAdmissionsModalOpen(true);
+      } else if (hash === '#admissions' || hash === '#kujiunga' || pathname === '/admissions') {
+        handleOpenAdmissions('form');
+      } else if (hash === '#admission-fees' || hash === '#ada-udahili') {
+        handleOpenAdmissions('fees');
+      } else if (hash === '#vigezo-udahili') {
+        handleOpenAdmissions('criteria');
+      } else if (hash === '#vitu-udahili') {
+        handleOpenAdmissions('vitu-muhimu');
       } else if (
         hash === '#joining-instructions' ||
         hash === '#joining' ||
         hash === '#fomu-kujiunga' ||
         hash === '#fomu' ||
-        hash === '#maelekezo-kujiunga'
+        hash === '#maelekezo-kujiunga' ||
+        pathname === '/joining-instructions' ||
+        pathname === '/joining'
       ) {
         setIsJoiningInstructionsModalOpen(true);
-      } else if (hash === '#vitu-muhimu' || hash === '#mahitaji' || hash === '#vitu' || hash === '#requirements') {
+      } else if (
+        hash === '#vitu-muhimu' ||
+        hash === '#mahitaji' ||
+        hash === '#vitu' ||
+        hash === '#requirements' ||
+        pathname === '/vitu-muhimu' ||
+        pathname === '/mahitaji'
+      ) {
         setIsVituMuhimuModalOpen(true);
-      } else if (hash === '#results' || hash === '#matokeo') {
+      } else if (hash === '#results' || hash === '#matokeo' || pathname === '/results') {
         setIsSchoolResultsOpen(true);
-      } else if (hash === '#news' || hash === '#habari' || hash === '#matangazo') {
+      } else if (hash === '#news' || hash === '#habari' || hash === '#matangazo' || pathname === '/news') {
         setIsNewsModalOpen(true);
-      } else if (hash === '#medical' || hash === '#afya' || hash === '#fomu-ya-afya' || hash === '#medical-form') {
+      } else if (hash === '#medical' || hash === '#afya' || hash === '#fomu-ya-afya' || hash === '#medical-form' || pathname === '/medical') {
         setIsMedicalModalOpen(true);
-      } else if (hash === '#videos' || hash === '#video') {
+      } else if (hash === '#videos' || hash === '#video' || pathname === '/videos') {
         handleNavigate('videos');
-      } else if (hash === '#location' || hash === '#ramani' || hash === '#map') {
+      } else if (hash === '#location' || hash === '#ramani' || hash === '#map' || pathname === '/location') {
         handleNavigate('location');
-      } else if (hash === '#faq' || hash === '#maswali' || hash === '#faqs' || hash === '#swali') {
+      } else if (hash === '#faq' || hash === '#maswali' || hash === '#faqs' || hash === '#swali' || pathname === '/faq') {
         handleNavigate('faq');
-      } else if (hash === '#campus-tour' || hash === '#tour' || hash === '#majengo' || hash === '#majengo-ya-shule') {
+      } else if (hash === '#campus-tour' || hash === '#tour' || hash === '#majengo' || hash === '#majengo-ya-shule' || pathname === '/campus-tour') {
         handleNavigate('campus-tour');
+      } else if (hash === '#academics' || pathname === '/academics') {
+        handleNavigate('academics');
+      } else if (hash === '#about' || pathname === '/about') {
+        handleNavigate('about');
+      } else if (hash === '#fees' || pathname === '/fees') {
+        handleNavigate('fees');
+      } else if (hash === '#contact' || pathname === '/contact') {
+        handleNavigate('contact');
+      } else if (hash === '#gallery' || pathname === '/gallery') {
+        handleNavigate('gallery');
       }
     };
 
     checkHash();
     window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
+    window.addEventListener('popstate', checkHash);
+    return () => {
+      window.removeEventListener('hashchange', checkHash);
+      window.removeEventListener('popstate', checkHash);
+    };
   }, [setActiveView, isAdmin, isStaffOrTeacher, isAcademicMaster, isParent]);
 
   // Section Observer for Dynamic SEO on Scroll
@@ -491,6 +530,7 @@ function MainSchoolApp() {
           <ApplyNowModal
             isOpen={isAdmissionsModalOpen}
             onClose={() => setIsAdmissionsModalOpen(false)}
+            initialTab={admissionsInitialTab}
           />
         </Suspense>
       )}

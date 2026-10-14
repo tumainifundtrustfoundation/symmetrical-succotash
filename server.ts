@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import compression from "compression";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
@@ -25,6 +26,15 @@ import {
   handleGetPrivateBlob,
   handlePutPrivateBlob,
 } from "./server/vercelBlobService";
+import {
+  generateSitemapXml,
+  CANONICAL_SITE_URL,
+  OFFICIAL_SITEMAP_ENTRIES,
+} from "./server/sitemapGenerator";
+import {
+  injectSeoMetaTags,
+  PAGE_SEO_MAP,
+} from "./server/seoMetadata";
 
 dotenv.config();
 
@@ -32,12 +42,25 @@ dotenv.config();
 // If running via tsx/ESM, fallback safely using process.cwd().
 const serverRootDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 
+// Guard against unhandled exceptions/rejections to keep dev server stable
+process.on("uncaughtException", (err) => {
+  console.error("[Server] Handled uncaught exception:", err?.message || err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[Server] Handled unhandled rejection:", reason);
+});
+
 // Initialize persistent school database on startup
 initSchoolDatabase();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  
+  // Resolve port from process args (--port 3000) or PORT env var, fallback to 3000
+  const portArgIndex = process.argv.indexOf("--port");
+  const portFromArg = portArgIndex !== -1 && process.argv[portArgIndex + 1] ? Number(process.argv[portArgIndex + 1]) : null;
+  const PORT = Number(process.env.PORT) || portFromArg || 3000;
 
   // Gzip / Deflate compression for ultra-fast network transfer (<70% payload size)
   app.use(compression({
@@ -57,6 +80,112 @@ async function startServer() {
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     next();
+  });
+
+  // 301 Canonical Host & HTTPS Enforcer
+  app.use((req, res, next) => {
+    const rawHost = (req.headers["x-forwarded-host"] as string) || req.headers.host || "";
+    const host = rawHost.split(":")[0].toLowerCase();
+    const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol || "http";
+
+    // Exclude localhost, 127.0.0.1, and cloud dev preview domains (*.run.app, *.google.com)
+    const isLocalOrPreview =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".run.app") ||
+      host.endsWith(".google.com") ||
+      host.endsWith(".aistudio.google");
+
+    if (!isLocalOrPreview) {
+      const isApex = host === "uomboniss.sc.tz";
+      const isHttp = proto === "http";
+
+      if (isApex || (isHttp && host.includes("uomboniss.sc.tz"))) {
+        const canonicalTarget = `https://www.uomboniss.sc.tz${req.originalUrl}`;
+        return res.redirect(301, canonicalTarget);
+      }
+    }
+    next();
+  });
+
+  // Dynamic Canonical XML Sitemap Endpoint
+  app.get("/sitemap.xml", (_req, res) => {
+    const xml = generateSitemapXml();
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=43200");
+    res.send(xml);
+  });
+
+  // Crawlable Robots.txt Endpoint
+  app.get("/robots.txt", (_req, res) => {
+    const robotsPath = path.join(process.cwd(), "public", "robots.txt");
+    if (fs.existsSync(robotsPath)) {
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      return res.sendFile(robotsPath);
+    }
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /bursar\nDisallow: /academic-master\n\nSitemap: https://www.uomboniss.sc.tz/sitemap.xml\n`);
+  });
+
+  // IndexNow Key verification file
+  app.get("/uomboniss2026indexnowkey7f9a1.txt", (_req, res) => {
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send("uomboniss2026indexnowkey7f9a1\n");
+  });
+
+  // IndexNow URL submission endpoint (Microsoft Bing & IndexNow engines)
+  app.post("/api/seo/indexnow", async (req, res) => {
+    const host = "www.uomboniss.sc.tz";
+    const key = "uomboniss2026indexnowkey7f9a1";
+    const keyLocation = `https://${host}/${key}.txt`;
+    const urlList = req.body.urls || OFFICIAL_SITEMAP_ENTRIES.map((entry) => entry.loc);
+
+    try {
+      const payload = {
+        host,
+        key,
+        keyLocation,
+        urlList,
+      };
+
+      const response = await fetch("https://api.indexnow.org/indexnow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+
+      return res.json({
+        success: response.ok || response.status === 200 || response.status === 202,
+        status: response.status,
+        message: "Urls submitted to IndexNow successfully",
+        submittedUrls: urlList,
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        error: err?.message || "IndexNow submission failed",
+        submittedUrls: urlList,
+      });
+    }
+  });
+
+  // Technical SEO status endpoint
+  app.get("/api/seo/status", (_req, res) => {
+    res.json({
+      success: true,
+      canonicalUrl: CANONICAL_SITE_URL,
+      sitemapUrl: `${CANONICAL_SITE_URL}/sitemap.xml`,
+      robotsUrl: `${CANONICAL_SITE_URL}/robots.txt`,
+      indexNowKey: "uomboniss2026indexnowkey7f9a1",
+      indexedPublicPages: OFFICIAL_SITEMAP_ENTRIES.length,
+      publicRoutes: OFFICIAL_SITEMAP_ENTRIES.map((e) => e.loc),
+      nectaCenterNumber: "S0486",
+      officialName: "Uomboni Secondary School",
+      swahiliName: "Shule ya Sekondari Uomboni",
+      gps: { latitude: -3.25685, longitude: 37.48725 },
+      address: "Kijiji cha Uomboni, Marangu Magharibi, Moshi Vijijini, Kilimanjaro, Tanzania",
+    });
   });
 
   // Shared Gemini client instance
@@ -470,7 +599,11 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
   // Vite middleware in dev or static files in production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+        watch: null,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -489,18 +622,47 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
         }
       }
     }));
-    app.get("*", (_req, res) => {
+    let cachedIndexHtml: string | null = null;
+    const getIndexHtml = () => {
+      if (!cachedIndexHtml) {
+        const distIndex = path.join(distPath, "index.html");
+        const rootIndex = path.join(process.cwd(), "index.html");
+        cachedIndexHtml = fs.existsSync(distIndex)
+          ? fs.readFileSync(distIndex, "utf-8")
+          : fs.readFileSync(rootIndex, "utf-8");
+      }
+      return cachedIndexHtml;
+    };
+
+    app.get("*", (req, res) => {
       res.set({
         "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
         "Pragma": "no-cache",
         "Expires": "0",
+        "Content-Type": "text/html; charset=utf-8",
       });
-      res.sendFile(path.join(distPath, "index.html"));
+      const template = getIndexHtml();
+      const customizedHtml = injectSeoMetaTags(template, req.path);
+      res.send(customizedHtml);
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Uomboni Secondary School portal running on http://localhost:${PORT}`);
+  });
+
+  server.on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      console.warn(`[Server] Port ${PORT} already in use. Retrying in 1s...`);
+      setTimeout(() => {
+        try {
+          server.close();
+        } catch {}
+        server.listen(PORT, "0.0.0.0");
+      }, 1000);
+    } else {
+      console.error("[Server] HTTP server error:", err);
+    }
   });
 }
 
