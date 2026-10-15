@@ -75,10 +75,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<AuthMessage | null>(null);
-  const [activeView, setActiveView] = useState<'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome'>(() => {
+  const [activeView, setActiveView] = useState<
+    'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome' | 'admission-documents'
+  >(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       const path = window.location.pathname.toLowerCase();
+      if (
+        path === '/admission-documents' ||
+        path === '/admissions' ||
+        hash === '#admission-documents' ||
+        hash === '#admissions' ||
+        hash === '#admission' ||
+        hash === '#kujiunga' ||
+        hash === '#fomu'
+      ) {
+        return 'admission-documents';
+      }
       if (path === '/welcome' || hash === '#welcome' || hash === '#karibu') return 'welcome';
       if (path === '/login' || hash === '#login' || hash === '#ingia') return 'login';
       if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') return 'signup';
@@ -110,6 +123,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setActiveView('forgot-password');
       } else if (path === '/verify-email' || hash === '#verify-email') {
         setActiveView('verify-email');
+      } else if (
+        path === '/admission-documents' ||
+        path === '/admissions' ||
+        hash === '#admission-documents' ||
+        hash === '#admissions' ||
+        hash === '#admission' ||
+        hash === '#kujiunga' ||
+        hash === '#fomu'
+      ) {
+        setActiveView('admission-documents');
       } else if (
         path === '/student-dashboard' ||
         path === '/parent-dashboard' ||

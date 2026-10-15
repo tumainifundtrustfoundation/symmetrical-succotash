@@ -1,123 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <!-- 1. Homepage & Primary Portal -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- 2. Official Student Admission Documents & Joining Instructions -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#necta</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.uomboniss.sc.tz/admission-documents</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
   </url>
+
+  <!-- 3. Admissions Overview & Joining Instructions -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#results</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/admissions</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- 4. Academic Information & NECTA S0486 Center -->
+  <url>
+    <loc>https://www.uomboniss.sc.tz/academics</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- 5. Examination Results (Publicly Authorized NECTA & Terminal) -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#portal</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#parent</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#staff</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#academic</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#bursar</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#admissions</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/results</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- 6. About Uomboni Secondary School (History, Catholic Ethos, Leadership) -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#joining</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/about</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 7. School Facilities & 3D Interactive Campus Tour -->
+  <url>
+    <loc>https://www.uomboniss.sc.tz/campus-tour</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 8. School Fees, Banking & M-Pesa Payment Guidelines -->
+  <url>
+    <loc>https://www.uomboniss.sc.tz/fees</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- 9. Teaching Staff & Academic Leadership -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#fees</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/teachers</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- 10. School News & Official Announcements -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#academics</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/news</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- 11. Campus Media & Photo Gallery -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#teachers</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/gallery</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.75</priority>
   </url>
+
+  <!-- 12. Contact Information, Location & Directions (Marangu, Moshi) -->
   <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#students</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://www.uomboniss.sc.tz/contact</loc>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#about</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#gallery</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#news</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#contact</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#login</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://uombonisecondaryschool.netlify.app/#signup</loc>
-    <lastmod>2026-10-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.85</priority>
   </url>
 </urlset>

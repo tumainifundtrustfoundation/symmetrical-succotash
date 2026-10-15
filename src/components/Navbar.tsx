@@ -205,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Uomboni Secondary School
               </span>
               <span className="block text-[11px] text-slate-500 font-medium">
-                Building Knowledge, Character &amp; Excellence
+                Tujiendeleze Sisi Wenyewe
               </span>
             </div>
           </button>

@@ -27,6 +27,10 @@ import {
   handleGetPrivateBlob,
   handlePutPrivateBlob,
 } from "./server/vercelBlobService";
+import {
+  isSearchEngineBot,
+  renderBotCrawlerHtml,
+} from "./server/seoPrerender";
 
 dotenv.config();
 
@@ -88,6 +92,119 @@ async function startServer() {
     res.setHeader("Service-Worker-Allowed", "/");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.sendFile(swPath);
+  });
+
+  // =========================================================================
+  // CANONICAL 301 REDIRECTS (NON-WWW TO WWW & NETLIFY TO OFFICIAL DOMAIN)
+  // =========================================================================
+  app.use((req, res, next) => {
+    const host = (req.headers.host || "").toLowerCase();
+    const isApex = host === "uomboniss.sc.tz";
+    const isNetlify = host.includes("uombonisecondaryschool.netlify.app");
+
+    if (isApex || isNetlify) {
+      return res.redirect(301, `https://www.uomboniss.sc.tz${req.originalUrl}`);
+    }
+
+    const proto = req.headers["x-forwarded-proto"];
+    if (host === "www.uomboniss.sc.tz" && proto === "http") {
+      return res.redirect(301, `https://www.uomboniss.sc.tz${req.originalUrl}`);
+    }
+
+    next();
+  });
+
+  // Explicit robots.txt endpoint
+  app.get("/robots.txt", (_req, res) => {
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.sendFile(path.join(process.cwd(), "public", "robots.txt"));
+  });
+
+  // Explicit sitemap.xml endpoint
+  app.get("/sitemap.xml", (_req, res) => {
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.sendFile(path.join(process.cwd(), "public", "sitemap.xml"));
+  });
+
+  // Microsoft Bing & IndexNow Domain Verification Key
+  app.get("/38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt", (_req, res) => {
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.send("38b4d1c97a2e4f0bb68e3a291f0f4a7c\n");
+  });
+
+  // IndexNow API Trigger for Bing, Yandex, Seznam
+  app.post("/api/seo/indexnow", async (req, res) => {
+    try {
+      const { urlList } = req.body;
+      const host = "www.uomboniss.sc.tz";
+      const key = "38b4d1c97a2e4f0bb68e3a291f0f4a7c";
+      const keyLocation = "https://www.uomboniss.sc.tz/38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt";
+
+      const payload = {
+        host,
+        key,
+        keyLocation,
+        urlList: Array.isArray(urlList) && urlList.length > 0 ? urlList : [
+          "https://www.uomboniss.sc.tz/",
+          "https://www.uomboniss.sc.tz/admission-documents",
+          "https://www.uomboniss.sc.tz/admissions",
+          "https://www.uomboniss.sc.tz/results",
+          "https://www.uomboniss.sc.tz/academics",
+          "https://www.uomboniss.sc.tz/about",
+          "https://www.uomboniss.sc.tz/campus-tour",
+          "https://www.uomboniss.sc.tz/fees",
+          "https://www.uomboniss.sc.tz/contact"
+        ],
+      };
+
+      const indexNowRes = await fetch("https://api.indexnow.org/indexnow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+
+      return res.json({
+        success: true,
+        submittedUrls: payload.urlList,
+        indexNowStatus: indexNowRes.status,
+        message: "Urls submitted to IndexNow search engine protocol successfully",
+      });
+    } catch (e: any) {
+      return res.status(500).json({ error: e?.message || "IndexNow submission failed" });
+    }
+  });
+
+  // Search Engine Bot Prerendering Middleware for Public Routes
+  app.use((req, res, next) => {
+    if (req.method !== "GET") return next();
+
+    const publicRoutes = [
+      "/",
+      "/about",
+      "/admissions",
+      "/admission-documents",
+      "/academics",
+      "/results",
+      "/campus-tour",
+      "/fees",
+      "/teachers",
+      "/news",
+      "/gallery",
+      "/contact",
+    ];
+
+    const cleanPath = req.path.toLowerCase().replace(/\/$/, "") || "/";
+    if (publicRoutes.includes(cleanPath)) {
+      const userAgent = req.headers["user-agent"] || "";
+      if (isSearchEngineBot(userAgent)) {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("X-Prerender-Engine", "Uomboni-SEO-SSR-v1");
+        return res.send(renderBotCrawlerHtml(cleanPath));
+      }
+    }
+    next();
   });
 
   // Health check endpoint

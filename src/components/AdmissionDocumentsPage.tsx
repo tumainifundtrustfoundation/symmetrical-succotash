@@ -24,8 +24,10 @@ import {
   Scroll,
   CheckSquare,
   Lock,
+  CreditCard,
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
+import { FeePaymentSection } from './FeePaymentSection';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { AdmissionDocument } from '../types';
@@ -45,11 +47,13 @@ import {
 interface AdmissionDocumentsPageProps {
   onBackToHome: () => void;
   onOpenAdminPortal?: () => void;
+  onOpenBursar?: () => void;
 }
 
 export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
   onBackToHome,
   onOpenAdminPortal,
+  onOpenBursar,
 }) => {
   const { language } = useLanguage();
   const { user, userProfile } = useAuth();
@@ -101,7 +105,27 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
     { id: 'joining', labelSw: 'Maelekezo Kujiunga', labelEn: 'Joining Instructions', icon: BookOpen },
     { id: 'rules', labelSw: 'Sheria & Kanuni', labelEn: 'Rules & Conduct', icon: Scroll },
     { id: 'checklist', labelSw: 'Vitu Muhimu', labelEn: 'Required Checklist', icon: CheckSquare },
+    { id: 'fees', labelSw: 'Malipo ya Ada & Benki', labelEn: 'Fees & Bank Details', icon: CreditCard },
   ];
+
+  // Auto-scroll to fees if hash is #fees on load
+  useEffect(() => {
+    if (window.location.hash === '#fees') {
+      setTimeout(() => {
+        const el = document.getElementById('fees');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  }, []);
+
+  const handleCategorySelect = (catId: string) => {
+    if (catId === 'fees') {
+      const el = document.getElementById('fees');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    setSelectedCategory(catId);
+  };
 
   // Filtered documents
   const filteredDocs = useMemo(() => {
@@ -387,7 +411,7 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => handleCategorySelect(cat.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-[#102A43] text-white shadow-sm'
@@ -538,6 +562,13 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
             })}
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* SEHEMU YA MALIPO YA ADA YA SHULE & AKAUNTI ZA BENKI (STUDENT ADMISSION)    */}
+        {/* ========================================================================= */}
+        <div id="fees" className="rounded-3xl overflow-hidden shadow-xs border border-slate-200/90 bg-white">
+          <FeePaymentSection onOpenBursar={onOpenBursar} />
+        </div>
 
         {/* Bottom Instructions & Admissions Office Contacts */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

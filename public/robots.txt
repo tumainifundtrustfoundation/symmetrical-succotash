@@ -1,5 +1,40 @@
+# Robots.txt for Uomboni Secondary School (NECTA S0486)
+# Official Website: https://www.uomboniss.sc.tz/
+# Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)
+# Location: Kijiji cha Uomboni, Marangu, Moshi Vijijini, Kilimanjaro, Tanzania
+
 User-agent: *
 Allow: /
+Allow: /about
+Allow: /admissions
+Allow: /admission-documents
+Allow: /academics
+Allow: /results
+Allow: /campus-tour
+Allow: /fees
+Allow: /teachers
+Allow: /news
+Allow: /gallery
+Allow: /contact
+Allow: /media/
+Allow: /images/
+Allow: /assets/
+Allow: /sitemap.xml
+Allow: /38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt
 
-Sitemap: https://symmetrical-succotash-teal.vercel.app/sitemap.xml
-Sitemap: https://uombonisecondaryschool.netlify.app/sitemap.xml
+# Strictly protect private internal administrative portals, login gateways, and system files
+Disallow: /admin
+Disallow: /portal
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /api/auth/
+Disallow: /api/blob/
+Disallow: /server/
+
+# Crawl Delay
+Crawl-delay: 1
+
+# Canonical XML Sitemap
+Sitemap: https://www.uomboniss.sc.tz/sitemap.xml
