@@ -22,6 +22,7 @@ import {
 import {
   ShieldCheck,
   Lock,
+  KeyRound,
   X,
   Plus,
   Trash2,
@@ -90,6 +91,11 @@ import { AdminSystemArchitectureTab } from './admin/AdminSystemArchitectureTab';
 import { AdminVideosTab } from './admin/AdminVideosTab';
 import { AdminAdmissionDocumentsTab } from './admin/AdminAdmissionDocumentsTab';
 import { SystemArchitectureModal } from './SystemArchitectureModal';
+import {
+  adminRegisterTeacher,
+  adminResetTeacherPin,
+  getActiveTeacherPin,
+} from '../services/teacherAuthDirectory';
 
 interface AdminPortalModalProps {
   isOpen: boolean;
@@ -292,9 +298,23 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   const [trSubjects, setTrSubjects] = useState('Basic Mathematics, Physics');
   const [trPhone, setTrPhone] = useState('+255 754 000 000');
   const [trEmail, setTrEmail] = useState('');
+  const [trInitialPin, setTrInitialPin] = useState('walimu2026');
   const [trQualification, setTrQualification] = useState('B.Ed Science - UDSM');
   const [trImageUrl, setTrImageUrl] = useState('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400');
   const [trExperienceYears, setTrExperienceYears] = useState(8);
+
+  // Admin Reset Teacher Password / PIN Modal State
+  const [resetTeacherModal, setResetTeacherModal] = useState<{
+    isOpen: boolean;
+    teacher: Teacher | null;
+    newPin: string;
+    successMsg?: string | null;
+  }>({
+    isOpen: false,
+    teacher: null,
+    newPin: '',
+    successMsg: null,
+  });
 
   // Edit Teacher Modal & Form State
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
@@ -883,14 +903,55 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
       experienceYears: Number(trExperienceYears) || 5,
     };
 
+    // Admin provisions email and initial login password/pin directly (User Prompt requirement)
+    const initialPin = trInitialPin.trim() || 'walimu2026';
+    adminRegisterTeacher({
+      id: newTeacher.id,
+      name: newTeacher.name,
+      email: newTeacher.email,
+      role: newTeacher.roleSw || 'Mwalimu wa Somo',
+      subjects: newTeacher.subjects || ['Sayansi'],
+      phone: newTeacher.phone,
+      pin: initialPin,
+    });
+
     addTeacher(newTeacher);
     setTrName('');
     setTrSubjects('Basic Mathematics, Physics');
     setTrQualification('B.Ed Science - UDSM');
     setTrPhone('+255 754 000 000');
     setTrEmail('');
+    setTrInitialPin('walimu2026');
     setShowAddTeacherForm(false);
-    alert(language === 'sw' ? 'Mwalimu ameongezwa kikamilifu kwenye daftari!' : 'Teacher added successfully to roster!');
+    alert(
+      language === 'sw'
+        ? `Mwalimu ${newTeacher.name} ameongezwa kikamilifu! Email: ${newTeacher.email}, Nenosiri la Kuingilia: ${initialPin}`
+        : `Teacher ${newTeacher.name} registered successfully! Email: ${newTeacher.email}, Initial PIN: ${initialPin}`
+    );
+  };
+
+  const handleOpenResetTeacherPin = (tr: Teacher) => {
+    const currentPin = getActiveTeacherPin(tr.id) || 'walimu2026';
+    setResetTeacherModal({
+      isOpen: true,
+      teacher: tr,
+      newPin: currentPin,
+      successMsg: null,
+    });
+  };
+
+  const handleExecuteResetTeacherPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetTeacherModal.teacher || !resetTeacherModal.newPin.trim()) return;
+
+    adminResetTeacherPin(resetTeacherModal.teacher.id, resetTeacherModal.newPin.trim());
+    setResetTeacherModal((prev) => ({
+      ...prev,
+      successMsg:
+        language === 'sw'
+          ? `Nenosiri la kuingilia la Mwalimu ${prev.teacher?.name} limesasishwa kuwa: "${prev.newPin.trim()}"`
+          : `Credentials for ${prev.teacher?.name} reset successfully to: "${prev.newPin.trim()}"`,
+    }));
   };
 
   // Timetable Slot Handler
@@ -4016,14 +4077,34 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                           </div>
 
                           <div>
-                            <label className="font-bold text-slate-700 block mb-1">Barua Pepe (Email)</label>
+                            <label className="font-bold text-slate-700 block mb-1">
+                              Barua Pepe ya Kuingilia Portal (Email) *
+                            </label>
                             <input
                               type="email"
-                              placeholder="mf. teacher@uombonisec.sc.tz"
+                              required
+                              placeholder="mf. teacher@uombonisec.ac.tz"
                               value={trEmail}
                               onChange={(e) => setTrEmail(e.target.value)}
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-600 focus:outline-hidden text-xs"
                             />
+                          </div>
+
+                          <div>
+                            <label className="font-bold text-slate-700 block mb-1">
+                              Nenosiri / PIN ya Kuanzia Kuingilia *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="mf. walimu2026 au Tch@2026"
+                              value={trInitialPin}
+                              onChange={(e) => setTrInitialPin(e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-600 focus:outline-hidden text-xs font-mono font-bold text-emerald-900"
+                            />
+                            <span className="text-[10px] text-slate-500 mt-0.5 block">
+                              Mwalimu atalitumia hili kuingia na anaweza kulibadili mwenyewe baadaye.
+                            </span>
                           </div>
 
                           <div>
@@ -4329,15 +4410,25 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                               </div>
                             </div>
 
-                            {/* Action Buttons: Edit and Delete */}
-                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                            {/* Action Buttons: Edit, Reset Password/PIN, Delete */}
+                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
                               <button
                                 id={`btn-edit-teacher-${tr.id}`}
                                 onClick={() => handleOpenEditTeacher(tr)}
-                                className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 transition-colors cursor-pointer shadow-xs"
+                                className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-[11px] flex items-center justify-center gap-1 border border-emerald-200 transition-colors cursor-pointer shadow-xs"
                               >
                                 <Edit className="w-3.5 h-3.5 text-emerald-700" />
-                                <span>Hariri Taarifa</span>
+                                <span>Hariri</span>
+                              </button>
+
+                              <button
+                                id={`btn-reset-pin-${tr.id}`}
+                                onClick={() => handleOpenResetTeacherPin(tr)}
+                                className="py-2 px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] flex items-center justify-center gap-1 border border-amber-200 transition-colors cursor-pointer shadow-xs"
+                                title="Weka au Reset Nenosiri la Kuingilia"
+                              >
+                                <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                                <span>Reset PIN</span>
                               </button>
 
                               <button
@@ -4648,6 +4739,87 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                             </button>
                           </div>
                         </form>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* RESET TEACHER PASSWORD / PIN MODAL (Prompt: Admin assigns & resets password) */}
+                  {resetTeacherModal.isOpen && resetTeacherModal.teacher && (
+                    <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
+                      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150">
+                        <div className="p-5 bg-gradient-to-r from-amber-950 to-slate-900 text-white flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <KeyRound className="w-5 h-5 text-amber-400" />
+                            <div>
+                              <h4 className="text-base font-bold text-white">
+                                {language === 'sw' ? 'Weka / Reset Nenosiri la Mwalimu' : 'Set / Reset Teacher Password'}
+                              </h4>
+                              <p className="text-xs text-amber-300 font-semibold">{resetTeacherModal.teacher.name}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setResetTeacherModal({ isOpen: false, teacher: null, newPin: '', successMsg: null })}
+                            className="p-1.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/10"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <div className="p-6 space-y-4 text-xs">
+                          <p className="text-slate-600 leading-relaxed">
+                            {language === 'sw'
+                              ? 'Kama Mkuu wa Shule (Admin), una mamlaka ya kubadili au kumpa mwalimu nenosiri/PIN mpya ya kuanzia kuingilia mfumo. Mwalimu ataweza kulibadili mwenyewe baadaye akitaka.'
+                              : 'As Administrator, you can assign or reset this teacher’s portal login password/PIN.'}
+                          </p>
+
+                          <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                            <div className="text-[11px] text-slate-500 font-bold uppercase">Barua Pepe ya Kuingilia:</div>
+                            <div className="font-mono text-emerald-900 font-bold text-xs">{resetTeacherModal.teacher.email}</div>
+                          </div>
+
+                          {resetTeacherModal.successMsg ? (
+                            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>{resetTeacherModal.successMsg}</span>
+                            </div>
+                          ) : (
+                            <form onSubmit={handleExecuteResetTeacherPin} className="space-y-4">
+                              <div>
+                                <label className="block text-slate-700 font-bold mb-1">
+                                  {language === 'sw' ? 'Nenosiri / PIN Mpya ya Kuingilia *' : 'New Access Password / PIN *'}
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={resetTeacherModal.newPin}
+                                  onChange={(e) =>
+                                    setResetTeacherModal((prev) => ({ ...prev, newPin: e.target.value }))
+                                  }
+                                  placeholder="mf. walimu2026 au pass123"
+                                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500"
+                                />
+                              </div>
+
+                              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                                <button
+                                  type="button"
+                                  onClick={() => setResetTeacherModal({ isOpen: false, teacher: null, newPin: '', successMsg: null })}
+                                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 cursor-pointer"
+                                >
+                                  {language === 'sw' ? 'Ghairi' : 'Cancel'}
+                                </button>
+                                <button
+                                  type="submit"
+                                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-black shadow-md cursor-pointer flex items-center gap-1.5"
+                                >
+                                  <KeyRound className="w-4 h-4" />
+                                  <span>{language === 'sw' ? 'Hifadhi Nenosiri' : 'Save Credentials'}</span>
+                                </button>
+                              </div>
+                            </form>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

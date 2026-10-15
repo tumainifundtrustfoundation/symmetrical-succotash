@@ -240,7 +240,7 @@ export const StudentPortalModal: React.FC<StudentPortalModalProps> = ({
                       <div className="text-center px-4 py-2 rounded-2xl bg-white/10 border border-white/20">
                         <div className="text-[10px] uppercase tracking-wider text-slate-300 font-bold">GPA</div>
                         <div className="text-xl sm:text-2xl font-black text-emerald-300 font-mono">
-                          {activeResult.gpa || '2.8'}
+                          {(activeResult as any).gpa || '2.8'}
                         </div>
                       </div>
                     </div>
@@ -272,7 +272,9 @@ export const StudentPortalModal: React.FC<StudentPortalModalProps> = ({
                             className={`p-3 rounded-2xl border ${gradeColor} flex items-center justify-between`}
                           >
                             <div>
-                              <div className="text-xs font-bold text-slate-900 leading-tight">{sub.subject}</div>
+                              <div className="text-xs font-bold text-slate-900 leading-tight">
+                                {sub.name || (sub as any).subject || sub.code}
+                              </div>
                               <div className="text-[10px] opacity-75 mt-0.5">
                                 {sub.score ? `${sub.score} alama` : 'Imerekodiwa'}
                               </div>
@@ -293,7 +295,8 @@ export const StudentPortalModal: React.FC<StudentPortalModalProps> = ({
                           {language === 'sw' ? 'Maoni ya Kitaaluma na Ushauri (Academic Remarks)' : 'Academic Assessment'}
                         </div>
                         <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                          {activeResult.remarks ||
+                          {activeResult.headmasterRemarks ||
+                            (activeResult as any).remarks ||
                             'Ufaulu mzuri sana! Mwanafunzi anashauriwa kuendelea kujisomea kwa bidii kwenye masomo ya sayansi na hesabu ili kudumisha kiwango hiki katika mitihani ya NECTA.'}
                         </p>
                       </div>

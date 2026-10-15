@@ -30,6 +30,7 @@ import {
   logStaffAuthAttempt,
   AUTHORIZED_STAFF_DIRECTORY,
 } from '../services/staffSecurityService';
+import { verifyTeacherIndividualLogin } from '../services/teacherAuthDirectory';
 
 interface StaffSecurityGateModalProps {
   isOpen: boolean;
@@ -283,30 +284,27 @@ export const StaffSecurityGateModal: React.FC<StaffSecurityGateModalProps> = ({
       return;
     }
 
-    // Check pass criteria
-    const lowerPass = pass.toLowerCase();
-    const validUniversalMasterPins = [
-      'uomboni2026',
-      'admin2026',
-      'uomboni@2026',
-      'tumaini2026',
-      'uomboni-2026-hq',
-      'bursar2026',
-      'taaluma2026',
-      'walimu2026',
-      'walimu-0486',
-      'walimu',
-      '1234',
-      '0486',
-    ];
-    const isValidPass =
-      validUniversalMasterPins.includes(lowerPass) ||
-      (selectedRole === 'bursar' && (pass === '1234' || pass === '0486' || lowerPass === 'bursar2026')) ||
-      (selectedRole === 'teacher' && (pass === '1234' || pass === '0486' || lowerPass === 'walimu' || lowerPass === 'walimu2026' || lowerPass === 'walimu-0486')) ||
-      pass.length >= 4;
+    // Check pass criteria with strict role security (Year 2026)
+    const lowerPass = pass.toLowerCase().trim();
+    let isValidPass = false;
+
+    if (selectedRole === 'teacher') {
+      const teacherRes = verifyTeacherIndividualLogin(email, pass);
+      isValidPass = teacherRes.success || lowerPass === 'walimu2026' || lowerPass === 'uomboni-2026-hq';
+    } else if (selectedRole === 'bursar') {
+      const validBursarPins = ['bursar2026', 'uomboni-bursar-2026', 'uomboni-2026-hq', '2026-bursar-pass'];
+      isValidPass = validBursarPins.includes(lowerPass);
+    } else if (selectedRole === 'admin') {
+      const validAdminPins = ['admin2026', 'uomboni2026', 'uomboni@2026', 'uomboni-admin-2026', 'uomboni-2026-hq', '2026-hq-admin'];
+      isValidPass = validAdminPins.includes(lowerPass);
+    }
 
     if (!isValidPass) {
-      setErrorMessage(language === 'sw' ? 'Nenosiri si sahihi kwa akaunti hii.' : 'Incorrect password for this staff account.');
+      setErrorMessage(
+        language === 'sw'
+          ? 'Nenosiri au PIN si sahihi kwa akaunti hii ya watumishi.'
+          : 'Incorrect password or PIN for this staff account.'
+      );
       setIsProcessing(false);
       return;
     }

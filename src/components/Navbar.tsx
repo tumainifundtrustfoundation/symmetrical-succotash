@@ -142,6 +142,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
+            {onOpenAdmin && (
+              <button
+                id="topbar-admin-portal-btn"
+                onClick={onOpenAdmin}
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 cursor-pointer"
+                title="Lango la Utawala & Udahili (Administration Portal)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-950" />
+                  <span>🏛️ {language === 'sw' ? 'Utawala (Admin)' : 'Admin Portal'}</span>
+                </span>
+              </button>
+            )}
             {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}

@@ -147,6 +147,28 @@ export const TEACHER_AUTH_DIRECTORY: Record<string, TeacherAuthProfile> = {
     phone: '+255 782 558 127',
     imageUrl: '/media/media_1.webp',
   },
+  'tch-admin': {
+    id: 'tch-admin',
+    name: 'Uomboni Secondary School (Super Admin)',
+    email: 'uombiniss.sc.tz@gmail.com',
+    role: 'Mkuu wa Shule (Headmaster & Super Admin)',
+    department: 'Utawala Mkuu',
+    assignedSubjects: ['Civics', 'General Studies'],
+    defaultPin: '782558',
+    phone: '+255 782 558 127',
+    imageUrl: '/media/media_1.webp',
+  },
+  'tch-admin-desk': {
+    id: 'tch-admin-desk',
+    name: 'Msimamizi Mkuu wa Mfumo',
+    email: 'admin@uomboniss.sc.tz',
+    role: 'Mkuu wa Shule (Headmaster & Super Admin)',
+    department: 'Utawala Mkuu',
+    assignedSubjects: ['Civics', 'General Studies'],
+    defaultPin: '782558',
+    phone: '+255 782 558 127',
+    imageUrl: '/media/media_1.webp',
+  },
 };
 
 // Helper to load any custom teachers registered by Admin from localStorage
@@ -184,18 +206,22 @@ export function getAllTeachersAuthProfiles(): TeacherAuthProfile[] {
  * Registers a new teacher with credentials provided directly by Administrator
  */
 export function adminRegisterTeacher(data: {
+  id?: string;
   name: string;
   email: string;
-  initialPinOrPassword: string;
+  initialPinOrPassword?: string;
+  pin?: string;
   role?: string;
   department?: string;
   assignedSubjects?: string[];
   phone?: string;
   imageUrl?: string;
+  subjects?: string[];
 }): { success: boolean; teacher: TeacherAuthProfile; message: string } {
   const cleanEmail = data.email.trim().toLowerCase();
-  const cleanPin = data.initialPinOrPassword.trim() || String(Math.floor(100000 + Math.random() * 900000));
-  const newId = 'tch-' + Date.now().toString().slice(-4);
+  const rawPin = data.initialPinOrPassword || data.pin || '';
+  const cleanPin = rawPin.trim() || String(Math.floor(100000 + Math.random() * 900000));
+  const newId = data.id || ('tch-' + Date.now().toString().slice(-4));
 
   const newProfile: TeacherAuthProfile = {
     id: newId,
@@ -357,6 +383,20 @@ export function changeTeacherPinWithVerification(
     messageSw: 'Imeshindwa kuhifadhi PIN kwenye mfumo wa kifaa.',
   };
 }
+
+export const teacherChangePin = (
+  teacherId: string,
+  currentPin: string,
+  newPin: string
+): { success: boolean; message?: string; error?: string; errorSw?: string } => {
+  const res = changeTeacherPinWithVerification(teacherId, currentPin, newPin);
+  return {
+    success: res.success,
+    message: res.messageSw,
+    error: res.message,
+    errorSw: res.messageSw,
+  };
+};
 
 /**
  * Tracks failed login attempts to prevent brute-force attacks
@@ -601,7 +641,7 @@ export function submitTeacherAccessRequest(data: {
   department: string;
   subjects: string[];
   notes?: string;
-}): { success: boolean; requestId: string; message: string } {
+}): { success: boolean; requestId: string; message: string; error?: string } {
   const requestId = 'req-' + Date.now();
   const newRequest: TeacherAccessRequest = {
     id: requestId,
@@ -631,6 +671,7 @@ export function submitTeacherAccessRequest(data: {
       success: false,
       requestId: '',
       message: err?.message || 'Hitilafu ya kuwasilisha ombi.',
+      error: err?.message || 'Hitilafu ya kuwasilisha ombi.',
     };
   }
 }
@@ -771,7 +812,7 @@ export function validateParentStudentLink(
     })),
     ...OFFICIAL_FORM_TWO_REGISTER_DATA.map((s) => ({
       examNo: s.indexNumber.toLowerCase().replace(/[^a-z0-9]/g, ''),
-      id: s.classIndex.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: ((s as any).classIndex || s.indexNumber).toLowerCase().replace(/[^a-z0-9]/g, ''),
       name: s.fullName,
       form: 'Kidato cha 2 (Form Two)',
     })),
