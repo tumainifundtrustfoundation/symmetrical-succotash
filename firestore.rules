@@ -28,6 +28,7 @@ service cloud.firestore {
       return (isAuthenticated() && (
         request.auth.uid == 'google-dev-user-tumaini' ||
         (request.auth.token.email != null && (
+          request.auth.token.email == 'yohanabahati665@gmail.com' ||
           request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
           request.auth.token.email == 'adolphmassawe@gmail.com' ||
           request.auth.token.email.matches('.*admin.*@uomboni.*')
@@ -38,6 +39,7 @@ service cloud.firestore {
     function isAcademicMaster() {
       return isAdmin() || hasRole('academic_master') || hasRole('teacher') || (
         isAuthenticated() && request.auth.token.email != null && (
+          request.auth.token.email == 'yohanabahati665@gmail.com' ||
           request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
           request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
           request.auth.token.email.matches('.*academic.*@uomboni.*')
