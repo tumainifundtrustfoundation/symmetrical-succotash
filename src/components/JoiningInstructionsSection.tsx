@@ -288,19 +288,24 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                         {language === 'sw' ? '📞 Mawasiliano Rasmi ya Udahili & Shuleni' : '📞 Official Admissions & Campus Contacts'}
                       </span>
                       <div className="flex flex-wrap items-center gap-2">
-                        {['+255 802 2000', '+255 000 0000', '0752 000 939', '0782 558 127', '0745 548 225', '0754 532 949'].map((ph, idx) => (
+                        {[
+                          { num: '0782 558 127', label: 'Mkuu wa Shule' },
+                          { num: '0754 532 949', label: 'Makamu Mkuu' },
+                          { num: '0752 000 939', label: 'Mhasibu' },
+                          { num: '0745 548 225', label: 'Taaluma' },
+                        ].map((ph, idx) => (
                           <a
                             key={idx}
-                            href={`tel:${ph.replace(/\s+/g, '')}`}
+                            href={`tel:${ph.num.replace(/\s+/g, '')}`}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0b2545] hover:bg-blue-950 text-white text-xs font-mono font-bold border border-blue-600 transition-colors"
                           >
                             <PhoneCall className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{ph}</span>
+                            <span>{ph.num} ({ph.label})</span>
                           </a>
                         ))}
                       </div>
                       <p className="text-[11px] text-blue-200 font-mono mt-1">
-                        P.O. Box 90000 Marangu - Moshi · info@uomboniss.ac.tz · www.uomboniss.ac.tz
+                        S.L.P 361 Marangu - Kilimanjaro · uombonisec@gmail.com · info@uomboniss.ac.tz
                       </p>
                     </div>
 

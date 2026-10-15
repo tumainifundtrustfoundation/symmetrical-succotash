@@ -24,6 +24,7 @@ import { TermsAndPrivacyModal } from '../TermsAndPrivacyModal';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { UserRole } from '../../lib/firebase';
+import { validateParentStudentLink, submitTeacherAccessRequest } from '../../services/teacherAuthDirectory';
 
 type SignupRole = 'student' | 'parent';
 
@@ -44,6 +45,22 @@ export const SignUpPage: React.FC = () => {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalTab, setLegalTab] = useState<'privacy' | 'terms'>('privacy');
+
+  // Parent student verification states
+  const [childStudentId, setChildStudentId] = useState('');
+  const [childAcademicYear, setChildAcademicYear] = useState('2026');
+  const [parentVerifiedChild, setParentVerifiedChild] = useState<{ name: string; form: string } | null>(null);
+  const [parentContactAlert, setParentContactAlert] = useState<string | null>(null);
+
+  // Teacher Access Request Modal States
+  const [isTeacherRequestModalOpen, setIsTeacherRequestModalOpen] = useState(false);
+  const [trName, setTrName] = useState('');
+  const [trEmail, setTrEmail] = useState('');
+  const [trPhone, setTrPhone] = useState('');
+  const [trDept, setTrDept] = useState('Sayansi');
+  const [trSubjects, setTrSubjects] = useState('');
+  const [trNotes, setTrNotes] = useState('');
+  const [trFeedback, setTrFeedback] = useState<string | null>(null);
 
   // Live password strength calculation
   const hasMinLength = password.length >= 8;

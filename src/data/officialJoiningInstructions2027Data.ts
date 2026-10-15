@@ -47,16 +47,16 @@ export interface OfficialJoiningInstructions2027 {
 }
 
 export const OFFICIAL_JOINING_INSTRUCTIONS_2027: OfficialJoiningInstructions2027 = {
-  title: 'YAH: FOMU YA KUJIUNGA NA SHULE 2027',
-  year: 2027,
-  reportingDate: '07/01/2027',
+  title: 'YAH: FOMU YA KUJIUNGA NA SHULE 2026',
+  year: 2026,
+  reportingDate: '07/01/2026',
   schoolName: 'SHULE YA SEKONDARI UOMBONI',
   diocese: 'JIMBO KATOLIKI MOSHI',
   poBox: 'S.L.P 361, MARANGU - KILIMANJARO',
   locationHeader: 'MARANGU- KILIMANJARO',
   contacts: {
     headmaster: '0782 558 127',
-    deputyHeadmaster: '0752 717 191 / 0785 402 452',
+    deputyHeadmaster: '0754 532 949 / 0752 717 191',
     bursar: '0752 000 939',
   },
   locationDescription: 'Shule ipo Mkoani Kilimanjaro, Wilaya ya Moshi Vijijini, Kata ya Marangu-Magharibi, Kijiji cha Kiraracha, ipo karibu na Parokia ya Bikira Maria Malkia wa Rozari Takatifu - Uomboni.',

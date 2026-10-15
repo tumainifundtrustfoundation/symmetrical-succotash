@@ -1266,16 +1266,16 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
                         <tr>
                           <td className="p-3 font-bold text-[#102A43]">Kidato cha 1 - 4</td>
                           <td className="p-3 font-medium">Bweni (Boarding)</td>
-                          <td className="p-3 font-mono">TZS 650,000</td>
-                          <td className="p-3 font-mono">TZS 650,000</td>
-                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 1,300,000</td>
+                          <td className="p-3 font-mono">TZS 800,000</td>
+                          <td className="p-3 font-mono">TZS 800,000</td>
+                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 1,600,000</td>
                         </tr>
                         <tr className="bg-slate-50/50">
                           <td className="p-3 font-bold text-[#102A43]">Kidato cha 1 - 4</td>
                           <td className="p-3 font-medium">Kutwa (Day)</td>
-                          <td className="p-3 font-mono">TZS 350,000</td>
-                          <td className="p-3 font-mono">TZS 350,000</td>
-                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 700,000</td>
+                          <td className="p-3 font-mono">TZS 300,000</td>
+                          <td className="p-3 font-mono">TZS 300,000</td>
+                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 600,000</td>
                         </tr>
                       </tbody>
                     </table>

@@ -83,11 +83,11 @@ export const OfficialJoiningInstructions2027Viewer: React.FC<OfficialJoiningInst
                 MWAKA 2027
               </span>
               <span className="text-[10px] text-emerald-300 font-medium hidden sm:inline-block">
-                Tarehe ya Kuripoti: 07/01/2027
+                Tarehe ya Kuripoti: 07/01/2026
               </span>
             </div>
             <h3 className="font-serif text-base sm:text-lg font-bold text-white mt-0.5">
-              Fomu Rasmi ya Kujiunga na Shule 2027 (Joining Instructions)
+              Fomu Rasmi ya Kujiunga na Shule 2026 (Joining Instructions)
             </h3>
             <p className="text-xs text-slate-300">
               Shule ya Sekondari Uomboni • Jimbo Katoliki Moshi
@@ -327,7 +327,7 @@ export const OfficialJoiningInstructions2027Viewer: React.FC<OfficialJoiningInst
               <div className="space-y-3 pt-2">
                 <div className="font-black text-slate-900 uppercase text-sm border-b-2 border-slate-800 pb-1 flex items-center justify-between">
                   <span>MALIPO YA ADA;</span>
-                  <span className="text-xs font-mono font-bold text-emerald-700">Mwaka wa Masomo 2027</span>
+                  <span className="text-xs font-mono font-bold text-emerald-700">Mwaka wa Masomo 2026</span>
                 </div>
 
                 {/* Table a: Malipo ya Bweni */}
@@ -506,7 +506,7 @@ export const OfficialJoiningInstructions2027Viewer: React.FC<OfficialJoiningInst
               <SchoolLogo size="sm" />
               <div>
                 <span className="font-bold text-sm text-white block leading-tight">
-                  Fomu Rasmi ya Kujiunga na Shule 2027
+                  Fomu Rasmi ya Kujiunga na Shule 2026
                 </span>
                 <span className="text-[10px] text-amber-300">
                   Uomboni Secondary School • NECTA S0486

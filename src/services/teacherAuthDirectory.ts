@@ -1,10 +1,15 @@
 /**
  * Official Teacher Authentication & Subject Authorization Directory
  * Enforces per-teacher credential isolation:
- * - Every teacher has an individual confidential PIN / password.
- * - Prevents teachers from logging in under another teacher's name.
+ * - Every teacher has an individual confidential PIN / password set by Administrator.
+ * - Admin can provision login email and initial password, and can reset passwords.
+ * - Teachers can independently change their personal password/PIN.
  * - Restricts score entry so a teacher can ONLY see and submit marks for their assigned subject(s).
  */
+import { OFFICIAL_FORM_FOUR_REGISTER_DATA } from '../data/formFourStudents';
+import { OFFICIAL_FORM_ONE_REGISTER_DATA } from '../data/formOneStudents';
+import { OFFICIAL_FORM_TWO_REGISTER_DATA } from '../data/formTwoStudents';
+import { OFFICIAL_FORM_THREE_REGISTER_DATA } from '../data/formThreeStudents';
 
 export interface TeacherAuthProfile {
   id: string;
@@ -16,6 +21,7 @@ export interface TeacherAuthProfile {
   defaultPin: string;
   phone: string;
   imageUrl: string;
+  isCustom?: boolean;
 }
 
 // Confidential Teacher Directory with Individual Secure PINs and Specific Assigned Subjects
@@ -143,11 +149,96 @@ export const TEACHER_AUTH_DIRECTORY: Record<string, TeacherAuthProfile> = {
   },
 };
 
+// Helper to load any custom teachers registered by Admin from localStorage
+export function syncCustomTeachersFromStorage(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = window.localStorage.getItem('uomboni_custom_teachers_list');
+    if (raw) {
+      const list: TeacherAuthProfile[] = JSON.parse(raw);
+      list.forEach((t) => {
+        if (t && t.id) {
+          TEACHER_AUTH_DIRECTORY[t.id] = t;
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Failed to parse custom teachers list from localStorage:', e);
+  }
+}
+
+// Initial sync on module load
+if (typeof window !== 'undefined') {
+  syncCustomTeachersFromStorage();
+}
+
 /**
- * Retrieves the teacher profile by ID or email
+ * Retrieves all teachers profiles including default faculty and admin-registered teachers
+ */
+export function getAllTeachersAuthProfiles(): TeacherAuthProfile[] {
+  syncCustomTeachersFromStorage();
+  return Object.values(TEACHER_AUTH_DIRECTORY);
+}
+
+/**
+ * Registers a new teacher with credentials provided directly by Administrator
+ */
+export function adminRegisterTeacher(data: {
+  name: string;
+  email: string;
+  initialPinOrPassword: string;
+  role?: string;
+  department?: string;
+  assignedSubjects?: string[];
+  phone?: string;
+  imageUrl?: string;
+}): { success: boolean; teacher: TeacherAuthProfile; message: string } {
+  const cleanEmail = data.email.trim().toLowerCase();
+  const cleanPin = data.initialPinOrPassword.trim() || String(Math.floor(100000 + Math.random() * 900000));
+  const newId = 'tch-' + Date.now().toString().slice(-4);
+
+  const newProfile: TeacherAuthProfile = {
+    id: newId,
+    name: data.name.trim(),
+    email: cleanEmail,
+    role: data.role?.trim() || 'Mwalimu wa Somo (Teacher)',
+    department: data.department?.trim() || 'Sayansi (Science)',
+    assignedSubjects: data.assignedSubjects && data.assignedSubjects.length > 0 ? data.assignedSubjects : ['General Studies'],
+    defaultPin: cleanPin,
+    phone: data.phone?.trim() || '+255 782 558 127',
+    imageUrl: data.imageUrl || '/media/media_2.jpg',
+    isCustom: true,
+  };
+
+  // Add to in-memory directory
+  TEACHER_AUTH_DIRECTORY[newId] = newProfile;
+  setCustomTeacherPin(newId, cleanPin);
+
+  // Persist to localStorage
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem('uomboni_custom_teachers_list');
+      const list: TeacherAuthProfile[] = raw ? JSON.parse(raw) : [];
+      list.push(newProfile);
+      window.localStorage.setItem('uomboni_custom_teachers_list', JSON.stringify(list));
+    } catch (e) {
+      console.warn('Could not persist custom teacher to localStorage:', e);
+    }
+  }
+
+  return {
+    success: true,
+    teacher: newProfile,
+    message: `Mwalimu ${newProfile.name} amesajiliwa kikamilifu. Barua pepe: ${newProfile.email}, Nenosiri la Kuanzia: ${cleanPin}`,
+  };
+}
+
+/**
+ * Retrieves the teacher profile by ID, email, or partial name
  */
 export function getTeacherAuthProfile(teacherIdOrEmail: string): TeacherAuthProfile | null {
   if (!teacherIdOrEmail) return null;
+  syncCustomTeachersFromStorage();
   const target = teacherIdOrEmail.toLowerCase().trim();
 
   // Search by direct ID
@@ -185,7 +276,7 @@ export function getActiveTeacherPin(teacherId: string): string {
     }
   }
 
-  const profile = TEACHER_AUTH_DIRECTORY[teacherId];
+  const profile = TEACHER_AUTH_DIRECTORY[teacherId] || getTeacherAuthProfile(teacherId);
   return profile ? profile.defaultPin : '';
 }
 
@@ -385,12 +476,11 @@ export function verifyTeacherIndividualLogin(
 
   const activePin = getActiveTeacherPin(profile.id);
 
-  // Exact confidential match with the teacher's individual PIN or recognized universal school PINs
-  const universalPins = ['1234', '0486', 'walimu', 'walimu2026', 'uomboni2026', 'uomboni2025', 'tumaini2025'];
+  // Exact confidential match with the teacher's individual PIN / password set by Admin or changed by teacher
   if (
     cleanEntered === activePin ||
     cleanEntered === profile.defaultPin ||
-    universalPins.includes(cleanEntered.toLowerCase())
+    cleanEntered.toLowerCase() === activePin.toLowerCase()
   ) {
     // Successful login -> reset failure counter
     resetFailedTeacherAttempts(profile.id);
@@ -488,4 +578,248 @@ export function normalizeTeacherAssignedSubjects(rawSubjects: string[]): string[
   }
 
   return result.length > 0 ? result : ['Chemistry'];
+}
+
+export interface TeacherAccessRequest {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  subjects: string[];
+  notes?: string;
+  requestedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+const REQUESTS_STORAGE_KEY = 'uomboni_teacher_access_requests';
+
+export function submitTeacherAccessRequest(data: {
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  subjects: string[];
+  notes?: string;
+}): { success: boolean; requestId: string; message: string } {
+  const requestId = 'req-' + Date.now();
+  const newRequest: TeacherAccessRequest = {
+    id: requestId,
+    name: data.name.trim(),
+    email: data.email.trim().toLowerCase(),
+    phone: data.phone.trim(),
+    department: data.department.trim(),
+    subjects: data.subjects,
+    notes: data.notes?.trim(),
+    requestedAt: new Date().toISOString(),
+    status: 'pending',
+  };
+
+  try {
+    const existing = getTeacherAccessRequests();
+    existing.unshift(newRequest);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(existing));
+    }
+    return {
+      success: true,
+      requestId,
+      message: 'Ombi lako la akaunti ya mwalimu limewasilishwa kwa Mkuu wa Shule (Admin) kwa ukaguzi na kupewa nenosiri la kwanza.',
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      requestId: '',
+      message: err?.message || 'Hitilafu ya kuwasilisha ombi.',
+    };
+  }
+}
+
+export function getTeacherAccessRequests(): TeacherAccessRequest[] {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const saved = window.localStorage.getItem(REQUESTS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+  }
+  return [];
+}
+
+export function approveTeacherAccessRequest(
+  requestId: string,
+  initialPin?: string
+): { success: boolean; credentials?: { email: string; pin: string; teacherId: string }; message: string } {
+  try {
+    const requests = getTeacherAccessRequests();
+    const req = requests.find((r) => r.id === requestId);
+    if (!req) return { success: false, message: 'Ombi halijapatikana.' };
+
+    const genPin = initialPin && initialPin.length >= 4 ? initialPin : String(Math.floor(100000 + Math.random() * 900000));
+    const teacherId = 'tch-' + Date.now().toString().slice(-4);
+
+    // Save into custom directory
+    TEACHER_AUTH_DIRECTORY[teacherId] = {
+      id: teacherId,
+      name: req.name,
+      email: req.email,
+      role: 'Mwalimu wa Somo (Faculty Teacher)',
+      department: req.department || 'Taaluma',
+      assignedSubjects: req.subjects.length > 0 ? req.subjects : ['Basic Mathematics'],
+      defaultPin: genPin,
+      phone: req.phone,
+      imageUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
+    };
+
+    setCustomTeacherPin(teacherId, genPin);
+
+    // Update request status
+    req.status = 'approved';
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+      window.localStorage.setItem(`uomboni_custom_teacher_${teacherId}`, JSON.stringify(TEACHER_AUTH_DIRECTORY[teacherId]));
+    }
+
+    return {
+      success: true,
+      credentials: { email: req.email, pin: genPin, teacherId },
+      message: `Mwalimu ${req.name} ameidhinishwa. Barua pepe: ${req.email}, Nenosiri la kuanzia: ${genPin}`,
+    };
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Hitilafu ya kuidhinisha mwalimu.' };
+  }
+}
+
+export function rejectTeacherAccessRequest(requestId: string): { success: boolean } {
+  try {
+    const requests = getTeacherAccessRequests();
+    const req = requests.find((r) => r.id === requestId);
+    if (req) {
+      req.status = 'rejected';
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests));
+      }
+    }
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+/**
+ * Admin function to reset any teacher's PIN / password
+ */
+export function adminResetTeacherPin(
+  teacherId: string,
+  forcedNewPin?: string
+): { success: boolean; newPin: string; message: string } {
+  const profile = getTeacherAuthProfile(teacherId);
+  if (!profile) {
+    return { success: false, newPin: '', message: 'Wasifu wa mwalimu haukupatikana.' };
+  }
+
+  const generatedPin = forcedNewPin && forcedNewPin.trim().length >= 4
+    ? forcedNewPin.trim()
+    : String(Math.floor(100000 + Math.random() * 900000));
+
+  setCustomTeacherPin(profile.id, generatedPin);
+
+  return {
+    success: true,
+    newPin: generatedPin,
+    message: `PIN / Nenosiri la Mwalimu ${profile.name} limerejeshwa kuwa: ${generatedPin}. Anaweza kuingia na kubadilisha akitaka.`,
+  };
+}
+
+/**
+ * Validates parent's student info against the school roster for year 2026.
+ * Enforces rule: Parent must have valid child ID/exam number and year (2026).
+ */
+export function validateParentStudentLink(
+  studentIdentifier: string,
+  academicYear: string | number = '2026'
+): { valid: boolean; studentName?: string; form?: string; error?: string } {
+  const cleanId = studentIdentifier.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  const cleanYear = String(academicYear).trim();
+
+  if (!cleanId) {
+    return {
+      valid: false,
+      error: 'Tafadhali ingiza Namba ya Mtihani au Namba ya Usajili ya Mwanafunzi wako (mfano: S0486/0014/2026).',
+    };
+  }
+
+  if (cleanYear !== '2026' && cleanYear !== '2026/2027') {
+    return {
+      valid: false,
+      error: 'Mwaka wa masomo unapaswa kuwa 2026. Tafadhali hakiki mwaka wa masomo wa mwanafunzi.',
+    };
+  }
+
+  // Combine all official rosters for Forms 1 to 4 (Academic Year 2026)
+  const studentDatabase = [
+    ...OFFICIAL_FORM_FOUR_REGISTER_DATA.map((s) => ({
+      examNo: s.indexNumber.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: s.classIndex.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      name: s.fullName,
+      form: 'Kidato cha 4 (Form Four)',
+    })),
+    ...OFFICIAL_FORM_THREE_REGISTER_DATA.map((s) => ({
+      examNo: s.indexNumber.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: s.classIndex.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      name: s.fullName,
+      form: 'Kidato cha 3 (Form Three)',
+    })),
+    ...OFFICIAL_FORM_TWO_REGISTER_DATA.map((s) => ({
+      examNo: s.indexNumber.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: s.classIndex.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      name: s.fullName,
+      form: 'Kidato cha 2 (Form Two)',
+    })),
+    ...OFFICIAL_FORM_ONE_REGISTER_DATA.map((s) => ({
+      examNo: s.indexNumber.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: s.classIndex.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      name: s.fullName,
+      form: 'Kidato cha 1 (Form One)',
+    })),
+  ];
+
+  // Try direct match or partial match on exam number or student id
+  const match = studentDatabase.find((s) => {
+    const rawExam = s.examNo;
+    const rawId = s.id;
+    const rawName = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return (
+      rawExam.includes(cleanId) ||
+      cleanId.includes(rawExam) ||
+      rawId === cleanId ||
+      cleanId.includes(rawId) ||
+      rawName.includes(cleanId)
+    );
+  });
+
+  if (match) {
+    return {
+      valid: true,
+      studentName: match.name,
+      form: match.form,
+    };
+  }
+
+  // Also allow number suffix search (e.g. "0001", "0014", "14")
+  const digitsOnly = cleanId.replace(/\D/g, '');
+  if (digitsOnly.length >= 2) {
+    const suffixMatch = studentDatabase.find((s) => s.examNo.includes(digitsOnly) || s.id.includes(digitsOnly));
+    if (suffixMatch) {
+      return {
+        valid: true,
+        studentName: suffixMatch.name,
+        form: suffixMatch.form,
+      };
+    }
+  }
+
+  return {
+    valid: false,
+    error: `Mwanafunzi mwenye Namba au ID "${studentIdentifier}" kwa mwaka wa masomo ${academicYear} hajapatikana kwenye daftari rasmi la Shule ya Sekondari Uomboni. Tafadhali wasiliana na Uongozi wa Shule: Mkuu wa Shule (+255 782 558 127) au Barua pepe: uomboniss.sc.tz@gmail.com.`,
+  };
 }

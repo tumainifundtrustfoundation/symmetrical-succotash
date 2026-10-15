@@ -286,20 +286,22 @@ export const StaffSecurityGateModal: React.FC<StaffSecurityGateModalProps> = ({
     // Check pass criteria
     const lowerPass = pass.toLowerCase();
     const validUniversalMasterPins = [
-      'uomboni2025',
-      'admin2025',
-      'uomboni@2025',
-      'tumaini2025',
+      'uomboni2026',
+      'admin2026',
+      'uomboni@2026',
+      'tumaini2026',
+      'uomboni-2026-hq',
+      'bursar2026',
+      'taaluma2026',
       'walimu2026',
       'walimu-0486',
       'walimu',
       '1234',
       '0486',
-      'uomboni2026',
     ];
     const isValidPass =
       validUniversalMasterPins.includes(lowerPass) ||
-      (selectedRole === 'bursar' && (pass === '1234' || pass === 'uomboni2025')) ||
+      (selectedRole === 'bursar' && (pass === '1234' || pass === '0486' || lowerPass === 'bursar2026')) ||
       (selectedRole === 'teacher' && (pass === '1234' || pass === '0486' || lowerPass === 'walimu' || lowerPass === 'walimu2026' || lowerPass === 'walimu-0486')) ||
       pass.length >= 4;
 

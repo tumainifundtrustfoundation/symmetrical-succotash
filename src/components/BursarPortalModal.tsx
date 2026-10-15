@@ -187,7 +187,7 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
   // Batch Fee Update State
   const [batchForm, setBatchForm] = useState('Form 1');
   const [batchType, setBatchType] = useState<'Bweni' | 'Kutwa' | 'Wote'>('Bweni');
-  const [batchFeeAmount, setBatchFeeAmount] = useState('1200000');
+  const [batchFeeAmount, setBatchFeeAmount] = useState('1600000');
   const [batchSuccessMsg, setBatchSuccessMsg] = useState('');
 
   // Receipt Modal State (For printing)
@@ -211,7 +211,7 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
     let highDebtCount = 0;
 
     students.forEach((s) => {
-      const total = s.feeTotal || 1200000;
+      const total = s.feeTotal || 1600000;
       const paid = s.feePaid || 0;
       const balance = Math.max(0, total - paid);
 
@@ -247,7 +247,7 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
   const filteredStudents = useMemo(() => {
     return students
       .filter((s) => {
-        const total = s.feeTotal || 1200000;
+        const total = s.feeTotal || 1600000;
         const paid = s.feePaid || 0;
         const balance = Math.max(0, total - paid);
 
@@ -281,8 +281,8 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
         return matchSearch && matchStatus && matchForm && matchType;
       })
       .sort((a, b) => {
-        const balA = Math.max(0, (a.feeTotal || 1200000) - (a.feePaid || 0));
-        const balB = Math.max(0, (b.feeTotal || 1200000) - (b.feePaid || 0));
+        const balA = Math.max(0, (a.feeTotal || 1600000) - (a.feePaid || 0));
+        const balB = Math.max(0, (b.feeTotal || 1600000) - (b.feePaid || 0));
 
         if (sortBy === 'balance_desc') return balB - balA;
         if (sortBy === 'balance_asc') return balA - balB;
@@ -1446,8 +1446,8 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
                         <span className="font-bold text-indigo-300 text-xs uppercase tracking-wider block">
                           Wanafunzi wa Bweni (Boarding Students)
                         </span>
-                        <p className="text-2xl font-black text-white font-mono">TZS 1,200,000 / Mwaka</p>
-                        <p className="text-xs text-slate-400">Inajumuisha: Bweni, Chakula mara 3, Taaluma, Michezo, Afya na Matumizi ya Maabara.</p>
+                        <p className="text-2xl font-black text-white font-mono">TZS 1,600,000 / Mwaka</p>
+                        <p className="text-xs text-slate-400">Muhula wa I: TZS 800,000/= | Muhula wa II: TZS 800,000/=. Inajumuisha: Bweni, Chakula mara 3, Taaluma, Michezo na Maabara.</p>
                       </div>
 
                       <div className="p-5 rounded-2xl bg-teal-950/40 border border-teal-800/40 space-y-2">
