@@ -2,14 +2,15 @@ import { put, get } from "@vercel/blob";
 import { Readable } from "stream";
 import type { Request, Response } from "express";
 
+// MOCKED — in-memory Map stub per migration guide, data kept during process lifecycle
 interface InMemoryBlobItem {
-  data: Buffer;
-  contentType?: string;
+  content: Buffer;
+  contentType: string;
   pathname: string;
-  url: string;
+  uploadedAt: string;
 }
 
-const memoryStore = new Map<string, InMemoryBlobItem>();
+const inMemoryBlobStore = new Map<string, InMemoryBlobItem>();
 
 /**
  * Validates BLOB_READ_WRITE_TOKEN availability
@@ -19,8 +20,7 @@ export function getBlobToken(): string | null {
 }
 
 /**
- * Securely serves private Vercel Blob files with streaming & nosniff headers.
- * Falls back to in-memory store if token is not configured.
+ * Securely serves private Blob files with streaming & nosniff headers
  */
 export async function handleGetPrivateBlob(req: Request, res: Response) {
   try {
@@ -29,52 +29,55 @@ export async function handleGetPrivateBlob(req: Request, res: Response) {
       return res.status(400).json({ error: "Missing pathname parameter" });
     }
 
-    if (memoryStore.has(pathname)) {
-      const item = memoryStore.get(pathname)!;
-      res.setHeader("Cache-Control", "private, no-cache");
-      if (item.contentType) {
-        res.setHeader("Content-Type", item.contentType);
-      }
-      res.setHeader("X-Content-Type-Options", "nosniff");
-      return res.send(item.data);
-    }
-
     const token = getBlobToken();
-    if (!token) {
-      return res.status(404).send("Not found");
+
+    // If token is configured, try fetching from Vercel Blob first
+    if (token) {
+      try {
+        const result = await get(pathname, {
+          access: "private",
+          token,
+        });
+
+        if (result !== null) {
+          res.setHeader("Cache-Control", "private, no-cache");
+          if (result.blob.contentType) {
+            res.setHeader("Content-Type", result.blob.contentType);
+          }
+          res.setHeader("X-Content-Type-Options", "nosniff");
+
+          if (result.stream) {
+            const nodeStream = Readable.fromWeb(result.stream as any);
+            return nodeStream.pipe(res);
+          } else {
+            return res.end();
+          }
+        }
+      } catch (cloudErr) {
+        console.warn("Vercel Blob remote fetch note, falling back to memory:", cloudErr);
+      }
     }
 
-    const result = await get(pathname, {
-      access: "private",
-      token,
-    });
-
-    if (result === null) {
+    // In-memory Map stub fallback
+    const item = inMemoryBlobStore.get(pathname);
+    if (!item) {
       return res.status(404).send("Not found");
     }
 
     res.setHeader("Cache-Control", "private, no-cache");
-    if (result.blob.contentType) {
-      res.setHeader("Content-Type", result.blob.contentType);
-    }
+    res.setHeader("Content-Type", item.contentType || "application/octet-stream");
     res.setHeader("X-Content-Type-Options", "nosniff");
-
-    if (result.stream) {
-      const nodeStream = Readable.fromWeb(result.stream as any);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
+    return res.end(item.content);
   } catch (err: any) {
-    console.error("Vercel Blob GET error:", err?.message || err);
+    console.error("Blob GET error:", err?.message || err);
     res.status(500).json({
-      error: err?.message || "Failed to retrieve private blob",
+      error: err?.message || "Failed to retrieve blob",
     });
   }
 }
 
 /**
- * Uploads a file/document to private Vercel Blob storage, or in-memory stub if token missing.
+ * Uploads a file/document to Blob storage (in-memory Map stub or Vercel Blob if configured)
  */
 export async function handlePutPrivateBlob(req: Request, res: Response) {
   try {
@@ -83,23 +86,26 @@ export async function handlePutPrivateBlob(req: Request, res: Response) {
       return res.status(400).json({ error: "Missing pathname parameter in request body" });
     }
 
-    let bodyData: Buffer = Buffer.alloc(0);
+    const token = getBlobToken();
+
+    let bodyData: Buffer;
     if (typeof content === "string" && content.startsWith("data:") && content.includes(";base64,")) {
       const base64Data = content.split(";base64,")[1];
       bodyData = Buffer.from(base64Data, "base64");
-    } else if (typeof content === "string") {
-      bodyData = Buffer.from(content, "utf-8");
     } else if (Buffer.isBuffer(content)) {
       bodyData = content;
+    } else {
+      bodyData = Buffer.from(String(content || ""), "utf-8");
     }
 
-    const token = getBlobToken();
+    const finalContentType = contentType || "application/octet-stream";
+
     if (token) {
       try {
         const blob = await put(pathname, bodyData, {
           access: "private",
           token,
-          contentType: contentType || undefined,
+          contentType: finalContentType,
         });
 
         return res.json({
@@ -111,33 +117,32 @@ export async function handlePutPrivateBlob(req: Request, res: Response) {
             contentDisposition: blob.contentDisposition,
           },
         });
-      } catch (blobErr: any) {
-        console.warn("Vercel Blob put error, falling back to in-memory store:", blobErr?.message);
+      } catch (cloudErr: any) {
+        console.warn("Vercel Blob put error, storing in memory stub:", cloudErr?.message || cloudErr);
       }
     }
 
-    // In-memory fallback
-    const fallbackUrl = `/api/blob?pathname=${encodeURIComponent(pathname)}`;
-    memoryStore.set(pathname, {
-      data: bodyData,
-      contentType: contentType || "application/octet-stream",
+    // Save into in-memory store
+    inMemoryBlobStore.set(pathname, {
+      content: bodyData,
+      contentType: finalContentType,
       pathname,
-      url: fallbackUrl,
+      uploadedAt: new Date().toISOString(),
     });
 
     return res.json({
       success: true,
       blob: {
-        url: fallbackUrl,
+        url: `/api/blob?pathname=${encodeURIComponent(pathname)}`,
         pathname,
-        contentType: contentType || "application/octet-stream",
-        contentDisposition: `inline; filename="${pathname.split("/").pop()}"`,
+        contentType: finalContentType,
+        contentDisposition: `inline; filename="${pathname.split("/").pop() || "file"}"`,
       },
     });
   } catch (err: any) {
-    console.error("Vercel Blob PUT error:", err?.message || err);
+    console.error("Blob PUT error:", err?.message || err);
     res.status(500).json({
-      error: err?.message || "Failed to put private blob",
+      error: err?.message || "Failed to put blob",
     });
   }
 }

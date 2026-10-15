@@ -24,44 +24,36 @@ import {
   Stethoscope,
   AlertTriangle,
   RotateCcw,
+  Download,
+  CheckSquare,
   BookOpen,
   Shirt,
   BedDouble,
   FileCheck,
-  CheckSquare,
-  Square,
-  Search,
-  Building,
   CreditCard,
+  Building,
   Copy,
-  Download,
-  ExternalLink,
+  Lock,
   MessageCircle,
-  HelpCircle,
   ArrowRight,
-  Layers,
-  Users,
+  HelpCircle,
 } from 'lucide-react';
 import {
   downloadJoiningInstructionsPdf,
   downloadAdmissionVerificationLetterPdf,
   downloadOfficialMedicalExaminationFormPdf,
   downloadVituMuhimuPdf,
-  printVituMuhimuDirectly,
   downloadOfficialJoiningInstructions2027Pdf,
+  downloadFeePaymentReceiptPdf,
 } from '../utils/pdfService';
+import { VITU_MUHIMU_CATEGORIES, VITU_MUHIMU_LIST } from '../data/vituMuhimuData';
 import { OnlineApplication } from '../types';
 import { SchoolLogo } from './SchoolLogo';
 import { MedicalExaminationFormModal } from './MedicalExaminationFormModal';
-import {
-  VITU_MUHIMU_CATEGORIES,
-  VITU_MUHIMU_LIST,
-  VITU_MUHIMU_IMPORTANT_NOTES,
-} from '../data/vituMuhimuData';
 
-export type AdmissionModalTab = 'form' | 'vitu-muhimu' | 'criteria' | 'fees';
+export type AdmissionModalTab = 'overview' | 'apply' | 'checklist' | 'forms' | 'fees';
 
-export interface ApplyNowModalProps {
+interface ApplyNowModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: AdmissionModalTab;
@@ -72,21 +64,35 @@ const DRAFT_STORAGE_KEY = 'uomboni_admission_application_draft';
 export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
   isOpen,
   onClose,
-  initialTab = 'form',
+  initialTab = 'overview',
 }) => {
-  const { language } = useLanguage();
-  const { submitOnlineApplication } = useData();
+  const { language, t } = useLanguage();
+  const { joiningDocs, submitOnlineApplication, bankAccounts, submitPaymentRecord } = useData();
 
-  // Active top-level Tab inside Student Admission
   const [activeTab, setActiveTab] = useState<AdmissionModalTab>(initialTab);
 
+  // Sync initialTab when modal opens or initialTab prop changes
   useEffect(() => {
-    if (initialTab) {
+    if (isOpen && initialTab) {
       setActiveTab(initialTab);
     }
-  }, [initialTab, isOpen]);
+  }, [isOpen, initialTab]);
 
-  // Basic Student Details
+  // Vitu Muhimu State
+  const [activeVituCategory, setActiveVituCategory] = useState<'academic' | 'uniform' | 'boarding' | 'documents'>('academic');
+
+  // Fee Payment States
+  const [copiedBankId, setCopiedBankId] = useState<string | null>(null);
+  const [feeStudentName, setFeeStudentName] = useState('');
+  const [feeExamNumber, setFeeExamNumber] = useState('');
+  const [feeSelectedForm, setFeeSelectedForm] = useState('Form 1');
+  const [feeAmount, setFeeAmount] = useState('650000');
+  const [feePaymentMethod, setFeePaymentMethod] = useState('CRDB Bank - 01J1079051400');
+  const [feeTransactionRef, setFeeTransactionRef] = useState('');
+  const [feeParentPhone, setFeeParentPhone] = useState('');
+  const [submittedReceipt, setSubmittedReceipt] = useState<any | null>(null);
+
+  // Online Application Form States
   const [studentName, setStudentName] = useState('');
   const [gender, setGender] = useState<'M' | 'F'>('M');
   const [dob, setDob] = useState('');
@@ -105,13 +111,13 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
   const [parentAddress, setParentAddress] = useState('');
   const [parentRelationship, setParentRelationship] = useState('Mzazi (Parent)');
 
-  // Supporting Document names (for online declaration)
+  // Supporting Document names
   const [birthCertDoc, setBirthCertDoc] = useState('');
   const [psleResultDoc, setPsleResultDoc] = useState('');
   const [transferDoc, setTransferDoc] = useState('');
   const [medicalFormDoc, setMedicalFormDoc] = useState('');
 
-  // Medical Information (privacy protected)
+  // Medical Information
   const [allergies, setAllergies] = useState('');
   const [chronicConditions, setChronicConditions] = useState('');
   const [regularMedication, setRegularMedication] = useState('');
@@ -121,142 +127,12 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
   // Declaration
   const [parentConsentDeclared, setParentConsentDeclared] = useState(false);
 
-  // Modal / submission state
+  // Submission state
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [latestApp, setLatestApp] = useState<OnlineApplication | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [draftSavedAlert, setDraftSavedAlert] = useState(false);
   const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
-
-  // Vitu Muhimu state inside Admission Modal
-  const [selectedVituCategory, setSelectedVituCategory] = useState<string>('all');
-  const [vituSearchQuery, setVituSearchQuery] = useState<string>('');
-  const [checkedVituIds, setCheckedVituIds] = useState<Record<string, boolean>>({});
-
-  const toggleCheckVitu = (id: string) => {
-    setCheckedVituIds((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const filteredVituItems = VITU_MUHIMU_LIST.filter((item) => {
-    const matchesCategory = selectedVituCategory === 'all' || item.category === selectedVituCategory;
-    const q = vituSearchQuery.toLowerCase();
-    const matchesSearch =
-      !vituSearchQuery ||
-      item.nameSw.toLowerCase().includes(q) ||
-      item.nameEn.toLowerCase().includes(q) ||
-      (item.specSw && item.specSw.toLowerCase().includes(q)) ||
-      (item.specEn && item.specEn.toLowerCase().includes(q));
-    return matchesCategory && matchesSearch;
-  });
-
-  const checkedVituCount = Object.values(checkedVituIds).filter(Boolean).length;
-  const totalVituCount = VITU_MUHIMU_LIST.length;
-  const vituProgressPercent = Math.round((checkedVituCount / totalVituCount) * 100);
-
-  // Fees bank account copying
-  const [copiedBankId, setCopiedBankId] = useState<string | null>(null);
-  const handleCopyText = (text: string, id: string) => {
-    navigator.clipboard?.writeText(text);
-    setCopiedBankId(id);
-    setTimeout(() => setCopiedBankId(null), 2500);
-  };
-
-  // Admission Requirements Data
-  const admissionRequirements = [
-    {
-      titleSw: 'Alama za Kufaulu Darasa la Saba (PSLE Result Slip/Certificate)',
-      titleEn: 'Primary School Leaving Examination (PSLE) Result Slip or Certificate',
-      descSw: 'Cheti halisi au nakala iliyothibitishwa ya matokeo ya mtihani wa kumaliza elimu ya msingi.',
-    },
-    {
-      titleSw: 'Cheti Halisi cha Kuzaliwa (RITA Birth Certificate)',
-      titleEn: 'Certified Copy of Official Birth Certificate (RITA)',
-      descSw: 'Nakala iliyothibitishwa ya cheti cha kuzaliwa kutoka Wakala wa Usajili, Ufilisi na Udhamini (RITA).',
-    },
-    {
-      titleSw: 'Barua ya Uhamisho & Ripoti ya Maendeleo (Transfers Form 2 & 3)',
-      titleEn: 'Official Transfer Letter & Academic Progress Report (for transfer applicants)',
-      descSw: 'Barua rasmi kutoka shule ya awali iliyosajiliwa pamoja na daftari la maendeleo ya taaluma (progress report).',
-    },
-    {
-      titleSw: 'Fomu Rasmi ya Upimaji Afya ya Hospitali (Medical Examination Form)',
-      titleEn: 'Medical Examination Form signed and stamped by an authorized medical officer',
-      descSw: 'Imejazwa, kusainiwa na kupigwa muhuri na daktari wa kituo cha afya au hospitali inayotambuliwa na serikali.',
-    },
-    {
-      titleSw: 'Picha Nne (4) za Pasipoti Zenye Mandhari ya Bluu ya Angani',
-      titleEn: 'Four (4) recent passport-sized photographs (sky blue background)',
-      descSw: 'Picha safi za hivi karibuni zikiwa na sare rasmi au shati jeupe.',
-    },
-    {
-      titleSw: 'Fomu ya Maagano ya Malezi na Nidhamu Iliyosainiwa na Mzazi',
-      titleEn: 'Signed School Rules and Discipline Acceptance Agreement by Parent/Guardian',
-      descSw: 'Kukubali kufuata maadili na sheria zote za shule ya Kikatoliki ya Sekondari Uomboni.',
-    },
-  ];
-
-  const importantDates = [
-    {
-      eventSw: 'Udahili wa Kidato cha Kwanza (Form One 2026/2027)',
-      eventEn: 'Form One Admissions & Registration (2026/2027)',
-      dateSw: 'Nafasi Ziko Wazi (Open Now)',
-      badge: 'OPEN',
-    },
-    {
-      eventSw: 'Maombi ya Uhamisho Kidato cha 2 & 3',
-      eventEn: 'Form 2 & 3 Transfer Applications Window',
-      dateSw: 'Nafasi Ziko Wazi (Open Now)',
-      badge: 'OPEN',
-    },
-    {
-      eventSw: 'Kuripoti Shuleni & Maandalizi ya Muhula Mpya',
-      eventEn: 'School Reporting & Term Orientation',
-      dateSw: 'Januari (Kulingana na Kalenda ya Wizara ya Elimu)',
-      badge: 'SCHEDULED',
-    },
-  ];
-
-  const officialBankAccounts = [
-    {
-      id: 'crdb',
-      bankName: 'CRDB Bank Plc',
-      accountName: 'UOMBONI SECONDARY SCHOOL',
-      accountNumber: '0150248900100',
-      branch: 'Tawi la Marangu / Moshi',
-      color: 'border-emerald-600 bg-emerald-50/50',
-      tag: 'Akaunti Kuu ya Ada',
-    },
-    {
-      id: 'nmb',
-      bankName: 'NMB Bank Plc',
-      accountName: 'UOMBONI SECONDARY SCHOOL',
-      accountNumber: '22110023456',
-      branch: 'Tawi la Moshi',
-      color: 'border-blue-600 bg-blue-50/50',
-      tag: 'Akaunti ya Ada',
-    },
-    {
-      id: 'mkombozi',
-      bankName: 'Mkombozi Commercial Bank',
-      accountName: 'UOMBONI SECONDARY SCHOOL',
-      accountNumber: '00110024982001',
-      branch: 'Tawi la Moshi (Benki ya Kikanisa)',
-      color: 'border-amber-600 bg-amber-50/50',
-      tag: 'Akaunti ya Kikatoliki',
-    },
-    {
-      id: 'lipa-namba',
-      bankName: 'Lipa Namba ya Simu (M-Pesa / Tigo / Airtel)',
-      accountName: 'UOMBONI SECONDARY SCHOOL',
-      accountNumber: '5882194',
-      branch: 'Lipa kwa Simu / Till Number',
-      color: 'border-rose-600 bg-rose-50/50',
-      tag: 'Malipo ya Papo kwa Hapo',
-    },
-  ];
 
   // Restore draft on mount if exists
   useEffect(() => {
@@ -289,6 +165,53 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
   }, []);
 
   if (!isOpen) return null;
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedBankId(id);
+    setTimeout(() => setCopiedBankId(null), 2500);
+  };
+
+  const getBursarWhatsAppUrl = (customData?: { studentName?: string; form?: string; amount?: string; ref?: string; receiptNo?: string }) => {
+    const sName = customData?.studentName ?? feeStudentName;
+    const sForm = customData?.form ?? feeSelectedForm;
+    const sAmount = customData?.amount ?? feeAmount;
+    const sRef = customData?.ref ?? feeTransactionRef;
+    const sReceipt = customData?.receiptNo;
+
+    const formattedAmount = sAmount && !isNaN(Number(sAmount)) ? Number(sAmount).toLocaleString() : sAmount;
+
+    let messageSw = `Habari Mhasibu (Bursar Desk) - UOMBONI SECONDARY SCHOOL,\n\nNina swali / ufafanuzi kuhusu malipo ya ada ya shule:\n`;
+    if (sReceipt) messageSw += `• Namba ya Risiti: ${sReceipt}\n`;
+    if (sName) messageSw += `• Jina la Mwanafunzi: ${sName}\n`;
+    if (sForm) messageSw += `• Kidato / Darasa: ${sForm}\n`;
+    if (formattedAmount) messageSw += `• Kiasi cha Ada (TZS): ${formattedAmount} /=\n`;
+    if (sRef) messageSw += `• Kumbukumbu ya Muamala: ${sRef}\n`;
+    messageSw += `• Ufafanuzi / Ombi: Ninaomba msaada wa uthibitisho wa malipo ya ada na maelekezo ya muamala.\n\nAsante sana!`;
+
+    return `https://wa.me/255752000939?text=${encodeURIComponent(messageSw)}`;
+  };
+
+  const handlePaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feeStudentName || !feeAmount || !feeTransactionRef || !feeParentPhone) {
+      alert(language === 'sw' ? 'Tafadhali jaza taarifa zote zinazohitajika' : 'Please fill all required fields');
+      return;
+    }
+
+    const newRecord = submitPaymentRecord({
+      studentName: feeStudentName,
+      examNumber: feeExamNumber || 'S0486/UNREGISTERED',
+      form: feeSelectedForm,
+      amount: Number(feeAmount),
+      paymentMethod: feePaymentMethod,
+      transactionReference: feeTransactionRef,
+      paymentDate: new Date().toISOString().split('T')[0],
+      parentPhone: feeParentPhone,
+    });
+
+    setSubmittedReceipt(newRecord);
+  };
 
   const handleSaveDraft = () => {
     try {
@@ -419,45 +342,55 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
     handleClearDraft();
   };
 
+  const admissionRequirements = [
+    'Primary School Leaving Examination (PSLE) Result Slip or Certificate',
+    'Certified Copy of Official Birth Certificate (RITA)',
+    'Official Transfer Letter & Academic Progress Report (for transfer applicants)',
+    'Medical Examination Form signed and stamped by an authorized medical officer',
+    'Four (4) recent passport-sized photographs (sky blue background)',
+    'Signed School Rules and Discipline Acceptance Agreement by Parent/Guardian',
+  ];
+
+  const admissionDates = [
+    { event: 'Form One Admissions & Registration (2026/2027)', date: 'Inaendelea (Open Now)' },
+    { event: 'Form 2 & 3 Transfer Applications Window', date: 'Inaendelea (Open Now)' },
+    { event: 'Kuripoti Shuleni & Maandalizi ya Muhula Mpya', date: 'Januari 2026' },
+  ];
+
+  const categoryItems = VITU_MUHIMU_LIST.filter(item => item.category === activeVituCategory);
+
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200">
         <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[96vh] overflow-y-auto shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col">
-          
-          {/* Modal Header */}
-          <div className="sticky top-0 z-30 bg-gradient-to-r from-emerald-950 via-[#102A43] to-emerald-950 text-white p-4 sm:p-6 rounded-t-3xl border-b border-[#C9A227]/30 shadow-md">
-            <div className="flex items-center justify-between gap-4">
+
+          {/* Sticky Modal Header with School Identity & Tab Navigation */}
+          <div className="sticky top-0 z-20 bg-gradient-to-r from-emerald-950 via-[#102A43] to-emerald-950 text-white p-4 sm:p-6 rounded-t-3xl border-b border-[#C9A227]/30 shadow-md">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10">
               <div className="flex items-center gap-3">
                 <div className="p-1 rounded-xl bg-white/10 border border-[#C9A227]/40 shadow-xs shrink-0">
                   <SchoolLogo size="sm" />
                 </div>
                 <div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#C9A227] text-[#102A43]">
                       Mwaka 2026/2027
                     </span>
-                    <span className="text-[11px] text-emerald-300 font-semibold">
-                      NECTA CENTRE S0486
-                    </span>
-                    <span className="hidden sm:inline-block text-[10px] text-amber-200/80 font-mono">
-                      &bull; Jimbo Katoliki Moshi
+                    <span className="text-[11px] text-emerald-300 font-semibold hidden xs:inline">
+                      NECTA S0486
                     </span>
                   </div>
-                  <h3 className="text-base sm:text-lg lg:text-xl font-black text-white leading-tight">
-                    {language === 'sw' ? 'Udahili wa Wanafunzi (Student Admission)' : 'Official Student Admission Portal'}
+                  <h3 className="text-base sm:text-xl font-black text-white leading-tight">
+                    {language === 'sw' ? 'Lango Kamili la Udahili & Ada za Shule' : 'Student Admissions & School Fees Portal'}
                   </h3>
-                  <p className="text-xs text-amber-300 flex items-center gap-1.5 flex-wrap">
-                    <span>Shule ya Sekondari Uomboni</span>
-                    <span>&bull;</span>
-                    <span className="italic">&ldquo;Tujiendeleze Sisi Wenyewe&rdquo;</span>
-                    <span>&bull;</span>
-                    <span>Marangu, Moshi</span>
+                  <p className="text-[11px] sm:text-xs text-amber-300">
+                    Shule ya Sekondari Uomboni • Marangu, Moshi Vijijini, Kilimanjaro
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                {activeTab === 'form' && (
+              <div className="flex items-center gap-2">
+                {activeTab === 'apply' && (
                   <button
                     type="button"
                     onClick={handleSaveDraft}
@@ -465,13 +398,13 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
                     title="Hifadhi rasimu na urudi baadaye"
                   >
                     <Save className="w-3.5 h-3.5 text-amber-300" />
-                    <span className="hidden md:inline">Hifadhi Rasimu</span>
+                    <span className="hidden sm:inline">Hifadhi Rasimu</span>
                   </button>
                 )}
 
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
                   aria-label="Funga"
                 >
                   <X className="w-5 h-5" />
@@ -479,138 +412,208 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
               </div>
             </div>
 
-            {/* Sub-Navigation Tabs inside Student Admission */}
-            <div className="mt-4 pt-2 border-t border-white/10 flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none">
+            {/* Quick Interactive Tabs Bar */}
+            <div className="pt-3 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
               <button
                 type="button"
-                onClick={() => setActiveTab('form')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-                  activeTab === 'form'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                onClick={() => setActiveTab('overview')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === 'overview'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black scale-102'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Tangazo &amp; Vigezo</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('apply')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === 'apply'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black scale-102'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>1. Fomu ya Udahili (Application)</span>
+                <span>Omba Mtandaoni</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab('vitu-muhimu')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-                  activeTab === 'vitu-muhimu'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                onClick={() => setActiveTab('checklist')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === 'checklist'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black scale-102'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 <CheckSquare className="w-3.5 h-3.5" />
-                <span>2. Vitu Muhimu (Checklist)</span>
-                {checkedVituCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-950 text-amber-300 font-bold">
-                    {checkedVituCount}/{totalVituCount}
-                  </span>
-                )}
+                <span>Vitu Muhimu (Checklist)</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab('criteria')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
-                  activeTab === 'criteria'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                onClick={() => setActiveTab('forms')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === 'forms'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black scale-102'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
-                <FileCheck className="w-3.5 h-3.5" />
-                <span>3. Sifa &amp; Vigezo vya Udahili</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Fomu za Kujiunga (PDF)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('fees')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === 'fees'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black scale-102'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 <CreditCard className="w-3.5 h-3.5" />
-                <span>4. Ada &amp; Malipo ya Benki</span>
+                <span>Malipo ya Ada &amp; Benki</span>
               </button>
             </div>
           </div>
 
-          {/* Modal Body */}
-          <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-            {draftSavedAlert && (
-              <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 flex items-center gap-2 text-xs font-bold animate-in fade-in">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Rasimu ya fomu yako imehifadhiwa salama kwenye kifaa hiki. Unaweza kurudi kuendelea wakati wowote!</span>
+          {/* Modal Content Sections */}
+          <div className="p-4 sm:p-6 md:p-8 space-y-6">
+
+            {/* TAB 1: OVERVIEW & CRITERIA (TANGAZO & VIGEZO) */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Announcement Banner */}
+                <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-transparent border border-amber-300/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="space-y-1.5 max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-300">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                      <span>UDAHILI 2026/2027 • NAFASI ZIPO WAZI</span>
+                    </div>
+                    <h4 className="font-serif text-xl sm:text-2xl font-bold text-[#102A43]">
+                      Nafasi za Kujiunga Kidato cha 1 &amp; Uhamisho wa Kidato cha 2 na 3
+                    </h4>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      Shule ya Sekondari Uomboni (NECTA S0486) ni shule ya Kikatoliki iliyo chini ya Jimbo Katoliki la Moshi, inayopokea wavulana na wasichana (Bweni na Kutwa) katika mazingira bora ya kielimu na kimaadili Marangu, Kilimanjaro.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('apply')}
+                      className="px-5 py-2.5 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    >
+                      <span>Jaza Fomu Mtandaoni Sasa</span>
+                      <ArrowRight className="w-4 h-4 text-amber-300" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('fees')}
+                      className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-[#102A43] border border-slate-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <CreditCard className="w-4 h-4 text-[#C9A227]" />
+                      <span>Angalia Ada &amp; Akaunti za Benki</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Direct Entry vs Transfer Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#102A43] shadow-xs space-y-3">
+                    <span className="text-xs font-semibold text-[#C9A227] tracking-wider uppercase">Direct Entry (Wahitimu La 7)</span>
+                    <h5 className="text-lg font-bold text-[#102A43]">Kidato cha Kwanza (Form One)</h5>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      Wanafunzi waliofaulu Mtihani wa Kumaliza Elimu ya Msingi (PSLE) wanakaribishwa kujiunga. Fomu zinapatikana mtandaoni au ofisi ya shule.
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-slate-700 border-t border-slate-100 pt-3">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
+                        <span>Bweni na Kutwa kwa wavulana na wasichana</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
+                        <span>Ada nafuu inayolipwa kwa awamu benki</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs space-y-3">
+                    <span className="text-xs font-semibold text-[#102A43] tracking-wider uppercase">Continuing Students (Uhamisho)</span>
+                    <h5 className="text-lg font-bold text-[#102A43]">Kidato cha 2 &amp; 3 (Transfers)</h5>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      Wanafunzi wenye maendeleo mazuri ya kitaaluma na tabia njema kutoka shule zilizosajiliwa wanakaribishwa kujiunga.
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-slate-700 border-t border-slate-100 pt-3">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
+                        <span>Kipimo cha alama za mitihani ya awali</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#C9A227] shrink-0" />
+                        <span>Barua rasmi ya uhamisho na maendeleo</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Criteria & Dates Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <h5 className="text-sm sm:text-base font-bold text-[#102A43] flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[#C9A227]" />
+                      <span>Sifa &amp; Vigezo vya Udahili (Admission Criteria)</span>
+                    </h5>
+                    <div className="space-y-2.5">
+                      {admissionRequirements.map((req, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                          <span className="w-5 h-5 rounded-full bg-[#FFFFF0] border border-[#102A43]/20 flex items-center justify-center text-[11px] font-bold text-[#102A43] shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span>{req}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+                    <div>
+                      <h5 className="text-sm sm:text-base font-bold text-[#102A43] flex items-center gap-2 mb-3">
+                        <Calendar className="w-4 h-4 text-[#C9A227]" />
+                        <span>Tarehe Muhimu (Key Dates)</span>
+                      </h5>
+                      <div className="space-y-2.5 text-xs sm:text-sm">
+                        {admissionDates.map((d) => (
+                          <div key={d.event} className="pb-2 border-b border-slate-100 last:border-b-0">
+                            <span className="font-semibold text-[#102A43] block">{d.event}</span>
+                            <span className="text-slate-500 text-xs">{d.date}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 text-xs space-y-1 text-slate-600">
+                      <strong className="text-[#102A43] block">Upatikanaji wa Fomu za Karatasi:</strong>
+                      <span>Ofisi ya Shule Marangu, Moshi Bookshop, na Ngarenaro. Mawasiliano: 0752 000 939 / 0782 558 127.</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* TAB 1: APPLICATION FORM */}
-            {activeTab === 'form' && (
-              <>
-                {/* 3 Quick-Reference Summary Cards to other admission sections */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-gradient-to-r from-amber-50/70 via-slate-50 to-emerald-50/70 rounded-2xl border border-slate-200 shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('vitu-muhimu')}
-                    className="p-3 bg-white rounded-xl border border-slate-200 hover:border-amber-400 hover:shadow-xs text-left transition-all cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="p-1.5 rounded-lg bg-amber-100 text-amber-900">
-                        <CheckSquare className="w-4 h-4" />
-                      </span>
-                      <span className="text-[11px] font-bold text-amber-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                        Tazama &rarr;
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs font-bold text-[#102A43] block">Vitu Muhimu &amp; Sare</span>
-                      <span className="text-[11px] text-slate-500 block leading-tight">Godoro, sanduku la bati, madaftari...</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('criteria')}
-                    className="p-3 bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:shadow-xs text-left transition-all cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-900">
-                        <FileCheck className="w-4 h-4" />
-                      </span>
-                      <span className="text-[11px] font-bold text-emerald-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                        Vigezo &rarr;
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs font-bold text-[#102A43] block">Sifa 6 za Udahili</span>
-                      <span className="text-[11px] text-slate-500 block leading-tight">PSLE, cheti cha kuzaliwa RITA, afya...</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('fees')}
-                    className="p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-xs text-left transition-all cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="p-1.5 rounded-lg bg-blue-100 text-blue-900">
-                        <CreditCard className="w-4 h-4" />
-                      </span>
-                      <span className="text-[11px] font-bold text-blue-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                        Ada & Benki &rarr;
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs font-bold text-[#102A43] block">Ada &amp; Malipo ya Benki</span>
-                      <span className="text-[11px] text-slate-500 block leading-tight">Bweni TZS 1.6M | Kutwa TZS 850K</span>
-                    </div>
-                  </button>
-                </div>
+            {/* TAB 2: APPLY ONLINE (OMBA MTANDAONI) */}
+            {activeTab === 'apply' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {draftSavedAlert && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 flex items-center gap-2 text-xs font-bold animate-in fade-in">
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span>Rasimu ya fomu yako imehifadhiwa salama kwenye kifaa hiki. Unaweza kurudi kuendelea wakati wowote!</span>
+                  </div>
+                )}
 
                 {submittedRef ? (
                   <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-200 text-center space-y-4 animate-in zoom-in-95">
@@ -623,8 +626,7 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
                         {language === 'sw' ? 'Ombi Limewasilishwa Kikamilifu!' : 'Application Successfully Submitted!'}
                       </span>
                       <h4 className="text-xl sm:text-2xl font-black text-slate-900">
-                        Namba ya Maombi:{' '}
-                        <span className="text-emerald-700 font-mono">#{submittedRef}</span>
+                        Namba ya Maombi: <span className="text-emerald-700 font-mono">#{submittedRef}</span>
                       </h4>
                     </div>
 
@@ -641,7 +643,7 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
                           className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-2 shadow-md transition-transform hover:scale-102 cursor-pointer"
                         >
                           <Printer className="w-4 h-4" />
-                          <span>{language === 'sw' ? 'Barua ya Uhakiki (PDF)' : 'Verification Slip (PDF)'}</span>
+                          <span>{language === 'sw' ? 'Pakua Barua ya Uhakiki (PDF)' : 'Download Verification Slip (PDF)'}</span>
                         </button>
                       )}
 
@@ -654,1002 +656,793 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
                       </button>
 
                       <button
-                        onClick={() => setActiveTab('vitu-muhimu')}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
-                      >
-                        <CheckSquare className="w-4 h-4 text-emerald-700" />
-                        <span>Kagua Vitu Muhimu</span>
-                      </button>
-
-                      <button
                         onClick={handleReset}
-                        className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold cursor-pointer"
                       >
-                        {language === 'sw' ? 'Wasilisha Ombi Lingine' : 'Submit Another'}
+                        Wasilisha Ombi Lingine
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6 text-xs text-slate-800">
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     {formError && (
-                      <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 flex items-start gap-2.5 animate-in fade-in duration-200">
-                        <X className="w-4 h-4 text-rose-600 shrink-0 mt-0.5 cursor-pointer" onClick={() => setFormError(null)} />
-                        <div className="flex-1 font-semibold text-xs leading-relaxed">
-                          {formError}
-                        </div>
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-xs sm:text-sm text-red-800">
+                        <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                        <span>{formError}</span>
                       </div>
                     )}
 
-                    {/* SECTION 1: STUDENT IDENTIFICATION */}
-                    <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-[#FFFFF0] border border-[#102A43]/15">
-                      <h4 className="text-xs font-black text-[#102A43] uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
-                        <User className="w-4 h-4 text-emerald-700" />
-                        <span>1. Taarifa za Utambulisho wa Mwanafunzi (Student Identification)</span>
-                      </h4>
+                    {/* Section 1: Taarifa za Mwanafunzi */}
+                    <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                        <User className="w-4 h-4 text-[#102A43]" />
+                        <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider">
+                          1. Taarifa Binafsi za Mwanafunzi (Student Biodata)
+                        </h4>
+                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                        <div className="sm:col-span-2">
                           <label className="font-bold text-slate-700 block mb-1">
-                            Jina Kamili la Mwanafunzi *
+                            Jina Kamili la Mwanafunzi (Kama lilivyo Cheti cha Kuzaliwa / La Saba) *
                           </label>
                           <input
                             type="text"
                             required
-                            placeholder="Mfano: Juma Ally Mushi"
                             value={studentName}
                             onChange={(e) => setStudentName(e.target.value)}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#102A43] text-xs font-semibold"
+                            placeholder="Mfano: KELVIN ALOYCE MARO"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#102A43] focus:outline-hidden"
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="font-bold text-slate-700 block mb-1">
-                              Jinsia *
-                            </label>
-                            <select
-                              value={gender}
-                              onChange={(e) => setGender(e.target.value as 'M' | 'F')}
-                              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs"
-                            >
-                              <option value="M">Mvulana (Male)</option>
-                              <option value="F">Msichana (Female)</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-slate-700 block mb-1">
-                              Tarehe ya Kuzaliwa
-                            </label>
-                            <input
-                              type="date"
-                              value={dob}
-                              onChange={(e) => setDob(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-[11px]"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Uraia (Nationality)
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Jinsia (Gender) *</label>
+                          <select
+                            value={gender}
+                            onChange={(e) => setGender(e.target.value as 'M' | 'F')}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
+                          >
+                            <option value="M">Mvulana (Male)</option>
+                            <option value="F">Msichana (Female)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Tarehe ya Kuzaliwa (DOB)</label>
                           <input
-                            type="text"
-                            value={nationality}
-                            onChange={(e) => setNationality(e.target.value)}
-                            placeholder="Tanzanian"
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            type="date"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                           />
                         </div>
 
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Darasa Analoomba *
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Darasa Analoomba Kujiunga *</label>
                           <select
                             value={applyingFor}
                             onChange={(e) => setApplyingFor(e.target.value as any)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-[#102A43]"
                           >
-                            <option value="Form 1">Kidato cha 1 (Form One)</option>
-                            <option value="Form 2 Transfer">Uhamisho Kidato cha 2 (Form 2)</option>
-                            <option value="Form 3 Transfer">Uhamisho Kidato cha 3 (Form 3)</option>
-                            <option value="Pre-Form 1">Pre-Form One Course</option>
+                            <option value="Form 1">Kidato cha Kwanza (Form 1)</option>
+                            <option value="Form 2 Transfer">Kidato cha Pili (Form 2 Transfer)</option>
+                            <option value="Form 3 Transfer">Kidato cha Tatu (Form 3 Transfer)</option>
+                            <option value="Pre-Form 1">Pre-Form 1 (Kiingereza &amp; Sayansi)</option>
                           </select>
                         </div>
 
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Mfumo wa Masomo (Entry Type) *
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Aina ya Udahili (Entry Type) *</label>
                           <select
                             value={entryType}
                             onChange={(e) => setEntryType(e.target.value as any)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-[#102A43]"
                           >
-                            <option value="Bweni (Boarding)">Bweni (Boarding) - TZS 1,600,000/=</option>
-                            <option value="Kutwa (Day)">Kutwa (Day) - TZS 850,000/=</option>
+                            <option value="Bweni (Boarding)">Bweni (Boarding Student)</option>
+                            <option value="Kutwa (Day)">Kutwa (Day Scholar)</option>
                           </select>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Shule Aliyotoka (Previous School)
-                          </label>
+                        <div className="sm:col-span-2">
+                          <label className="font-bold text-slate-700 block mb-1">Shule Aliyotoka (Previous School)</label>
                           <input
                             type="text"
-                            placeholder="Shule ya Msingi au Sekondari"
                             value={previousSchool}
                             onChange={(e) => setPreviousSchool(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            placeholder="Shule ya Msingi au Sekondari alikotoka..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                           />
                         </div>
 
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Namba ya Mtihani La 7 / PREM No.
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Namba ya PREM / Namba ya Mtihani La Saba</label>
                           <input
                             type="text"
-                            placeholder="PSLE Exam No / PREM"
                             value={premNumber}
                             onChange={(e) => setPremNumber(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Matokeo ya Awali (Daraja / Alama)
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Mfano: Daraja B (Wastani 185)"
-                            value={primaryResults}
-                            onChange={(e) => setPrimaryResults(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            placeholder="PS0401089-012"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono"
                           />
                         </div>
                       </div>
                     </div>
 
-                    {/* SECTION 2: PARENT / GUARDIAN DETAILS */}
-                    <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200">
-                      <h4 className="text-xs font-black text-[#102A43] uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
-                        <Users className="w-4 h-4 text-amber-600" />
-                        <span>2. Taarifa za Mzazi au Mlezi (Parent / Guardian)</span>
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Jina Kamili la Mzazi / Mlezi *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Mfano: Aloyce Maro"
-                            value={parentName}
-                            onChange={(e) => setParentName(e.target.value)}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#102A43] text-xs font-semibold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Namba ya Simu ya Mzazi (WhatsApp/Piga) *
-                          </label>
-                          <input
-                            type="tel"
-                            required
-                            placeholder="Mfano: 0754 123 456"
-                            value={parentPhone}
-                            onChange={(e) => setParentPhone(e.target.value)}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#102A43] text-xs font-mono font-semibold"
-                          />
-                        </div>
+                    {/* Section 2: Taarifa za Mzazi / Mlezi */}
+                    <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                        <Phone className="w-4 h-4 text-[#102A43]" />
+                        <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider">
+                          2. Taarifa za Mzazi au Mlezi (Parent / Guardian)
+                        </h4>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Barua Pepe (Email)
-                          </label>
-                          <input
-                            type="email"
-                            placeholder="mzazi@gmail.com"
-                            value={parentEmail}
-                            onChange={(e) => setParentEmail(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Mahali Mnapoishi / Makazi
-                          </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                        <div className="sm:col-span-2">
+                          <label className="font-bold text-slate-700 block mb-1">Jina Kamili la Mzazi / Mlezi *</label>
                           <input
                             type="text"
-                            placeholder="Mji, Wilaya, Mtaa"
-                            value={parentAddress}
-                            onChange={(e) => setParentAddress(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            required
+                            value={parentName}
+                            onChange={(e) => setParentName(e.target.value)}
+                            placeholder="Jina kamili la mzazi..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                           />
                         </div>
 
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Uhusiano na Mwanafunzi
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Uhusiano (Relationship) *</label>
                           <select
                             value={parentRelationship}
                             onChange={(e) => setParentRelationship(e.target.value)}
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                           >
-                            <option value="Baba (Father)">Baba (Father)</option>
-                            <option value="Mama (Mother)">Mama (Mother)</option>
+                            <option value="Mzazi (Parent)">Mzazi (Parent)</option>
                             <option value="Mlezi (Guardian)">Mlezi (Guardian)</option>
-                            <option value="Ndugu wa Karibu">Ndugu wa Karibu</option>
+                            <option value="Mfadhili (Sponsor)">Mfadhili (Sponsor)</option>
                           </select>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* SECTION 3: ATTACHED DOCUMENTS DECLARATION */}
-                    <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200">
-                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                        <h4 className="text-xs font-black text-[#102A43] uppercase tracking-wider flex items-center gap-2">
-                          <FileCheck className="w-4 h-4 text-emerald-700" />
-                          <span>3. Nyaraka Zinazoambatishwa (Supporting Documents)</span>
-                        </h4>
-                        <span className="text-[11px] text-slate-500">
-                          (Unaweza kuwasilisha siku ya kuripoti shuleni)
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                          <span className="font-bold text-slate-800 block">
-                            1. Cheti cha Kuzaliwa (RITA)
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Namba ya cheti au jina la faili"
-                            value={birthCertDoc}
-                            onChange={(e) => setBirthCertDoc(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px]"
-                          />
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                          <span className="font-bold text-slate-800 block">
-                            2. Result Slip ya La 7 (PSLE)
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Namba ya mtihani / namba ya cheti"
-                            value={psleResultDoc}
-                            onChange={(e) => setPsleResultDoc(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px]"
-                          />
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                          <span className="font-bold text-slate-800 block">
-                            3. Barua ya Uhamisho (Kama anahama)
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Shule iliyotoa uhamisho"
-                            value={transferDoc}
-                            onChange={(e) => setTransferDoc(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px]"
-                          />
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-800">
-                              4. Fomu ya Afya ya Daktari
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setIsMedicalModalOpen(true)}
-                              className="text-[10px] font-bold text-emerald-700 hover:underline"
-                            >
-                              Jaza / Pakua &rarr;
-                            </button>
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Jina la kituo cha afya / daktari"
-                            value={medicalFormDoc}
-                            onChange={(e) => setMedicalFormDoc(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SECTION 4: MEDICAL INFORMATION */}
-                    <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200">
-                      <h4 className="text-xs font-black text-[#102A43] uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
-                        <HeartPulse className="w-4 h-4 text-rose-600" />
-                        <span>4. Taarifa za Afya ya Mwanafunzi (Medical Information)</span>
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Mzio (Allergies)
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Namba ya Simu ya Mzazi (WhatsApp / Call) *</label>
+                          <input
+                            type="tel"
+                            required
+                            value={parentPhone}
+                            onChange={(e) => setParentPhone(e.target.value)}
+                            placeholder="+255 782 ..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Barua Pepe (Email ya Mzazi)</label>
+                          <input
+                            type="email"
+                            value={parentEmail}
+                            onChange={(e) => setParentEmail(e.target.value)}
+                            placeholder="mzazi@gmail.com"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Makazi ya Mzazi (Mji / Wilaya / Kijiji)</label>
                           <input
                             type="text"
-                            placeholder="Mfano: Mzio wa chakula, dawa n.k"
+                            value={parentAddress}
+                            onChange={(e) => setParentAddress(e.target.value)}
+                            placeholder="Moshi, Kilimanjaro / Dar es Salaam..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 3: Afya & Tamko la Mzazi */}
+                    <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                        <HeartPulse className="w-4 h-4 text-emerald-700" />
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                          3. Taarifa za Kiafya &amp; Tamko Rasmi
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Mzio au Magonjwa Maalum (Kama yapo)</label>
+                          <input
+                            type="text"
                             value={allergies}
                             onChange={(e) => setAllergies(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            placeholder="Mfano: Mzio wa dawa fulani, Pumu, n.k."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                           />
                         </div>
 
                         <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Magonjwa Sugu (Kama yapo)
-                          </label>
+                          <label className="font-bold text-slate-700 block mb-1">Simu ya Dharura (Emergency Contact)</label>
                           <input
-                            type="text"
-                            placeholder="Mfano: Pumu (Asthma), Shinikizo n.k"
-                            value={chronicConditions}
-                            onChange={(e) => setChronicConditions(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-bold text-slate-700 block mb-1">
-                            Kundi la Damu (Blood Group)
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Mfano: O+, A+, B+, AB+"
-                            value={bloodGroup}
-                            onChange={(e) => setBloodGroup(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs"
+                            type="tel"
+                            value={emergencyContact}
+                            onChange={(e) => setEmergencyContact(e.target.value)}
+                            placeholder="+255 754 ..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono"
                           />
                         </div>
                       </div>
 
-                      <div>
-                        <label className="font-bold text-slate-700 block mb-1">
-                          Namba ya Simu ya Dharura (Emergency Contact)
+                      <div className="pt-3 border-t border-slate-200">
+                        <label className="flex items-start gap-3 cursor-pointer text-xs text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={parentConsentDeclared}
+                            onChange={(e) => setParentConsentDeclared(e.target.checked)}
+                            className="mt-0.5 w-4 h-4 rounded text-[#102A43] focus:ring-[#102A43]"
+                          />
+                          <span>
+                            <strong>Tamko la Mzazi/Mlezi:</strong> Nathibitisha kwamba taarifa zote zilizotolewa hapa ni sahihi na niko tayari kufuata sheria na kanuni zote za Shule ya Sekondari Uomboni zilizotolewa kwenye maelekezo ya kujiunga.
+                          </span>
                         </label>
-                        <input
-                          type="text"
-                          placeholder="Jina na namba ya simu ya dharura"
-                          value={emergencyContact}
-                          onChange={(e) => setEmergencyContact(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono"
-                        />
                       </div>
                     </div>
 
-                    {/* SECTION 5: DECLARATION */}
-                    <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-300 space-y-2">
-                      <h4 className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-                        <ShieldCheck className="w-4 h-4 text-amber-700" />
-                        <span>5. Tamko Rasmi la Mzazi au Mlezi (Parent Declaration)</span>
-                      </h4>
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                      <button
+                        type="button"
+                        onClick={handleClearDraft}
+                        className="text-xs font-bold text-slate-500 hover:text-red-600 transition-colors cursor-pointer"
+                      >
+                        Safisha Fomu (Futa Kila Kitu)
+                      </button>
 
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs leading-relaxed text-slate-800">
-                        <input
-                          type="checkbox"
-                          required
-                          checked={parentConsentDeclared}
-                          onChange={(e) => setParentConsentDeclared(e.target.checked)}
-                          className="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-700"
-                        />
-                        <span>
-                          Mimi niliyetia jina hapo juu ninathibitisha kuwa taarifa zote zilizojazwa katika fomu hii ni za kweli na sahihi. Ninakubali mwanangu kujiunga na Shule ya Sekondari Uomboni na kufuata kanuni, taratibu na malezi yote ya shule ya Kikatoliki ya Jimbo Katoliki Moshi.
-                        </span>
-                      </label>
-                    </div>
-
-                    {/* Submit and Draft CTAs */}
-                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <div className="flex items-center gap-3">
                         <button
                           type="button"
                           onClick={handleSaveDraft}
-                          className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                          className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                         >
-                          <Save className="w-3.5 h-3.5 text-amber-600" />
+                          <Save className="w-3.5 h-3.5" />
                           <span>Hifadhi Rasimu</span>
                         </button>
 
                         <button
-                          type="button"
-                          onClick={handleClearDraft}
-                          className="px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-600 text-xs transition-colors cursor-pointer"
-                          title="Safisha Fomu"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <button
-                          type="button"
-                          onClick={onClose}
-                          className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
-                        >
-                          Ghairi
-                        </button>
-
-                        <button
                           type="submit"
-                          id="btn-submit-admission-complete"
-                          className="px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-800 to-[#102A43] hover:from-emerald-700 hover:to-[#0A1C2E] text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-transform hover:scale-102 cursor-pointer"
+                          className="px-6 py-2.5 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
                         >
-                          <Send className="w-4 h-4 text-amber-300" />
-                          <span>Wasilisha Maombi Kamili</span>
+                          <Send className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Wasilisha Maombi Mtandaoni</span>
                         </button>
                       </div>
                     </div>
                   </form>
                 )}
-              </>
+              </div>
             )}
 
-            {/* TAB 2: VITU MUHIMU (ESSENTIAL CHECKLIST) */}
-            {activeTab === 'vitu-muhimu' && (
+            {/* TAB 3: ESSENTIAL ITEMS CHECKLIST (VITU MUHIMU) */}
+            {activeTab === 'checklist' && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                <div className="bg-[#102A43] text-white rounded-3xl p-6 sm:p-8 border border-[#C9A227]/30 shadow-xl overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
-                    <div className="space-y-2 max-w-2xl">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black tracking-wider uppercase">
-                        <CheckSquare className="w-3.5 h-3.5" />
-                        <span>ORODHA RASMI YA MAANDALIZI</span>
-                      </div>
-                      <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
-                        Vitu Muhimu vya Kujiunga na Shule (Essential Checklist)
-                      </h3>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                        Mwongozo kamilifu wa vifaa vya masomo, sare rasmi, mahitaji ya bweni, nyaraka za usajili, na vitu vilivyopigwa marufuku ili mzazi na mwanafunzi wajiandae vyema kabla ya kuripoti Marangu.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                      <button
-                        onClick={() => downloadVituMuhimuPdf()}
-                        className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#102A43] text-xs font-black flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-                      >
-                        <Download className="w-4 h-4 text-[#C9A227]" />
-                        <span>Pakua Orodha (PDF)</span>
-                      </button>
-
-                      <button
-                        onClick={() => printVituMuhimuDirectly()}
-                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
-                      >
-                        <Printer className="w-4 h-4" />
-                        <span>Chapisha</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveTab('form')}
-                        className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>Nenda Kwenye Fomu &rarr;</span>
-                      </button>
-                    </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#102A43] text-white shadow-sm">
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Mwongozo Rasmi wa Maandalizi</span>
+                    <h4 className="font-serif text-lg sm:text-xl font-bold">Orodha ya Vitu Muhimu vya Kujiunga (Checklist)</h4>
+                    <p className="text-xs text-slate-300 max-w-xl">
+                      Kila mzazi na mwanafunzi anapaswa kuzingatia maelekezo haya ya vifaa vya masomo, sare, bweni na nyaraka.
+                    </p>
                   </div>
 
-                  {/* Progress Tracker */}
-                  <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="text-slate-300">Maandalizi ya Vifaa:</span>
-                      <div className="w-40 sm:w-56 h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/10">
-                        <div
-                          className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-300"
-                          style={{ width: `${vituProgressPercent}%` }}
-                        />
-                      </div>
-                      <span className="font-mono font-bold text-amber-300">
-                        {checkedVituCount} / {totalVituCount} ({vituProgressPercent}%)
-                      </span>
-                    </div>
-
-                    <div className="relative w-full sm:w-64">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="Tafuta kifaa / sare / kitabu..."
-                        value={vituSearchQuery}
-                        onChange={(e) => setVituSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-slate-400 focus:outline-hidden focus:ring-1 focus:ring-amber-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Categories Pills */}
-                  <div className="pt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                    <button
-                      onClick={() => setSelectedVituCategory('all')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'all'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <Layers className="w-3.5 h-3.5" />
-                      <span>Vitu Vyote ({VITU_MUHIMU_LIST.length})</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedVituCategory('academic')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'academic'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Taaluma &amp; Daftari</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedVituCategory('uniform')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'uniform'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <Shirt className="w-3.5 h-3.5" />
-                      <span>Sare za Shule</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedVituCategory('boarding')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'boarding'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <BedDouble className="w-3.5 h-3.5" />
-                      <span>Bweni &amp; Sanduku</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedVituCategory('documents')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'documents'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <FileCheck className="w-3.5 h-3.5" />
-                      <span>Nyaraka &amp; Vyeti</span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedVituCategory('prohibited')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        selectedVituCategory === 'prohibited'
-                          ? 'bg-rose-500 text-white shadow-sm'
-                          : 'bg-rose-900/40 text-rose-200 hover:bg-rose-900/60'
-                      }`}
-                    >
-                      <AlertTriangle className="w-3.5 h-3.5 text-rose-300" />
-                      <span>Vilivyopigwa Marufuku</span>
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => downloadVituMuhimuPdf()}
+                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-2 shadow-sm shrink-0 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 text-slate-950" />
+                    <span>Pakua Orodha (PDF)</span>
+                  </button>
                 </div>
 
-                {/* Vitu Items Grid */}
+                {/* Categories Switcher */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                  <button
+                    type="button"
+                    onClick={() => setActiveVituCategory('academic')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeVituCategory === 'academic'
+                        ? 'bg-[#102A43] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Taaluma &amp; Daftari</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveVituCategory('uniform')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeVituCategory === 'uniform'
+                        ? 'bg-[#102A43] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <Shirt className="w-4 h-4" />
+                    <span>Sare za Shule</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveVituCategory('boarding')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeVituCategory === 'boarding'
+                        ? 'bg-[#102A43] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <BedDouble className="w-4 h-4" />
+                    <span>Bweni &amp; Sanduku</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveVituCategory('documents')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeVituCategory === 'documents'
+                        ? 'bg-[#102A43] text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <FileCheck className="w-4 h-4" />
+                    <span>Nyaraka &amp; Vyeti</span>
+                  </button>
+                </div>
+
+                {/* Items List Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                  {filteredVituItems.map((item) => {
-                    const isChecked = !!checkedVituIds[item.id];
-                    const isProhibited = item.category === 'prohibited';
-
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => !isProhibited && toggleCheckVitu(item.id)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-2 select-none ${
-                          isProhibited
-                            ? 'bg-rose-50/70 border-rose-300 cursor-default'
-                            : isChecked
-                            ? 'bg-emerald-50/80 border-emerald-400 shadow-xs'
-                            : 'bg-white border-slate-200 hover:border-amber-400 hover:shadow-xs'
-                        }`}
-                      >
-                        <div className="space-y-1.5">
-                          <div className="flex items-start justify-between gap-2">
-                            <span
-                              className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                                isProhibited
-                                  ? 'bg-rose-100 text-rose-800'
-                                  : 'bg-amber-100 text-amber-900'
-                              }`}
-                            >
-                              {item.quantity || (isProhibited ? 'Marufuku Kabisa' : 'Inahitajika')}
-                            </span>
-
-                            {!isProhibited && (
-                              <button
-                                type="button"
-                                className="text-slate-400 hover:text-emerald-700 transition-colors"
-                              >
-                                {isChecked ? (
-                                  <CheckSquare className="w-4 h-4 text-emerald-600" />
-                                ) : (
-                                  <Square className="w-4 h-4" />
-                                )}
-                              </button>
-                            )}
-
-                            {item.mandatory && !isProhibited && (
-                              <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                                Lazima
-                              </span>
-                            )}
-                          </div>
-
-                          <h5 className="font-bold text-sm text-[#102A43] leading-snug">
-                            {item.nameSw}
-                          </h5>
-
-                          <p className="text-[11px] text-slate-600 leading-relaxed">
-                            {item.specSw}
-                          </p>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                          <span className="capitalize">{item.category}</span>
-                          <span className={isProhibited ? 'text-rose-600 font-bold' : isChecked ? 'text-emerald-700 font-bold' : 'text-amber-600'}>
-                            {isProhibited ? '✕ Hairuhusiwi' : isChecked ? '✓ Tayari' : 'Inahitajika'}
+                  {categoryItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-[#102A43]/40 shadow-xs flex flex-col justify-between space-y-2"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[10px] font-mono font-bold text-amber-700 uppercase bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            {item.quantity || 'Inahitajika'}
                           </span>
+                          {item.mandatory && (
+                            <span className="text-[9px] font-black uppercase text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">
+                              Lazima
+                            </span>
+                          )}
                         </div>
+                        <h5 className="font-bold text-sm text-[#102A43] mt-1.5 leading-snug">
+                          {item.nameSw}
+                        </h5>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                          {item.specSw}
+                        </p>
                       </div>
-                    );
-                  })}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Uomboni Checklist</span>
+                        <span className="text-emerald-700 font-bold">✓ Muhimu</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Prohibited Alert Banner */}
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
+                {/* Prohibited Items Warning */}
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-xs text-red-900">
+                  <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-sm font-bold text-red-950 mb-0.5">
+                      Vitu Vilivyopigwa Marufuku Kabisa Shuleni:
+                    </strong>
                     <span>
-                      <strong>Sera ya Shule:</strong> Simu za mkononi, hita za umeme na vifaa vyote vya kielektroniki vimepigwa marufuku kabisa. Mwanafunzi atakayepatikana navyo atachukuliwa hatua kali za kinidhamu.
+                      Simu zote za mkononi, hita za umeme, pasi, redio, vifaa vya kielektroniki, nguo za nyumbani zisizoruhusiwa, mapambo ya dhahabu, na vito vya thamani vimepigwa marufuku. Mwanafunzi atakayepatikana navyo atachukuliwa hatua kali za kinidhamu.
                     </span>
                   </div>
-
-                  <button
-                    onClick={() => setActiveTab('form')}
-                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold shrink-0 transition-colors cursor-pointer"
-                  >
-                    Rudi Kujaza Fomu &rarr;
-                  </button>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: ADMISSION CRITERIA & DATES */}
-            {activeTab === 'criteria' && (
+            {/* TAB 4: OFFICIAL FORMS & JOINING INSTRUCTIONS (FOMU RASMI) */}
+            {activeTab === 'forms' && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                {/* Header Banner */}
-                <div className="p-6 rounded-3xl bg-gradient-to-r from-[#102A43] via-[#0A1C2E] to-[#102A43] text-white border border-[#C9A227]/30 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider">
-                      <FileCheck className="w-3.5 h-3.5" />
-                      <span>VIGEZO RASMI VYA UDAHILI 2026/2027</span>
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
-                      Sifa &amp; Vigezo vya Kujiunga na Shule ya Sekondari Uomboni
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                      Nafasi za kujiunga na Kidato cha Kwanza na cha Tatu zipo wazi kwa wavulana na wasichana (Bweni na Kutwa). Mazingira tulivu ya masomo mteremko wa Mlima Kilimanjaro, Marangu.
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => setActiveTab('form')}
-                    className="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm shrink-0 flex items-center gap-2 shadow-md cursor-pointer transition-transform hover:scale-102"
-                  >
-                    <span>Anza Kujaza Fomu Sasa</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <h4 className="font-serif text-lg font-bold text-[#102A43]">
+                    Fomu Rasmi za Kujiunga na Shule ya Sekondari Uomboni (2026/2027)
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Pakua fomu rasmi zilizoidhinishwa na uongozi wa shule. Fomu hizi zinatakiwa kujazwa, kugongwa mihuri inayotakiwa (hospitali na serikali za mitaa/RITA), na kuwasilishwa shuleni siku ya kuripoti.
+                  </p>
                 </div>
 
-                {/* 6 Official Requirements Grid */}
-                <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-                  <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-[#C9A227]" />
-                      <span>Vigezo 6 vya Msingi vya Udahili (Admission Criteria)</span>
-                    </h4>
-                    <span className="text-[11px] text-emerald-700 font-bold">Lazima zote zizingatiwe</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {admissionRequirements.map((req, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-2xl bg-[#FFFFF0] border border-slate-200 hover:border-amber-400 transition-colors flex items-start gap-3.5"
-                      >
-                        <span className="w-7 h-7 rounded-xl bg-[#102A43] text-amber-300 font-bold text-xs flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                          {idx + 1}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Joining Instructions 2027 */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-amber-600" />
+                        <span className="text-[10px] font-bold uppercase text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          Fomu Kuu Rasmi
                         </span>
-                        <div className="space-y-1">
-                          <h5 className="text-xs sm:text-sm font-bold text-[#102A43] leading-snug">
-                            {req.titleSw}
-                          </h5>
-                          <p className="text-[11px] text-slate-600 leading-relaxed">
-                            {req.descSw}
-                          </p>
-                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dates & Collection Centers Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Important Dates */}
-                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-                    <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
-                      <Calendar className="w-4 h-4 text-amber-600" />
-                      <span>Tarehe Muhimu za Udahili (Important Dates)</span>
-                    </h4>
-
-                    <div className="space-y-3">
-                      {importantDates.map((item, idx) => (
-                        <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-bold text-[#102A43] block">
-                              {item.eventSw}
-                            </span>
-                            <span className="text-[11px] text-slate-600 block">
-                              {item.dateSw}
-                            </span>
-                          </div>
-                          <span className="px-2 py-1 rounded-lg text-[10px] font-mono font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            {item.badge}
-                          </span>
-                        </div>
-                      ))}
+                      <h5 className="font-bold text-base text-[#102A43]">
+                        Fomu Rasmi ya Maelekezo ya Kujiunga (Joining Instructions 2027)
+                      </h5>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Inajumuisha kanuni na sheria za shule, ratiba ya masomo, ada za shule, akaunti za benki na maelekezo yote ya safari kuelekea Marangu.
+                      </p>
                     </div>
+
+                    <button
+                      onClick={() => downloadOfficialJoiningInstructions2027Pdf()}
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-amber-300" />
+                      <span>Pakua Fomu Rasmi ya Kujiunga (PDF)</span>
+                    </button>
                   </div>
 
-                  {/* Form Centers & Contacts */}
-                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3">
-                        <MapPin className="w-4 h-4 text-emerald-700" />
-                        <span>Vituo vya Upatikanaji wa Fomu (Hardcopy)</span>
-                      </h4>
-
-                      <ul className="space-y-2 text-xs text-slate-700">
-                        <li className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span><strong>Ofisi ya Mkuu wa Shule:</strong> Uomboni, Marangu Magharibi, Moshi</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span><strong>Moshi Bookshop:</strong> Mjini Moshi</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span><strong>Kituo cha Ngarenaro:</strong> Arusha</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span><strong>Tovuti Rasmi:</strong> Pakua mtandaoni au jaza fomu hii sasa</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 space-y-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                        Mawasiliano ya Uongozi wa Udahili
-                      </span>
-                      <div className="text-xs font-mono font-bold text-[#102A43] space-y-1">
-                        <div>📞 Mkuu wa Shule: +255 782 558 127</div>
-                        <div>📞 Makamu Mkuu: +255 754 532 949</div>
-                        <div>📞 Mkuu wa Taaluma: +255 745 548 225</div>
-                        <div>📞 Mhasibu wa Shule: +255 752 000 939</div>
+                  {/* Medical Form */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Stethoscope className="w-5 h-5 text-emerald-600" />
+                        <span className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          Upimaji Afya
+                        </span>
                       </div>
+                      <h5 className="font-bold text-base text-[#102A43]">
+                        Fomu ya Upimaji Afya ya Daktari (Medical Examination Form)
+                      </h5>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Inapaswa kujazwa na kupimwa na daktari aliyesajiliwa katika hospitali ya serikali au hospitali inayotambuliwa kabla ya mwanafunzi kuripoti shuleni.
+                      </p>
                     </div>
+
+                    <button
+                      onClick={() => setIsMedicalModalOpen(true)}
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-amber-200" />
+                      <span>Fungua &amp; Pakua Fomu ya Afya (PDF)</span>
+                    </button>
+                  </div>
+
+                  {/* Vitu Muhimu Checklist PDF */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckSquare className="w-5 h-5 text-blue-600" />
+                        <span className="text-[10px] font-bold uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                          Orodha ya Vitu
+                        </span>
+                      </div>
+                      <h5 className="font-bold text-base text-[#102A43]">
+                        Orodha Kamili ya Mahitaji (Vitu Muhimu Checklist PDF)
+                      </h5>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Orodha inayoelezea kila kifaa, vipimo, idadi, na aina ya masanduku ya chuma na madaftari yanayotakiwa.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => downloadVituMuhimuPdf()}
+                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-[#102A43] border border-slate-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-[#C9A227]" />
+                      <span>Pakua Orodha ya Vitu Muhimu (PDF)</span>
+                    </button>
+                  </div>
+
+                  {/* Online Verification Letter */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Printer className="w-5 h-5 text-indigo-600" />
+                        <span className="text-[10px] font-bold uppercase text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                          Uthibitisho wa Maombi
+                        </span>
+                      </div>
+                      <h5 className="font-bold text-base text-[#102A43]">
+                        Barua ya Uhakiki wa Udahili (Admission Verification)
+                      </h5>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        Ukikamilisha kujaza fomu mtandaoni, mfumo unazalisha barua rasmi ya uthibitisho yenye QR Code na namba ya kumbukumbu.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTab('apply')}
+                      className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Nenda kwenye Fomu ya Maombi</span>
+                    </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 4: FEES & BANK ACCOUNTS */}
+            {/* TAB 5: FEES & BANKING (MALIPO YA ADA & BENKI) */}
             {activeTab === 'fees' && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                {/* Fee Header */}
-                <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950 via-[#102A43] to-emerald-950 text-white border border-[#C9A227]/30 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider">
-                      <CreditCard className="w-3.5 h-3.5" />
-                      <span>ADA NA MFUMO WA MALIPO 2026/2027</span>
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
-                      Mchanganuo wa Ada &amp; Akaunti Rasmi za Benki
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                      Ada ya Shule ya Sekondari Uomboni inalipwa moja kwa moja kupitia benki au Lipa Namba ya shule. Mzazi anaweza kulipa ada yote au kwa awamu (Installments) kabla ya muhula kuanza.
-                    </p>
-                  </div>
-
-                  <a
-                    href="https://wa.me/255752000939?text=Habari%20Mhasibu,%20ninaomba%20msaada%20wa%20malipo%20ya%20ada%20ya%20Uomboni%20Secondary."
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shrink-0 flex items-center gap-2 shadow-md cursor-pointer transition-transform hover:scale-102"
-                  >
-                    <MessageCircle className="w-4 h-4 text-emerald-200" />
-                    <span>Wasiliana na Mhasibu (WhatsApp)</span>
-                  </a>
-                </div>
-
-                {/* 2 Fee Plans: Boarding vs Day */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Boarding */}
-                  <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-emerald-600 shadow-md space-y-4 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded-bl-2xl">
-                      Wavulana &amp; Wasichana
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-                        Bweni (Boarding)
-                      </span>
-                      <h4 className="text-2xl sm:text-3xl font-black text-[#102A43]">
-                        TZS 1,600,000<span className="text-xs font-normal text-slate-500"> / mwaka</span>
-                      </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        Inajumuisha malazi ya bweni, chakula bora mara tatu kwa siku, huduma za afya ya awali, masomo, maabara za sayansi na TEHAMA.
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 space-y-2.5">
-                      <span className="text-xs font-bold text-slate-800 block">
-                        Awamu za Malipo (Installment Schedule):
-                      </span>
-                      <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-emerald-950">Awamu ya 1 (Muhula wa Kwanza):</span>
-                        <span className="font-mono font-bold text-emerald-900">TZS 850,000/=</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-slate-800">Awamu ya 2 (Muhula wa Pili):</span>
-                        <span className="font-mono font-bold text-slate-900">TZS 750,000/=</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Day */}
-                  <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-300 shadow-xs space-y-4 relative overflow-hidden">
-                    <div className="space-y-1">
-                      <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
-                        Kutwa (Day Scholars)
-                      </span>
-                      <h4 className="text-2xl sm:text-3xl font-black text-[#102A43]">
-                        TZS 850,000<span className="text-xs font-normal text-slate-500"> / mwaka</span>
-                      </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        Inajumuisha chakula cha mchana shuleni, masomo yote, maabara, maktaba na huduma zote za kitaaluma na michezo.
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 space-y-2.5">
-                      <span className="text-xs font-bold text-slate-800 block">
-                        Awamu za Malipo (Installment Schedule):
-                      </span>
-                      <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-blue-950">Awamu ya 1 (Muhula wa Kwanza):</span>
-                        <span className="font-mono font-bold text-blue-900">TZS 450,000/=</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-slate-800">Awamu ya 2 (Muhula wa Pili):</span>
-                        <span className="font-mono font-bold text-slate-900">TZS 400,000/=</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Bank Accounts Grid */}
-                <div className="space-y-4">
-                  <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-[#102A43] uppercase tracking-wider flex items-center gap-2">
-                      <Building className="w-4 h-4 text-emerald-700" />
-                      <span>Akaunti Rasmi za Benki za Shule (Malipo Yote Hufanyika Hapa)</span>
-                    </h4>
-                    <span className="text-[11px] text-slate-500">Bofya namba kunakili</span>
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                    <div>
+                      <h4 className="font-serif text-lg font-bold text-[#102A43] flex items-center gap-2">
+                        <Building className="w-5 h-5 text-[#C9A227]" />
+                        <span>Akaunti Rasmi za Benki kwa Malipo ya Ada</span>
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Malipo yote ya ada yafanyike kwenye akaunti za shule zifuatazo pekee:
+                      </p>
+                    </div>
+
+                    <a
+                      href={getBursarWhatsAppUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Chat na Mhasibu WhatsApp</span>
+                    </a>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {officialBankAccounts.map((b) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {bankAccounts.map((acc) => (
                       <div
-                        key={b.id}
-                        className={`p-4 rounded-2xl border-2 ${b.color} flex flex-col justify-between space-y-3 shadow-xs`}
+                        key={acc.id}
+                        className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-[#102A43]/40 transition-all space-y-3"
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-bold text-[#102A43]">
-                              {b.bankName}
-                            </span>
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700">
-                              {b.tag}
-                            </span>
-                          </div>
-
-                          <div className="text-[11px] text-slate-600">
-                            Jina la Akaunti: <strong>{b.accountName}</strong>
-                          </div>
-                          <div className="text-[10px] text-slate-500">
-                            {b.branch}
-                          </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase text-[#102A43] bg-[#FFFFF0] px-2.5 py-1 rounded-md border border-[#102A43]/20">
+                            {acc.bankName}
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500">{acc.type}</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                          <span className="font-mono font-black text-sm sm:text-base text-[#102A43] tracking-wider">
-                            {b.accountNumber}
-                          </span>
+                        <div>
+                          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Jina la Akaunti:</span>
+                          <div className="text-xs sm:text-sm font-bold text-slate-900">{acc.accountName}</div>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-mono block">Namba ya Akaunti:</span>
+                            <span className="text-sm sm:text-base font-bold font-mono text-[#102A43] tracking-wider">
+                              {acc.accountNumber}
+                            </span>
+                          </div>
 
                           <button
                             type="button"
-                            onClick={() => handleCopyText(b.accountNumber, b.id)}
-                            className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-[#102A43] text-xs font-bold border border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            onClick={() => handleCopy(acc.accountNumber, acc.id)}
+                            className="px-3 py-1.5 rounded-lg bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                           >
-                            {copiedBankId === b.id ? (
+                            {copiedBankId === acc.id ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-700">Imenakiliwa!</span>
+                                <Check className="w-3.5 h-3.5 text-amber-300" />
+                                <span>Imenakiliwa</span>
                               </>
                             ) : (
                               <>
-                                <Copy className="w-3.5 h-3.5 text-slate-600" />
+                                <Copy className="w-3.5 h-3.5" />
                                 <span>Nakili</span>
                               </>
                             )}
                           </button>
                         </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                          <span>Tawi: {acc.branch}</span>
+                          <span className="font-mono">SWIFT: {acc.swiftCode}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Important Bank Pay Instructions */}
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-950 space-y-2">
-                  <span className="font-black flex items-center gap-2 text-amber-900">
-                    <ShieldCheck className="w-4 h-4 text-amber-700" />
-                    <span>Mwongozo wa Malipo ya Benki &amp; Uthibitisho</span>
-                  </span>
-                  <ul className="space-y-1 list-disc pl-5 text-slate-700">
-                    <li>Kwenye hati ya benki (bank slip), mzazi lazima aandike <strong>Jina Kamili la Mwanafunzi</strong> na <strong>Kidato/Darasa</strong>.</li>
-                    <li>Hati halisi ya benki (bank slip) iwasilishwe kwa Mhasibu wa shule siku ya kuripoti shuleni ili kupewa stakabadhi rasmi ya shule.</li>
-                    <li>Unaweza pia kutuma picha safi ya bank slip kupitia WhatsApp ya Mhasibu: <strong>0752 000 939</strong>.</li>
-                  </ul>
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={() => setActiveTab('form')}
-                      className="px-5 py-2.5 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <span>Jaza Fomu ya Udahili Mtandaoni &rarr;</span>
-                    </button>
+                {/* Fee Structure Summary Table */}
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                  <h5 className="font-bold text-sm text-[#102A43] flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-[#C9A227]" />
+                    <span>Muhtasari wa Ada za Shule kwa Mwaka (Fee Structure)</span>
+                  </h5>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <thead className="bg-[#102A43] text-white">
+                        <tr>
+                          <th className="p-3">Kidato (Form)</th>
+                          <th className="p-3">Aina ya Mwanafunzi</th>
+                          <th className="p-3">Awamu ya 1 (Muhula wa I)</th>
+                          <th className="p-3">Awamu ya 2 (Muhula wa II)</th>
+                          <th className="p-3">Jumla kwa Mwaka</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        <tr>
+                          <td className="p-3 font-bold text-[#102A43]">Kidato cha 1 - 4</td>
+                          <td className="p-3 font-medium">Bweni (Boarding)</td>
+                          <td className="p-3 font-mono">TZS 650,000</td>
+                          <td className="p-3 font-mono">TZS 650,000</td>
+                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 1,300,000</td>
+                        </tr>
+                        <tr className="bg-slate-50/50">
+                          <td className="p-3 font-bold text-[#102A43]">Kidato cha 1 - 4</td>
+                          <td className="p-3 font-medium">Kutwa (Day)</td>
+                          <td className="p-3 font-mono">TZS 350,000</td>
+                          <td className="p-3 font-mono">TZS 350,000</td>
+                          <td className="p-3 font-bold font-mono text-emerald-800">TZS 700,000</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
+                  <p className="text-[11px] text-slate-500 italic">
+                    * Ada inaweza kulipwa kwa awamu mbili au nne kulingana na makubaliano na uongozi wa shule / Bursar.
+                  </p>
+                </div>
+
+                {/* Submit Payment Proof & Generate Receipt */}
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <FileCheck className="w-5 h-5 text-[#102A43]" />
+                    <h5 className="font-bold text-sm sm:text-base text-[#102A43]">
+                      Wasilisha Taarifa za Muamala &amp; Pata Risiti ya Kielektroniki
+                    </h5>
+                  </div>
+
+                  {submittedReceipt ? (
+                    <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-4 animate-in zoom-in-95">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-inner">
+                        <CheckCircle2 className="w-7 h-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold uppercase text-emerald-800">Taarifa ya Malipo Imewasilishwa</span>
+                        <h4 className="text-lg font-black text-slate-900">
+                          Risiti Namba: <span className="font-mono text-emerald-700">{submittedReceipt.receiptNumber}</span>
+                        </h4>
+                      </div>
+                      <div className="bg-white p-4 rounded-xl border border-emerald-200 text-xs text-left max-w-md mx-auto space-y-1.5">
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Mwanafunzi:</span>
+                          <span className="font-bold text-slate-900">{submittedReceipt.studentName}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Kidato:</span>
+                          <span className="font-mono">{submittedReceipt.form}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Kiasi Kilicholipwa:</span>
+                          <span className="font-bold text-emerald-800 font-mono">TZS {Number(submittedReceipt.amount).toLocaleString()} /=</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Kumbukumbu ya Muamala:</span>
+                          <span className="font-mono">{submittedReceipt.transactionReference}</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span className="text-slate-500">Hali:</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">{submittedReceipt.status}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <a
+                          href={getBursarWhatsAppUrl({
+                            studentName: submittedReceipt.studentName,
+                            form: submittedReceipt.form,
+                            amount: String(submittedReceipt.amount),
+                            ref: submittedReceipt.transactionReference,
+                            receiptNo: submittedReceipt.receiptNumber,
+                          })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Tuma Risiti kwa Bursar WhatsApp</span>
+                        </a>
+
+                        <button
+                          type="button"
+                          onClick={() => setSubmittedReceipt(null)}
+                          className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold cursor-pointer"
+                        >
+                          Wasilisha Malipo Mengine
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handlePaymentSubmit} className="space-y-4 text-xs">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="font-bold text-slate-700 block mb-1">Jina Kamili la Mwanafunzi *</label>
+                          <input
+                            type="text"
+                            required
+                            value={feeStudentName}
+                            onChange={(e) => setFeeStudentName(e.target.value)}
+                            placeholder="Jina la mwanafunzi..."
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Kidato *</label>
+                          <select
+                            value={feeSelectedForm}
+                            onChange={(e) => setFeeSelectedForm(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white font-medium"
+                          >
+                            <option value="Form 1">Kidato cha 1 (Form 1)</option>
+                            <option value="Form 2">Kidato cha 2 (Form 2)</option>
+                            <option value="Form 3">Kidato cha 3 (Form 3)</option>
+                            <option value="Form 4">Kidato cha 4 (Form 4)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Kiasi Kilicholipwa (TZS) *</label>
+                          <input
+                            type="number"
+                            required
+                            value={feeAmount}
+                            onChange={(e) => setFeeAmount(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white font-mono font-bold text-[#102A43]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Njia / Benki Uliyolipia *</label>
+                          <select
+                            value={feePaymentMethod}
+                            onChange={(e) => setFeePaymentMethod(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white"
+                          >
+                            <option value="CRDB Bank - 01J1079051400">CRDB Bank (01J1079051400)</option>
+                            <option value="NMB Bank - 40302507439">NMB Bank (40302507439)</option>
+                            <option value="Mkombozi Bank - 0051150397901">Mkombozi Bank (0051150397901)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Namba ya Simu ya Mzazi *</label>
+                          <input
+                            type="tel"
+                            required
+                            value={feeParentPhone}
+                            onChange={(e) => setFeeParentPhone(e.target.value)}
+                            placeholder="+255 754 ..."
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white font-mono"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <label className="font-bold text-slate-700 block mb-1">
+                            Kumbukumbu ya Muamala / Slip No / Reference *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={feeTransactionRef}
+                            onChange={(e) => setFeeTransactionRef(e.target.value)}
+                            placeholder="Mfano: TXN-98214 au Kumbukumbu ya slip ya benki..."
+                            className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white font-bold flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                      >
+                        <FileCheck className="w-4 h-4 text-amber-300" />
+                        <span>Wasilisha Malipo &amp; Tengeneza Risiti</span>
+                      </button>
+                    </form>
+                  )}
                 </div>
               </div>
             )}
@@ -1657,18 +1450,11 @@ export const ApplyNowModal: React.FC<ApplyNowModalProps> = ({
         </div>
       </div>
 
-      {/* Hospital Medical Form Modal */}
+      {/* Standalone Medical Examination Modal if triggered */}
       {isMedicalModalOpen && (
         <MedicalExaminationFormModal
           isOpen={isMedicalModalOpen}
           onClose={() => setIsMedicalModalOpen(false)}
-          studentName={studentName}
-          applicationNumber={submittedRef || 'APP-2026-DRAFT'}
-          dateOfBirth={dob}
-          gender={gender}
-          parentName={parentName}
-          parentPhone={parentPhone}
-          premNumber={premNumber}
         />
       )}
     </>

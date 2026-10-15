@@ -5,84 +5,112 @@ export interface SitemapUrlEntry {
   priority?: number;
 }
 
-export const CANONICAL_SITE_URL = 'https://www.uomboniss.sc.tz';
-
 export const OFFICIAL_SITEMAP_ENTRIES: SitemapUrlEntry[] = [
   // 1. Root Homepage
   {
-    loc: `${CANONICAL_SITE_URL}/`,
+    loc: 'https://uombonisecondaryschool.netlify.app/',
     changefreq: 'daily',
     priority: 1.0,
   },
-  // 2. Admissions & Joining Instructions
+  // 2. High-Priority Official Results & National Exam Hub
   {
-    loc: `${CANONICAL_SITE_URL}/admissions`,
-    changefreq: 'weekly',
+    loc: 'https://uombonisecondaryschool.netlify.app/#necta',
+    changefreq: 'daily',
     priority: 0.95,
   },
   {
-    loc: `${CANONICAL_SITE_URL}/joining-instructions`,
+    loc: 'https://uombonisecondaryschool.netlify.app/#results',
+    changefreq: 'weekly',
+    priority: 0.9,
+  },
+  // 3. Portals & Intranets
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#portal',
+    changefreq: 'daily',
+    priority: 0.9,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#parent',
+    changefreq: 'weekly',
+    priority: 0.85,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#staff',
+    changefreq: 'weekly',
+    priority: 0.8,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#academic',
+    changefreq: 'weekly',
+    priority: 0.8,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#bursar',
+    changefreq: 'monthly',
+    priority: 0.75,
+  },
+  // 4. Admissions & Joining Instructions
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#admissions',
     changefreq: 'weekly',
     priority: 0.9,
   },
   {
-    loc: `${CANONICAL_SITE_URL}/vitu-muhimu`,
+    loc: 'https://uombonisecondaryschool.netlify.app/#joining',
+    changefreq: 'monthly',
+    priority: 0.8,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#fees',
+    changefreq: 'monthly',
+    priority: 0.8,
+  },
+  // 5. School Curriculum & Academics
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#academics',
     changefreq: 'weekly',
     priority: 0.85,
   },
-  // 3. Official Examination Results & NECTA S0486 Hub
   {
-    loc: `${CANONICAL_SITE_URL}/results`,
-    changefreq: 'weekly',
-    priority: 0.95,
-  },
-  // 4. School Curriculum & Academics
-  {
-    loc: `${CANONICAL_SITE_URL}/academics`,
-    changefreq: 'weekly',
-    priority: 0.85,
-  },
-  // 5. School Fees & Bank Accounts
-  {
-    loc: `${CANONICAL_SITE_URL}/fees`,
-    changefreq: 'monthly',
-    priority: 0.85,
-  },
-  // 6. About School, History & Leadership
-  {
-    loc: `${CANONICAL_SITE_URL}/about`,
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  // 7. Physical Location, Directions & GPS
-  {
-    loc: `${CANONICAL_SITE_URL}/location`,
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  // 8. Contact Information & Administration
-  {
-    loc: `${CANONICAL_SITE_URL}/contact`,
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  // 9. News, Events & Academic Calendar
-  {
-    loc: `${CANONICAL_SITE_URL}/news`,
-    changefreq: 'weekly',
-    priority: 0.8,
-  },
-  // 10. Campus Tour & Photo Gallery
-  {
-    loc: `${CANONICAL_SITE_URL}/gallery`,
+    loc: 'https://uombonisecondaryschool.netlify.app/#teachers',
     changefreq: 'monthly',
     priority: 0.75,
   },
-  // 11. Student & Parents Digital Portal
   {
-    loc: `${CANONICAL_SITE_URL}/portal`,
-    changefreq: 'weekly',
+    loc: 'https://uombonisecondaryschool.netlify.app/#students',
+    changefreq: 'monthly',
+    priority: 0.75,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#about',
+    changefreq: 'monthly',
+    priority: 0.8,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#gallery',
+    changefreq: 'monthly',
     priority: 0.7,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#news',
+    changefreq: 'weekly',
+    priority: 0.75,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#contact',
+    changefreq: 'monthly',
+    priority: 0.7,
+  },
+  // 6. Auth Entry Points
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#login',
+    changefreq: 'monthly',
+    priority: 0.6,
+  },
+  {
+    loc: 'https://uombonisecondaryschool.netlify.app/#signup',
+    changefreq: 'monthly',
+    priority: 0.5,
   },
 ];
 
@@ -112,7 +140,7 @@ export function generateSitemapXml(
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xmlUrls}
 </urlset>
 `;

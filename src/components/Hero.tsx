@@ -64,6 +64,17 @@ export const Hero: React.FC<HeroProps> = ({
 
         {/* Action Buttons (Deep Blue, Green, White & Gold) */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto">
+          {onOpenAdmissions ? (
+            <button
+              onClick={onOpenAdmissions}
+              id="hero-admission-btn"
+              className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-lg shadow-amber-950/30 cursor-pointer flex items-center justify-center gap-2 group border border-amber-300"
+            >
+              <FileText className="w-4 h-4 text-slate-900 group-hover:scale-110 transition-transform" />
+              <span>Student Admission 2026/27</span>
+            </button>
+          ) : null}
+
           {onOpenResults ? (
             <button
               onClick={onOpenResults}
@@ -84,7 +95,7 @@ export const Hero: React.FC<HeroProps> = ({
           )}
 
           <button
-            onClick={() => onNavigate('fees')}
+            onClick={onOpenFees ? onOpenFees : () => onNavigate('fees')}
             id="hero-fees-btn"
             className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm transition-all border border-white/25 cursor-pointer backdrop-blur-xs flex items-center justify-center gap-2"
           >
