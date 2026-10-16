@@ -1,7 +1,6 @@
 import express from "express";
-import http from "http";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
 import compression from "compression";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
@@ -23,14 +22,9 @@ import {
   verifySessionToken,
   terminateSession,
 } from "./server/authSecurity";
-import {
-  handleGetPrivateBlob,
-  handlePutPrivateBlob,
-} from "./server/vercelBlobService";
-import {
-  isSearchEngineBot,
-  renderBotCrawlerHtml,
-} from "./server/seoPrerender";
+import { generateSitemapXml } from "./server/sitemapGenerator";
+import { injectPrerenderedSeo } from "./server/seoPrerender";
+import { submitToIndexNow } from "./scripts/submitIndexNow";
 
 dotenv.config();
 
@@ -65,6 +59,27 @@ async function startServer() {
     next();
   });
 
+  // 1. Production Canonical Domain & HTTPS Redirect Middleware (uomboniss.sc.tz -> www.uomboniss.sc.tz)
+  app.use((req, res, next) => {
+    const host = req.headers.host || "";
+    const isLocalhost =
+      host.includes("localhost") ||
+      host.includes("127.0.0.1") ||
+      host.includes(".run.app") ||
+      host.includes(".aistudio");
+
+    if (!isLocalhost && host) {
+      const isHttp = req.headers["x-forwarded-proto"] === "http";
+      const isBareDomain = host.toLowerCase() === "uomboniss.sc.tz";
+
+      if (isBareDomain || (isHttp && host.toLowerCase().includes("uomboniss.sc.tz"))) {
+        const canonicalUrl = `https://www.uomboniss.sc.tz${req.originalUrl}`;
+        return res.redirect(301, canonicalUrl);
+      }
+    }
+    next();
+  });
+
   // Shared Gemini client instance
   let ai: GoogleGenAI | null = null;
   function getGeminiClient(): GoogleGenAI {
@@ -85,6 +100,40 @@ async function startServer() {
     return ai;
   }
 
+  // Serve public directory static files (favicons, icons, manifest)
+  app.use(express.static(path.join(process.cwd(), "public"), {
+    maxAge: "1d",
+  }));
+
+  // Explicit Dynamic XML Sitemap endpoint (Google Search Console & Bing Webmaster compliant)
+  app.get("/sitemap.xml", (_req, res) => {
+    const sitemapXml = generateSitemapXml();
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(sitemapXml);
+  });
+
+  // Explicit robots.txt endpoint
+  app.get("/robots.txt", (_req, res) => {
+    const robotsPath = path.join(process.cwd(), "public", "robots.txt");
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.sendFile(robotsPath);
+  });
+
+  // Explicit IndexNow verification key file
+  app.get("/e1a4d6f83b2c9a704e12589d6b3c7f1a.txt", (_req, res) => {
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send("e1a4d6f83b2c9a704e12589d6b3c7f1a\n");
+  });
+
+  // IndexNow API notification endpoint
+  app.post("/api/seo/indexnow", async (_req, res) => {
+    const result = await submitToIndexNow();
+    res.json(result);
+  });
+
   // Explicit service worker endpoint with proper headers
   app.get("/sw.js", (_req, res) => {
     const swPath = path.join(process.cwd(), "public", "sw.js");
@@ -94,117 +143,23 @@ async function startServer() {
     res.sendFile(swPath);
   });
 
-  // =========================================================================
-  // CANONICAL 301 REDIRECTS (NON-WWW TO WWW & NETLIFY TO OFFICIAL DOMAIN)
-  // =========================================================================
-  app.use((req, res, next) => {
-    const host = (req.headers.host || "").toLowerCase();
-    const isApex = host === "uomboniss.sc.tz";
-    const isNetlify = host.includes("uombonisecondaryschool.netlify.app");
-
-    if (isApex || isNetlify) {
-      return res.redirect(301, `https://www.uomboniss.sc.tz${req.originalUrl}`);
+  // Explicit PWA Web App Manifest endpoints
+  app.get(["/manifest.webmanifest", "/manifest.json"], (_req, res) => {
+    const webmanifestPath = path.join(process.cwd(), "public", "manifest.webmanifest");
+    res.setHeader("Content-Type", "application/manifest+json; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    if (fs.existsSync(webmanifestPath)) {
+      res.sendFile(webmanifestPath);
+    } else {
+      res.sendFile(path.join(process.cwd(), "public", "manifest.json"));
     }
-
-    const proto = req.headers["x-forwarded-proto"];
-    if (host === "www.uomboniss.sc.tz" && proto === "http") {
-      return res.redirect(301, `https://www.uomboniss.sc.tz${req.originalUrl}`);
-    }
-
-    next();
   });
 
-  // Explicit robots.txt endpoint
-  app.get("/robots.txt", (_req, res) => {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  // Explicit Offline Fallback endpoint
+  app.get("/offline.html", (_req, res) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "public, max-age=86400");
-    res.sendFile(path.join(process.cwd(), "public", "robots.txt"));
-  });
-
-  // Explicit sitemap.xml endpoint
-  app.get("/sitemap.xml", (_req, res) => {
-    res.setHeader("Content-Type", "application/xml; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-    res.sendFile(path.join(process.cwd(), "public", "sitemap.xml"));
-  });
-
-  // Microsoft Bing & IndexNow Domain Verification Key
-  app.get("/38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt", (_req, res) => {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.send("38b4d1c97a2e4f0bb68e3a291f0f4a7c\n");
-  });
-
-  // IndexNow API Trigger for Bing, Yandex, Seznam
-  app.post("/api/seo/indexnow", async (req, res) => {
-    try {
-      const { urlList } = req.body;
-      const host = "www.uomboniss.sc.tz";
-      const key = "38b4d1c97a2e4f0bb68e3a291f0f4a7c";
-      const keyLocation = "https://www.uomboniss.sc.tz/38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt";
-
-      const payload = {
-        host,
-        key,
-        keyLocation,
-        urlList: Array.isArray(urlList) && urlList.length > 0 ? urlList : [
-          "https://www.uomboniss.sc.tz/",
-          "https://www.uomboniss.sc.tz/admission-documents",
-          "https://www.uomboniss.sc.tz/admissions",
-          "https://www.uomboniss.sc.tz/results",
-          "https://www.uomboniss.sc.tz/academics",
-          "https://www.uomboniss.sc.tz/about",
-          "https://www.uomboniss.sc.tz/campus-tour",
-          "https://www.uomboniss.sc.tz/fees",
-          "https://www.uomboniss.sc.tz/contact"
-        ],
-      };
-
-      const indexNowRes = await fetch("https://api.indexnow.org/indexnow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(payload),
-      });
-
-      return res.json({
-        success: true,
-        submittedUrls: payload.urlList,
-        indexNowStatus: indexNowRes.status,
-        message: "Urls submitted to IndexNow search engine protocol successfully",
-      });
-    } catch (e: any) {
-      return res.status(500).json({ error: e?.message || "IndexNow submission failed" });
-    }
-  });
-
-  // Search Engine Bot Prerendering Middleware for Public Routes
-  app.use((req, res, next) => {
-    if (req.method !== "GET") return next();
-
-    const publicRoutes = [
-      "/",
-      "/about",
-      "/admissions",
-      "/admission-documents",
-      "/academics",
-      "/results",
-      "/campus-tour",
-      "/fees",
-      "/teachers",
-      "/news",
-      "/gallery",
-      "/contact",
-    ];
-
-    const cleanPath = req.path.toLowerCase().replace(/\/$/, "") || "/";
-    if (publicRoutes.includes(cleanPath)) {
-      const userAgent = req.headers["user-agent"] || "";
-      if (isSearchEngineBot(userAgent)) {
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.setHeader("X-Prerender-Engine", "Uomboni-SEO-SSR-v1");
-        return res.send(renderBotCrawlerHtml(cleanPath));
-      }
-    }
-    next();
+    res.sendFile(path.join(process.cwd(), "public", "offline.html"));
   });
 
   // Health check endpoint
@@ -542,24 +497,19 @@ async function startServer() {
       }
 
       const client = getGeminiClient();
-      const systemInstruction = `Wewe ni "Msaidizi Maalum wa Kidijitali wa Shule ya Sekondari Uomboni" (Uomboni Secondary School AI Advisor), shule ya Kikatoliki iliyo chini ya Jimbo Katoliki la Moshi, iliyopo Marangu, Moshi Vijijini - Kilimanjaro, Tanzania (S.L.P 361, Marangu - NECTA S0486).
-Kaulimbiu Kuu ya Shule: "TUJIENDELEZE SISI WENYEWE" (Wito: Sala, Elimu na Kazi / Prayer, Education and Work).
-Mazingira: Ipo kwenye mteremko wa Mlima Kilimanjaro, Marangu Magharibi.
+      const systemInstruction = `Wewe ni "Msaidizi Maalum wa Kidijitali wa Shule ya Sekondari Uomboni" (Uomboni Secondary School AI Advisor), shule ya Kikatoliki iliyo chini ya Jimbo Katoliki la Moshi, iliyopo Marangu, Moshi - Kilimanjaro, Tanzania.
+Kaulimbiu ya Shule: "Elimu ni Mwanga na Maadili Mema" (Education, Faith & Moral Excellence).
+Mazingira: Ipo kwenye mteremko wa Mlima Kilimanjaro, Marangu.
 
-Taarifa muhimu za shule za Mwaka 2026:
+Taarifa muhimu za shule:
 - Kidato cha 1 hadi cha 4 (O-Level, Sayansi, Sanaa na Biashara).
 - Shule ya Bweni (Boarding) na Kutwa (Day) kwa wavulana na wasichana.
-- Ada ya Bweni kwa Mwaka 2026 ni TZS 1,600,000/= (Muhula wa I: TZS 800,000/=, Muhula wa II: TZS 800,000/=). Sare na Vifaa vya Shule ni TZS 224,000/=. Ada ya Kutwa ni TZS 600,000/= kwa mwaka.
-- Malipo ya ada hufanyika kupitia akaunti rasmi za benki za Shule ya Sekondari Uomboni (Jina la Akaunti: UOMBONI SECONDARY SCHOOL):
-  1. CRDB Bank A/C: 01J1079051400
-  2. NMB Bank A/C: 40302507439
-  3. Mkombozi Commercial Bank A/C: 0051150397901
-  MUHIMU: Shule haipokei fedha taslimu shuleni wala malipo kwenda namba binafsi za simu.
-- Fomu za kujiunga (Joining Instructions 2026) na Fomu ya Uchunguzi wa Afya zinapatikana mtandaoni kwenye tovuti.
-- Matokeo ya mitihani (CSSC Joint Exam 2026, Mock, NECTA) yanaangaliwa mtandaoni kwa Namba ya Mtihani (Exam Number).
+- Malipo ya ada hufanyika benki (CRDB Bank A/C: 0150248900100, NMB Bank A/C: 22110023456 au Control Numbers & M-Pesa / Tigo Pesa Lipa Namba: 5882194).
+- Fomu za kujiunga (Joining Instructions) zinapatikana mtandaoni kwenye tovuti.
+- Matokeo ya mitihani (Mock, Midterm, NECTA) yanaangaliwa mtandaoni kwa Namba ya Mtihani (Exam Number).
 - Michezo, Maabara ya Kisasa ya Sayansi na TEHAMA (ICT Lab), Kwaya ya Mtakatifu Dominiko, Ibada na Maadili mema ya Kikristo.
 
-Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : "Kiswahili fasaha na chenye heshima na upendo"}, huku ukitoa maelekezo sahihi, ya kusaidia, na ya kikanisa/kielimu. Msaada wako unawalenga wazazi, walezi, na wanafunzi. Ikiwa hujaelewa swali, muombe mzazi awasiliane na uongozi wa shule: Mkuu wa Shule (+255 782 558 127), Makamu Mkuu (+255 754 532 949), Mhasibu (+255 752 000 939), au Mtaaluma (+255 745 548 225) / Barua pepe: uombonisec@gmail.com / info@uomboniss.ac.tz.`;
+Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : "Kiswahili fasaha na chenye heshima na upendo"}, huku ukitoa maelekezo sahihi, ya kusaidia, na ya kikanisa/kielimu. Msaada wako unawalenga wazazi, walezi, na wanafunzi. Ikiwa hujaelewa swali, muombe mzazi awasiliane na uongozi wa shule kwa namba +255 754 123 456 / info@uombonisec.sc.tz.`;
 
       const response = await client.models.generateContent({
         model: "gemini-3.8-flash",
@@ -585,35 +535,28 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
     }
   });
 
-  // =========================================================================
-  // VERCEL PRIVATE BLOB STORAGE ENDPOINTS (PUT & SECURE STREAMING GET)
-  // =========================================================================
-  app.get("/api/blob", handleGetPrivateBlob);
-  app.post("/api/blob/upload", handlePutPrivateBlob);
-
-  // Vite middleware in dev or static files in production
-  const httpServer = http.createServer(app);
-
+  // Vite middleware in dev or static files in production with Prerendered SEO injection
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: {
-        middlewareMode: true,
-        hmr: false,
-      },
-      appType: "spa",
+      server: { middlewareMode: true },
+      appType: "custom",
     });
     app.use(vite.middlewares);
 
-    // Fallback handler to transform and serve index.html for SPA routes
-    app.use("*", async (req, res, next) => {
+    app.get("*", async (req, res, next) => {
       const url = req.originalUrl;
+      // Skip API routes and files with extensions
+      if (url.startsWith("/api/") || url.includes(".")) {
+        return next();
+      }
       try {
-        const indexPath = path.join(process.cwd(), "index.html");
-        let template = await fs.promises.readFile(indexPath, "utf-8");
+        const templatePath = path.join(process.cwd(), "index.html");
+        let template = fs.readFileSync(templatePath, "utf-8");
         template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ "Content-Type": "text/html" }).end(template);
-      } catch (e) {
-        vite.ssrFixStacktrace(e as Error);
+        const html = injectPrerenderedSeo(template, url);
+        res.status(200).set({ "Content-Type": "text/html; charset=utf-8" }).end(html);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
         next(e);
       }
     });
@@ -632,51 +575,25 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
         }
       }
     }));
-    app.get("*", (_req, res) => {
-      res.set({
-        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-        "Pragma": "no-cache",
-        "Expires": "0",
-      });
-      res.sendFile(path.join(distPath, "index.html"));
+    app.get("*", (req, res) => {
+      const templatePath = path.join(distPath, "index.html");
+      if (fs.existsSync(templatePath)) {
+        const rawTemplate = fs.readFileSync(templatePath, "utf-8");
+        const html = injectPrerenderedSeo(rawTemplate, req.originalUrl);
+        res.set({
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        });
+        res.send(html);
+      } else {
+        res.status(404).send("Not Found");
+      }
     });
   }
 
-  httpServer.on("error", (err: any) => {
-    if (err.code === "EADDRINUSE") {
-      console.warn(`Port ${PORT} in use, retrying in 1s...`);
-      setTimeout(() => {
-        try {
-          httpServer.close();
-        } catch {}
-        httpServer.listen(PORT, "0.0.0.0");
-      }, 1000);
-    } else {
-      console.error("Server error:", err);
-    }
-  });
-
-  const shutdown = () => {
-    httpServer.close(() => {
-      process.exit(0);
-    });
-  };
-  process.on("SIGTERM", shutdown);
-  process.on("SIGINT", shutdown);
-
-  httpServer.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Uomboni Secondary School portal running on http://localhost:${PORT}`);
   });
 }
 
-// Global process error handlers to prevent unhandled crash
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught exception in server process:", err);
-});
-process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled promise rejection in server process:", reason);
-});
-
-startServer().catch((err) => {
-  console.error("Fatal error starting server:", err);
-});
+startServer();

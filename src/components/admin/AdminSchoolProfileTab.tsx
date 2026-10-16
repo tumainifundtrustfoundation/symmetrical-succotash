@@ -247,7 +247,7 @@ export const AdminSchoolProfileTab: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={formData?.postalAddress || 'S.L.P 361, Marangu - Kilimanjaro'}
+                value={formData?.postalAddress || 'S.L.P. 293, Marangu - Moshi'}
                 onChange={(e) => setFormData({ ...formData, postalAddress: e.target.value })}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-400"
               />

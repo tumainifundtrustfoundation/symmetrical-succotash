@@ -1,24 +1,16 @@
 import React from 'react';
-import { ChevronDown, ArrowRight, Award, FileText, CreditCard, Compass } from 'lucide-react';
-import { SchoolLogo } from './SchoolLogo';
+import { ChevronDown, ArrowRight, FileText } from 'lucide-react';
 
 interface HeroProps {
   onNavigate: (sectionId: string) => void;
-  onOpenResults?: () => void;
-  onOpenAdmissions?: () => void;
-  onOpenFees?: () => void;
   onOpenAdmin?: () => void;
+  onOpenAdmissionDocuments?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({
-  onNavigate,
-  onOpenResults,
-  onOpenAdmissions,
-  onOpenFees,
-  onOpenAdmin,
-}) => {
+export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmissionDocuments }) => {
+
   return (
-    <section id="home" className="relative w-full min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#102A43]">
+    <section id="home" className="relative w-full min-h-[82vh] lg:min-h-[88vh] flex items-center justify-center overflow-hidden bg-[#102A43]">
       {/* Real Uomboni Secondary School Photograph */}
       <div className="absolute inset-0 z-0">
         <img
@@ -27,119 +19,86 @@ export const Hero: React.FC<HeroProps> = ({
           className="w-full h-full object-cover object-center"
           loading="eager"
         />
-        {/* Deep Navy & Emerald Gradient Overlay for optimal contrast & institutional dignity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#102A43]/90 via-[#0A1C2E]/85 to-[#064e3b]/90" />
+        {/* Subtle Deep Navy Overlay */}
+        <div className="absolute inset-0 bg-[#102A43]/82 backdrop-brightness-90" />
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center animate-in fade-in duration-700">
-        
-        {/* School Crest Badge */}
-        <div className="flex justify-center mb-5">
-          <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-[#C9A227]/40 shadow-xl inline-flex items-center gap-3">
-            <SchoolLogo size="md" />
-            <div className="text-left pr-2">
-              <span className="block text-xs font-bold uppercase tracking-widest text-amber-300">
-                NECTA CENTRE S0486
-              </span>
-              <span className="block text-[11px] text-emerald-200 font-medium">
-                Catholic Diocese of Moshi · Marangu West
-              </span>
-            </div>
-          </div>
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center animate-in fade-in duration-700">
+        {/* Institutional Kicker */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-xs font-semibold tracking-wider uppercase mb-5 backdrop-blur-xs">
+          <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse" />
+          <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
         </div>
 
         {/* Headline */}
-        <div className="space-y-3 max-w-4xl mx-auto">
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.12] drop-shadow-sm">
-            Tujiendeleze Sisi Wenyewe
+        <div className="space-y-2.5 max-w-4xl mx-auto">
+          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
+            Tujendelee Sisi Wenyewe: Prayer · Education · Work
           </h1>
-          <p className="text-base sm:text-xl font-medium text-amber-200 tracking-wide font-serif italic">
-            &ldquo;Prayer · Education · Work&rdquo; · Elimu, Sala na Kazi
-          </p>
-          <p className="max-w-2xl mx-auto text-xs sm:text-sm text-slate-200/90 leading-relaxed pt-1">
-            Shule ya Sekondari Uomboni (Kidato cha I–IV, Bweni na Kutwa kwa Wavulana na Wasichana) iliyopo kwenye mteremko wa Mlima Kilimanjaro, Marangu Magharibi, Moshi Vijijini.
-          </p>
         </div>
 
-        {/* Action Buttons (Deep Blue, Green, White & Gold) */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto">
-          {onOpenAdmissions ? (
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          {onOpenAdmissionDocuments && (
             <button
-              onClick={onOpenAdmissions}
-              id="hero-admission-btn"
-              className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-lg shadow-amber-950/30 cursor-pointer flex items-center justify-center gap-2 group border border-amber-300"
+              onClick={onOpenAdmissionDocuments}
+              id="hero-student-admission-btn"
+              className="liquid-btn liquid-btn-red w-full sm:w-auto px-7 py-3 text-white font-black text-xs sm:text-sm cursor-pointer shadow-lg flex items-center justify-center gap-2 group transition-all"
+              title="Fungua Hati na Fomu za Kujiunga na Shule"
             >
-              <FileText className="w-4 h-4 text-slate-900 group-hover:scale-110 transition-transform" />
-              <span>Student Admission 2026/27</span>
-            </button>
-          ) : null}
-
-          {onOpenResults ? (
-            <button
-              onClick={onOpenResults}
-              id="hero-results-btn"
-              className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-950/40 cursor-pointer flex items-center justify-center gap-2 group border border-emerald-400/40"
-            >
-              <Award className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
-              <span>Matokeo ya Mitihani (NECTA)</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onNavigate('results')}
-              className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer flex items-center justify-center gap-2"
-            >
-              <Award className="w-4 h-4 text-amber-300" />
-              <span>Matokeo ya Mitihani</span>
+              <span className="relative z-10 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-white drop-shadow-xs" />
+                <span className="tracking-wider">STUDENT ADMISSION</span>
+                <ArrowRight className="w-4 h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
+              </span>
             </button>
           )}
 
           <button
-            onClick={onOpenFees ? onOpenFees : () => onNavigate('fees')}
-            id="hero-fees-btn"
-            className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm transition-all border border-white/25 cursor-pointer backdrop-blur-xs flex items-center justify-center gap-2"
+            onClick={() => onNavigate('about')}
+            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#FFFFF0] text-[#102A43] font-semibold text-xs sm:text-sm hover:bg-white transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2 group"
           >
-            <CreditCard className="w-4 h-4 text-amber-300" />
-            <span>Malipo ya Ada</span>
+            <span>Explore Our School</span>
+            <ArrowRight className="w-4 h-4 text-[#C9A227] group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           <button
-            onClick={() => onNavigate('about')}
-            className="px-5 py-3 rounded-xl bg-white text-[#102A43] hover:bg-slate-100 font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 group"
+            onClick={() => onNavigate('contact')}
+            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#C9A227] text-slate-950 font-bold text-xs sm:text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
           >
-            <span>Gundua Shule Yetu</span>
-            <ArrowRight className="w-4 h-4 text-emerald-700 group-hover:translate-x-1 transition-transform" />
+            <span>Mawasiliano &amp; Mahali</span>
           </button>
         </div>
 
         {/* Key Institutional Facts */}
-        <div className="mt-12 pt-6 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-left max-w-4xl mx-auto">
-          <div className="border-l-3 border-[#C9A227] pl-3.5">
-            <span className="block text-xl sm:text-2xl font-black text-white font-mono">S0486</span>
-            <span className="text-xs text-amber-200/80 font-medium">NECTA Registered Centre</span>
+        <div className="mt-10 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-left max-w-4xl mx-auto">
+          <div className="border-l-2 border-[#C9A227] pl-3.5">
+            <span className="block text-xl font-bold text-white">S0486</span>
+            <span className="text-xs text-[#FFFFF0]/70">NECTA Registered Centre</span>
           </div>
-          <div className="border-l-3 border-emerald-400 pl-3.5">
-            <span className="block text-xl sm:text-2xl font-black text-white font-mono">Forms 1–4</span>
-            <span className="text-xs text-emerald-200/80 font-medium">Ordinary Level (O-Level)</span>
+          <div className="border-l-2 border-[#C9A227] pl-3.5">
+            <span className="block text-xl font-bold text-white">Forms 1–4</span>
+            <span className="text-xs text-[#FFFFF0]/70">Ordinary Level Secondary</span>
           </div>
-          <div className="border-l-3 border-[#C9A227] pl-3.5">
-            <span className="block text-xl sm:text-2xl font-black text-white font-mono">Day &amp; Boarding</span>
-            <span className="text-xs text-amber-200/80 font-medium">Co-Educational Campus</span>
+          <div className="border-l-2 border-[#C9A227] pl-3.5">
+            <span className="block text-xl font-bold text-white">Day &amp; Boarding</span>
+            <span className="text-xs text-[#FFFFF0]/70">Co-Educational Facilities</span>
           </div>
-          <div className="border-l-3 border-emerald-400 pl-3.5">
-            <span className="block text-xl sm:text-2xl font-black text-white font-mono">Marangu West</span>
-            <span className="text-xs text-emerald-200/80 font-medium">Mt. Kilimanjaro Slopes</span>
+          <div className="border-l-2 border-[#C9A227] pl-3.5">
+            <span className="block text-xl font-bold text-white">Marangu West</span>
+            <span className="text-xs text-[#FFFFF0]/70">Mount Kilimanjaro Slopes</span>
           </div>
         </div>
       </div>
 
       {/* Gentle Scroll Hint */}
       <button
-        onClick={() => onNavigate('quick-stats')}
-        aria-label="Scroll to Quick Stats"
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-[#FFFFF0]/70 hover:text-white transition-colors cursor-pointer"
+        onClick={() => onNavigate('about')}
+        aria-label="Scroll to About section"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-[#FFFFF0]/60 hover:text-white transition-colors cursor-pointer"
       >
-        <ChevronDown className="w-5 h-5 animate-bounce text-amber-300" />
+        <ChevronDown className="w-5 h-5 animate-bounce" />
       </button>
     </section>
   );

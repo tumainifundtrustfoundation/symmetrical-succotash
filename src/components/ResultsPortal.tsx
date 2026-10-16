@@ -645,25 +645,23 @@ export const ResultsPortal: React.FC<ResultsPortalProps> = ({
         {/* TAB 1: SEARCH & DETAILED ACADEMIC PERFORMANCE REPORT */}
         {activeTab === 'search' && (
           <div className="space-y-8 animate-in fade-in duration-300">
-            {/* Distributed Workflow Launcher Banner - concealed from public unless authorized */}
-            {(onOpenTeacherStation || onOpenAcademicMasterDesk || onOpenAcademicPortal) && (
-              <DistributedWorkflowBanner
-                onOpenTeacherStation={() => {
-                  if (onOpenTeacherStation) {
-                    onOpenTeacherStation();
-                  } else if (onOpenAcademicPortal) {
-                    onOpenAcademicPortal();
-                  }
-                }}
-                onOpenAcademicMasterDesk={() => {
-                  if (onOpenAcademicMasterDesk) {
-                    onOpenAcademicMasterDesk();
-                  } else if (onOpenAcademicPortal) {
-                    onOpenAcademicPortal();
-                  }
-                }}
-              />
-            )}
+            {/* Distributed Workflow Launcher Banner */}
+            <DistributedWorkflowBanner
+              onOpenTeacherStation={() => {
+                if (onOpenTeacherStation) {
+                  onOpenTeacherStation();
+                } else if (onOpenAcademicPortal) {
+                  onOpenAcademicPortal();
+                }
+              }}
+              onOpenAcademicMasterDesk={() => {
+                if (onOpenAcademicMasterDesk) {
+                  onOpenAcademicMasterDesk();
+                } else if (onOpenAcademicPortal) {
+                  onOpenAcademicPortal();
+                }
+              }}
+            />
 
             {/* Public Examination Search Section */}
             <PublicResultsSearchSection

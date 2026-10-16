@@ -20,10 +20,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { sendResetPassword } from '../../lib/firebase';
 import { checkServerSecurityStatus } from '../../services/authSecurityClient';
-import { submitTeacherAccessRequest } from '../../services/teacherAuthDirectory';
 
 export const LoginPage: React.FC = () => {
-  const { login, loginWithGoogleAuth, loading: authLoading, setActiveView } = useAuth();
+  const { login, loginWithGoogleAuth, loginWithDemoRole, loading: authLoading, setActiveView } = useAuth();
   const { language } = useLanguage();
 
   const [identifier, setIdentifier] = useState('');
@@ -39,44 +38,8 @@ export const LoginPage: React.FC = () => {
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [resetFeedback, setResetFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Teacher Access Request Modal state (For teachers requesting account from admin)
-  const [isTeacherRequestOpen, setIsTeacherRequestOpen] = useState(false);
-  const [trName, setTrName] = useState('');
-  const [trEmail, setTrEmail] = useState('');
-  const [trPhone, setTrPhone] = useState('');
-  const [trDept, setTrDept] = useState('Sayansi');
-  const [trSubjects, setTrSubjects] = useState('');
-  const [trNotes, setTrNotes] = useState('');
-  const [trFeedback, setTrFeedback] = useState<string | null>(null);
-
-  const handleSubmitTeacherRequest = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!trName.trim() || !trEmail.trim()) {
-      setTrFeedback(language === 'sw' ? 'Tafadhali jaza jina na barua pepe.' : 'Please enter name and email.');
-      return;
-    }
-    const res = submitTeacherAccessRequest({
-      name: trName.trim(),
-      email: trEmail.trim(),
-      phone: trPhone.trim(),
-      department: trDept,
-      subjects: trSubjects.split(',').map((s) => s.trim()).filter(Boolean),
-      notes: trNotes.trim(),
-    });
-    if (res.success) {
-      setTrFeedback(
-        language === 'sw'
-          ? '✅ Ombi lako limetumwa kwa Mkuu wa Shule (Admin). Utapewa email na nenosiri la kuingilia baada ya uhakiki.'
-          : '✅ Request submitted to Administrator. Login credentials will be issued upon review.'
-      );
-      setTimeout(() => {
-        setIsTeacherRequestOpen(false);
-        setTrFeedback(null);
-      }, 3500);
-    } else {
-      setTrFeedback(res.error || 'Hitilafu imetokea.');
-    }
-  };
+  // Demo Accounts Drawer
+  const [showDemoAccounts, setShowDemoAccounts] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +83,11 @@ export const LoginPage: React.FC = () => {
               : 'Too many failed login attempts. Please wait a few moments before trying again.'
           );
         } else {
-          setErrorMessage(err || (language === 'sw' ? 'Username au Nenosiri si sahihi.' : 'Invalid Username or Password.'));
+          setErrorMessage(
+            language === 'sw'
+              ? 'Username au Nenosiri si sahihi.'
+              : 'Invalid Username or Password.'
+          );
         }
       }
     } catch (err: any) {
@@ -186,6 +153,21 @@ export const LoginPage: React.FC = () => {
       });
     } finally {
       setIsSendingReset(false);
+    }
+  };
+
+  const handleQuickDemoLogin = async (role: 'student' | 'teacher' | 'parent' | 'admin') => {
+    setIsSubmitting(true);
+    setErrorMessage('');
+    try {
+      const res = await loginWithDemoRole(role);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Kuingia kumeshindwa');
+      }
+    } catch (e: any) {
+      setErrorMessage('Hitilafu ya kuingia');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -375,100 +357,60 @@ export const LoginPage: React.FC = () => {
             <span>Endelea na Google</span>
           </button>
 
-          {/* Secure Production Badge */}
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Uthibitisho Salama wa Supabase &amp; NECTA S0486</span>
-          </div>
+          {/* Quick Demo Accounts Drawer Trigger */}
+          <button
+            type="button"
+            onClick={() => setShowDemoAccounts(!showDemoAccounts)}
+            className="neumorph-pill-small px-4 py-2.5 flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-800 cursor-pointer"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+            <span>Akaunti za Majaribio (Demo Roles)</span>
+          </button>
         </div>
 
-        {/* FIRST-TIME USER / NO ACCOUNT DIRECT GUIDANCE (Prompt requirements) */}
-        <div className="w-full max-w-xl mt-6 p-4 sm:p-5 rounded-3xl neumorph-canvas shadow-[10px_10px_25px_#1e293b15,-5px_-5px_15px_#ffffff] space-y-3.5 animate-in fade-in duration-700">
-          <div className="text-center">
-            <span className="text-xs font-black text-slate-800 tracking-wide uppercase">
-              {language === 'sw' ? 'Hujawahi Kuingia au Huna Akaunti Bado?' : 'First Time Here or Need an Account?'}
-            </span>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {language === 'sw'
-                ? 'Mfumo unatambua watumiaji kulingana na vitengo rasmi:'
-                : 'The system directs you according to official school roles:'}
-            </p>
+        {/* Demo Accounts Panel */}
+        {showDemoAccounts && (
+          <div className="mt-4 p-4 rounded-3xl bg-[#ebf0f7] shadow-[inset_4px_4px_8px_#cad5e2,inset_-4px_-4px_8px_#ffffff] max-w-md w-full animate-in zoom-in-95 duration-200">
+            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 text-center">
+              Chagua Jukumu la Kuingia Haraka:
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('admin')}
+                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-emerald-700 cursor-pointer"
+              >
+                👑 Mkuu wa Shule / Admin
+                <span className="block text-[10px] text-slate-500 font-normal">Udhibiti Kamili</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('teacher')}
+                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-blue-700 cursor-pointer"
+              >
+                👨‍🏫 Mwalimu / Academic
+                <span className="block text-[10px] text-slate-500 font-normal">Matokeo &amp; Vipindi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('parent')}
+                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-amber-700 cursor-pointer"
+              >
+                👨‍👩‍👧 Mzazi / Mlezi
+                <span className="block text-[10px] text-slate-500 font-normal">Ripoti za Mwanafunzi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('student')}
+                className="neumorph-pill-small p-2.5 text-left text-xs font-bold text-slate-800 hover:text-purple-700 cursor-pointer"
+              >
+                🎓 Mwanafunzi
+                <span className="block text-[10px] text-slate-500 font-normal">Matokeo &amp; Notisi</span>
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left">
-            {/* 1. Student Admission */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView('website');
-                window.location.hash = '#apply';
-              }}
-              className="p-3.5 rounded-2xl bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-200 transition-all cursor-pointer flex flex-col justify-between group shadow-xs"
-            >
-              <div>
-                <div className="flex items-center gap-1.5 text-emerald-900 font-black text-xs mb-1">
-                  <span className="text-sm">🎓</span>
-                  <span>{language === 'sw' ? 'Mwanafunzi Mpya' : 'New Student'}</span>
-                </div>
-                <p className="text-[11px] text-emerald-950/80 leading-snug">
-                  {language === 'sw'
-                    ? 'Jaza Fomu ya Kujiunga (Student Admission Form 2026).'
-                    : 'Fill official student admission form for 2026.'}
-                </p>
-              </div>
-              <span className="mt-2.5 text-[10px] font-black text-emerald-700 group-hover:underline">
-                {language === 'sw' ? 'Fungua Admission →' : 'Open Admission →'}
-              </span>
-            </button>
-
-            {/* 2. Teacher Request */}
-            <button
-              type="button"
-              onClick={() => {
-                setTrFeedback(null);
-                setIsTeacherRequestOpen(true);
-              }}
-              className="p-3.5 rounded-2xl bg-amber-50/90 hover:bg-amber-100 border border-amber-200 transition-all cursor-pointer flex flex-col justify-between group shadow-xs"
-            >
-              <div>
-                <div className="flex items-center gap-1.5 text-amber-900 font-black text-xs mb-1">
-                  <span className="text-sm">👨‍🏫</span>
-                  <span>{language === 'sw' ? 'Mwalimu / Staff' : 'Teacher / Staff'}</span>
-                </div>
-                <p className="text-[11px] text-amber-950/80 leading-snug">
-                  {language === 'sw'
-                    ? 'Mkuu wa Shule (Admin) ndiye anayekupa email & nenosiri.'
-                    : 'Admin provisions your official email & initial password.'}
-                </p>
-              </div>
-              <span className="mt-2.5 text-[10px] font-black text-amber-800 group-hover:underline">
-                {language === 'sw' ? 'Omba kwa Admin →' : 'Request Account →'}
-              </span>
-            </button>
-
-            {/* 3. Parent Sign Up */}
-            <button
-              type="button"
-              onClick={() => setActiveView('signup')}
-              className="p-3.5 rounded-2xl bg-blue-50/90 hover:bg-blue-100 border border-blue-200 transition-all cursor-pointer flex flex-col justify-between group shadow-xs"
-            >
-              <div>
-                <div className="flex items-center gap-1.5 text-blue-900 font-black text-xs mb-1">
-                  <span className="text-sm">👨‍👩‍👧</span>
-                  <span>{language === 'sw' ? 'Mzazi / Mlezi' : 'Parent / Guardian'}</span>
-                </div>
-                <p className="text-[11px] text-blue-950/80 leading-snug">
-                  {language === 'sw'
-                    ? 'Jisajili ukiwa na Student ID, Namba na Mwaka 2026.'
-                    : 'Sign up with Student ID and Academic Year 2026.'}
-                </p>
-              </div>
-              <span className="mt-2.5 text-[10px] font-black text-blue-700 group-hover:underline">
-                {language === 'sw' ? 'Jisajili Sasa →' : 'Sign Up Now →'}
-              </span>
-            </button>
-          </div>
-        </div>
       </main>
 
       {/* Footer */}
@@ -561,153 +503,6 @@ export const LoginPage: React.FC = () => {
               )}
             </div>
 
-          </div>
-        </div>
-      )}
-
-      {/* Teacher Request Modal on LoginPage */}
-      {isTeacherRequestOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg neumorph-canvas rounded-3xl p-6 shadow-2xl text-slate-800 relative">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-300">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">👨‍🏫</span>
-                <h3 className="text-sm font-black text-slate-800">
-                  {language === 'sw' ? 'Ombi la Akaunti ya Mwalimu kwa Mkuu wa Shule' : 'Teacher Access Request to Admin'}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsTeacherRequestOpen(false);
-                  setTrFeedback(null);
-                }}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="pt-4">
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                {language === 'sw'
-                  ? 'Kwa mujibu wa taratibu za kiusalama, akaunti za walimu hupewa barua pepe na nenosiri la kuingilia na Mkuu wa Shule (Admin) pekee. Tuma taarifa zako hapa chini:'
-                  : 'According to school security protocols, teachers are issued official login credentials directly by the Administrator. Submit your details below:'}
-              </p>
-
-              {trFeedback && (
-                <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-800 font-semibold">
-                  {trFeedback}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmitTeacherRequest} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">
-                    {language === 'sw' ? 'Jina Kamili la Mwalimu *' : 'Teacher Full Name *'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={trName}
-                    onChange={(e) => setTrName(e.target.value)}
-                    placeholder="mf. Mwl. Yohana Bahati"
-                    className="neumorph-input w-full h-10 px-3.5"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-700 font-bold mb-1">
-                      {language === 'sw' ? 'Barua Pepe Rasmi *' : 'Email Address *'}
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={trEmail}
-                      onChange={(e) => setTrEmail(e.target.value)}
-                      placeholder="mwalimu@uombonisec.ac.tz"
-                      className="neumorph-input w-full h-10 px-3.5"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 font-bold mb-1">
-                      {language === 'sw' ? 'Nambari ya Simu' : 'Phone Number'}
-                    </label>
-                    <input
-                      type="tel"
-                      value={trPhone}
-                      onChange={(e) => setTrPhone(e.target.value)}
-                      placeholder="+255 7XX XXX XXX"
-                      className="neumorph-input w-full h-10 px-3.5 font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-700 font-bold mb-1">
-                      {language === 'sw' ? 'Idara' : 'Department'}
-                    </label>
-                    <select
-                      value={trDept}
-                      onChange={(e) => setTrDept(e.target.value)}
-                      className="neumorph-input w-full h-10 px-3 font-semibold"
-                    >
-                      <option value="Sayansi">Sayansi (Science)</option>
-                      <option value="Lugha">Lugha (Languages)</option>
-                      <option value="Sanaa na Jamii">Sanaa na Jamii (Humanities)</option>
-                      <option value="Biashara">Biashara (Commercial)</option>
-                      <option value="Utawala na Malezi">Utawala na Malezi</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 font-bold mb-1">
-                      {language === 'sw' ? 'Masomo Unayofundisha' : 'Subjects'}
-                    </label>
-                    <input
-                      type="text"
-                      value={trSubjects}
-                      onChange={(e) => setTrSubjects(e.target.value)}
-                      placeholder="mf. Chemistry, Biology"
-                      className="neumorph-input w-full h-10 px-3.5"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">
-                    {language === 'sw' ? 'Ufafanuzi wa Majukumu / Barua' : 'Notes'}
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={trNotes}
-                    onChange={(e) => setTrNotes(e.target.value)}
-                    placeholder="Maelezo ya ziada kwa Mkuu wa Shule..."
-                    className="neumorph-input w-full p-2.5 resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2.5 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsTeacherRequestOpen(false);
-                      setTrFeedback(null);
-                    }}
-                    className="neumorph-pill-small px-4 py-2 font-semibold text-slate-600 cursor-pointer"
-                  >
-                    {language === 'sw' ? 'Ghairi' : 'Cancel'}
-                  </button>
-                  <button
-                    type="submit"
-                    className="neumorph-btn px-5 py-2 font-black text-[#2563eb] cursor-pointer"
-                  >
-                    {language === 'sw' ? 'Tuma Ombi kwa Admin' : 'Submit to Admin'}
-                  </button>
-                </div>
-              </form>
-            </div>
           </div>
         </div>
       )}

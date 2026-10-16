@@ -84,6 +84,20 @@ export interface AcademicDirective {
   status: 'active' | 'closed' | 'archived';
 }
 
+export interface ExamTypeConfig {
+  id: string;
+  name: string; // e.g. "NECTA Mock 2025", "Mid-Term Exam 2026", "Jaribio la Mwezi Machi", "Mtihani wa Muhula (Terminal)"
+  category: 'NECTA' | 'Mock' | 'Mid-Term' | 'Terminal' | 'Annual' | 'Monthly Test' | 'Joint / Pre-NECTA' | 'Other';
+  targetForm: 'ALL' | 'Form 1' | 'Form 2' | 'Form 3' | 'Form 4' | string;
+  academicYear: string; // e.g. "2025/2026"
+  term: 'Muhula wa 1 (Term 1)' | 'Muhula wa 2 (Term 2)' | 'Mwaka Mzima' | string;
+  status: 'active' | 'upcoming' | 'closed' | 'archived';
+  dateCreated?: string;
+  createdBy?: string;
+  description?: string;
+  isCurrentForEntry?: boolean;
+}
+
 export interface NewsItem {
   id: string;
   titleSw: string;
@@ -380,10 +394,7 @@ export interface OnlineApplication {
   studentName: string;
   gender: 'M' | 'F';
   dob?: string;
-  dateOfBirth?: string;
-  nationality?: string;
   applyingFor: 'Form 1' | 'Form 2 Transfer' | 'Form 3 Transfer' | 'Pre-Form 1' | string;
-  academicYear?: string; // e.g. '2026/2027'
   entryType: 'Bweni (Boarding)' | 'Kutwa (Day)' | string;
   previousSchool?: string;
   premNumber?: string; // Namba ya PREM au Namba ya Mtihani wa Darasa la Saba (Primary PREM or PSLE Examination Number)
@@ -392,21 +403,6 @@ export interface OnlineApplication {
   parentPhone: string;
   parentEmail?: string;
   parentAddress?: string;
-  parentRelationship?: string; // Father, Mother, Guardian
-  documents?: {
-    birthCertificateName?: string;
-    psleResultSlipName?: string;
-    previousSchoolReportName?: string;
-    medicalReportName?: string;
-  };
-  medicalInfo?: {
-    allergies?: string;
-    chronicConditions?: string;
-    regularMedication?: string;
-    bloodGroup?: string;
-    emergencyContact?: string;
-  };
-  parentConsentDeclared?: boolean;
   status: 'Inasubiri Uhakiki' | 'Imethibitishwa' | 'Inashughulikiwa' | 'Imekataliwa';
   submissionDate: string;
   adminNotes?: string;
@@ -605,100 +601,6 @@ export interface FirestoreSchoolSettings {
   logoURL?: string;
   motto: string;
   website: string;
-}
-
-// ==========================================
-// 1. SCHOOL VIDEO MANAGEMENT SYSTEM TYPES
-// ==========================================
-export interface SchoolVideo {
-  id: string;
-  title: string;
-  titleSw?: string;
-  description: string;
-  descriptionSw?: string;
-  youtubeUrl: string;
-  videoId: string;
-  embedUrl: string;
-  thumbnailUrl: string;
-  published: boolean;
-  featured?: boolean;
-  category?: 'Academic' | 'Campus Life' | 'Events & Graduation' | 'Sports' | 'Mass & Spiritual' | string;
-  publishedDate: string; // ISO string or YYYY-MM-DD
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-}
-
-// ==========================================
-// 4. OFFICIAL MEDICAL EXAMINATION FORM TYPES
-// ==========================================
-export interface StudentMedicalRecord {
-  applicationNumber: string;
-  studentName: string;
-  dateOfBirth?: string;
-  gender: 'M' | 'F';
-  bloodGroup?: string;
-  // Parent/Guardian health statement
-  knownAllergies?: string;
-  chronicConditions?: string; // Asthma, Epilepsy, Sickle Cell, etc.
-  pastSurgeries?: string;
-  regularMedications?: string;
-  dietaryRestrictions?: string;
-  physicalDisabilities?: string;
-  parentConsentConfirmed?: boolean;
-  parentConsentDate?: string;
-  // Healthcare Professional Clinical Examination
-  clinicalExam?: {
-    isClinicianCertified: boolean;
-    clinicianName: string;
-    clinicianQualification: string; // e.g. MD, AMO, CO
-    facilityName: string; // Hospital / Health Centre
-    facilityRegistrationNo?: string;
-    examinationDate: string;
-    heightCm?: number;
-    weightKg?: number;
-    bloodPressure?: string;
-    pulseRate?: string;
-    visionLeft?: string;
-    visionRight?: string;
-    hearingCondition?: string;
-    chestAndLungs?: string;
-    cardiovascularSystem?: string;
-    abdomen?: string;
-    skinCondition?: string;
-    mentalHealthAssessment?: string;
-    clinicalFitnessRecommendation: 'FIT_FOR_BOARDING' | 'FIT_WITH_CARE_RESTRICTIONS' | 'REQUIRES_FURTHER_INVESTIGATION';
-    specialClinicalNotes?: string;
-    stampAndSignatureVerified: boolean;
-  };
-  confidentialityNote?: string;
-}
-
-// ==========================================
-// 5. OFFICIAL STUDENT ADMISSION DOCUMENTS
-// ==========================================
-export interface AdmissionDocument {
-  id: string;
-  code: string; // e.g. "UOM-ADM-01"
-  titleSw: string;
-  titleEn: string;
-  descriptionSw: string;
-  descriptionEn: string;
-  category: 'admission' | 'medical' | 'parent' | 'joining' | 'rules' | 'checklist' | 'other';
-  academicYear: string; // e.g. "2026/2027"
-  fileType: 'PDF' | 'DOCX' | 'IMAGE';
-  fileSize: string; // e.g. "245 KB"
-  fileName: string;
-  fileData?: string; // base64 data URL for uploaded files
-  downloadType: 'generator' | 'uploaded';
-  generatorKey?: 'admission_form' | 'medical_form' | 'parent_form' | 'joining_instructions' | 'school_rules' | 'checklist';
-  published: boolean;
-  downloadsCount: number;
-  featured?: boolean;
-  order?: number;
-  uploadedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 

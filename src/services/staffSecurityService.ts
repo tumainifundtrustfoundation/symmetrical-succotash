@@ -24,34 +24,6 @@ export const AUTHORIZED_STAFF_DIRECTORY: Record<
   }
 > = {
   // Super Admin & Headmaster
-  'uombiniss.sc.tz@gmail.com': {
-    role: 'admin',
-    name: 'Uomboni Secondary School (Super Admin)',
-    titleSw: 'Mkuu wa Shule & Msimamizi Mkuu wa Mfumo',
-    titleEn: 'Headmaster & School Administrator',
-    additionalRoles: ['academic_master', 'bursar', 'teacher'],
-  },
-  'admin@uomboniss.sc.tz': {
-    role: 'admin',
-    name: 'Msimamizi Mkuu wa Shule (Admin)',
-    titleSw: 'Msimamizi wa Mfumo wa Shule (Administrator)',
-    titleEn: 'System Administrator',
-    additionalRoles: ['academic_master', 'bursar', 'teacher'],
-  },
-  'admin': {
-    role: 'admin',
-    name: 'Msimamizi Mkuu (Admin Console)',
-    titleSw: 'Msimamizi Mkuu wa Mfumo',
-    titleEn: 'Super Administrator',
-    additionalRoles: ['academic_master', 'bursar', 'teacher'],
-  },
-  'uombonisec@gmail.com': {
-    role: 'admin',
-    name: 'Ofisi ya Utawala Uomboni',
-    titleSw: 'Ofisi ya Mkuu wa Shule & Utawala',
-    titleEn: 'School Administration Office',
-    additionalRoles: ['academic_master', 'bursar', 'teacher'],
-  },
   'tumainifundtrustfoundation@gmail.com': {
     role: 'admin',
     name: 'Tumaini Fund Trust Foundation',

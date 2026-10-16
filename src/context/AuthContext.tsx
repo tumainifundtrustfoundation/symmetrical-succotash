@@ -11,6 +11,7 @@ import {
   loginWithEmailPassword,
   registerWithEmailPassword,
   signInWithGoogle,
+  signInAsDemoRole,
   logOutFromFirebase,
   sendResetPassword,
   resendVerificationEmail,
@@ -19,18 +20,7 @@ import {
   handleFirestoreError,
   OperationType,
 } from '../lib/firebase';
-import {
-  isSupabaseConfigured,
-  supabase,
-  loginWithSupabaseAuth,
-  registerWithSupabaseAuth,
-  sendSupabasePasswordReset,
-  signOutFromSupabase,
-  getSupabaseProfile,
-  SupabaseUserProfile,
-} from '../lib/supabase';
 import { doc, updateDoc, collection, getDocs } from 'firebase/firestore';
-import { getTeacherAuthProfile, verifyTeacherIndividualLogin } from '../services/teacherAuthDirectory';
 
 export interface AuthMessage {
   type: 'success' | 'error' | 'info';
@@ -54,7 +44,7 @@ interface AuthContextType {
     email: string;
     phone?: string;
     password: string;
-    role?: 'student' | 'parent';
+    role: 'student' | 'parent' | 'teacher' | 'staff';
   }) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogleAuth: (
     preferredRole?: UserRole,
@@ -75,33 +65,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authMessage, setAuthMessage] = useState<AuthMessage | null>(null);
-  const [activeView, setActiveView] = useState<
-    'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome' | 'admission-documents'
-  >(() => {
+  const [activeView, setActiveView] = useState<'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome' | 'admission-documents'>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       const path = window.location.pathname.toLowerCase();
-      if (
-        path === '/admission-documents' ||
-        path === '/admissions' ||
-        hash === '#admission-documents' ||
-        hash === '#admissions' ||
-        hash === '#admission' ||
-        hash === '#kujiunga' ||
-        hash === '#fomu'
-      ) {
-        return 'admission-documents';
-      }
-      if (path === '/welcome' || hash === '#welcome' || hash === '#karibu') return 'welcome';
-      if (path === '/login' || hash === '#login' || hash === '#ingia') return 'login';
-      if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') return 'signup';
-      if (path === '/forgot-password' || hash === '#forgot-password') return 'forgot-password';
-      if (path === '/verify-email' || hash === '#verify-email') return 'verify-email';
-      if (path.includes('-dashboard') || hash === '#portal' || hash === '#dashboard') return 'portal';
+      if (path === '/welcome' || hash === '#welcome') return 'welcome';
+      if (path === '/login' || hash === '#login') return 'login';
+      if (path === '/signup' || hash === '#signup') return 'signup';
+      if (hash === '#admission-documents' || hash === '#admissions-documents' || hash === '#admission-docs') return 'admission-documents';
       const savedView = sessionStorage.getItem('uomboni_view');
-      if (savedView === 'portal' && localStorage.getItem('uomboni_active_session')) {
-        return 'portal';
-      }
+      if (!savedView && !hash) return 'welcome';
     }
     return 'website';
   });
@@ -113,9 +86,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
 
-      if (path === '/welcome' || hash === '#welcome' || hash === '#karibu') {
+      if (path === '/welcome' || hash === '#welcome') {
         setActiveView('welcome');
-      } else if (path === '/login' || hash === '#login' || hash === '#ingia') {
+      } else if (path === '/login' || hash === '#login') {
         setActiveView('login');
       } else if (path === '/signup' || path === '/register' || hash === '#signup' || hash === '#register') {
         setActiveView('signup');
@@ -123,16 +96,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setActiveView('forgot-password');
       } else if (path === '/verify-email' || hash === '#verify-email') {
         setActiveView('verify-email');
-      } else if (
-        path === '/admission-documents' ||
-        path === '/admissions' ||
-        hash === '#admission-documents' ||
-        hash === '#admissions' ||
-        hash === '#admission' ||
-        hash === '#kujiunga' ||
-        hash === '#fomu'
-      ) {
-        setActiveView('admission-documents');
       } else if (
         path === '/student-dashboard' ||
         path === '/parent-dashboard' ||
@@ -155,38 +118,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  // Synchronize authentication state from Firebase with safety timeout
+  // Synchronize authentication state from Firebase
   useEffect(() => {
-    let timerCleared = false;
-    // Guaranteed safety timeout: Never block user screen for more than 500ms
-    const safetyTimeout = setTimeout(() => {
-      if (!timerCleared) {
-        setLoading(false);
-      }
-    }, 500);
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      timerCleared = true;
-      clearTimeout(safetyTimeout);
       setUser(firebaseUser);
       if (firebaseUser) {
-        // Sync profile asynchronously without stalling the page render
-        syncUserProfile(firebaseUser)
-          .then((profile) => {
-            setUserProfile(profile);
-            setActiveRoleDashboard(profile.role);
-            try {
-              localStorage.setItem('uomboni_active_session', JSON.stringify({ user: firebaseUser, profile }));
-            } catch (e) {}
-            // If in an auth login/signup screen, transition to portal
-            setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'portal' : prev));
-          })
-          .catch((err) => {
-            console.warn("Async user profile sync note:", err?.message || err);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
+        try {
+          const profile = await syncUserProfile(firebaseUser);
+          setUserProfile(profile);
+          setActiveRoleDashboard(profile.role);
+          try {
+            localStorage.setItem('uomboni_active_session', JSON.stringify({ user: firebaseUser, profile }));
+          } catch (e) {}
+          // If in an auth screen, transition to portal
+          setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'portal' : prev));
+        } catch (err) {
+          console.error("Error setting up user profile:", err);
+        }
       } else {
         // Fallback to local session cache if present
         try {
@@ -206,22 +154,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (e) {
           setUserProfile(null);
         }
-        setLoading(false);
       }
+      setLoading(false);
     });
 
-    return () => {
-      clearTimeout(safetyTimeout);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   // Update browser history when view changes
-  const handleSetActiveView = (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website' | 'welcome') => {
+  const handleSetActiveView = (view: 'login' | 'signup' | 'forgot-password' | 'verify-email' | 'portal' | 'website') => {
     setActiveView(view);
-    try {
-      sessionStorage.setItem('uomboni_view', view);
-    } catch (e) {}
     if (view === 'website') {
       window.history.pushState(null, '', '/');
     } else if (view === 'portal') {
@@ -236,198 +178,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     setAuthMessage(null);
     try {
-      const cleanEmail = email.trim();
-      const lowerEmail = cleanEmail.toLowerCase();
-      const lowerPass = password.trim().toLowerCase();
-
-      // Master Admin Passcodes accepted for School Leadership & Administration
-      const validAdminPins = [
-        'admin2026',
-        'uomboni2026',
-        'uomboni@2026',
-        'uomboni-admin-2026',
-        'uomboni-2026-hq',
-        '2026-hq-admin',
-        '0486-hq',
-        'admin2025',
-        'uomboni2025',
-        'admin',
-        'uomboni',
-        '782558',
-      ];
-
-      const isAdminIdentifier =
-        [
-          'uombiniss.sc.tz@gmail.com',
-          'admin@uomboniss.sc.tz',
-          'admin@uombonisecondary.ac.tz',
-          'admin',
-          'uombonisec@gmail.com',
-          'tumainifundtrustfoundation@gmail.com',
-          'adolphmassawe@gmail.com',
-          'headmaster@uombonisecondary.ac.tz',
-        ].includes(lowerEmail) || preferredRole === 'admin';
-
-      if (isAdminIdentifier && validAdminPins.includes(lowerPass)) {
-        const now = new Date().toISOString();
-        const adminProfile: UserProfile = {
-          uid: 'staff-admin-super',
-          email: cleanEmail.includes('@') ? cleanEmail : 'uombiniss.sc.tz@gmail.com',
-          fullName: 'Br. Adolph Massawe / Mkuu wa Shule & Msimamizi Mkuu',
-          phone: '+255 782 558 127',
-          role: 'admin',
-          photoURL: '/media/media_1.webp',
-          school: 'UOMBONI SECONDARY SCHOOL',
-          createdAt: now,
-          updatedAt: now,
-          lastLogin: now,
-          emailVerified: true,
-        };
-
-        const adminUser: User = {
-          uid: 'staff-admin-super',
-          email: adminProfile.email,
-          displayName: adminProfile.fullName,
-          photoURL: adminProfile.photoURL,
-          emailVerified: true,
-        } as unknown as User;
-
-        setUser(adminUser);
-        setUserProfile(adminProfile);
-        setActiveRoleDashboard('admin');
-        setActiveView('portal');
-        try {
-          localStorage.setItem('uomboni_active_session', JSON.stringify({ user: adminUser, profile: adminProfile }));
-          localStorage.setItem('uomboni_admin_google_user', JSON.stringify({ email: adminProfile.email, displayName: adminProfile.fullName, photoURL: adminProfile.photoURL }));
-          sessionStorage.setItem('uomboni_admin_logged', 'true');
-        } catch (e) {}
-
-        setAuthMessage({
-          type: 'success',
-          text: `Karibu, Mkuu wa Shule! Mfumo umekutambua kama Msimamizi Mkuu wa Shule (ADMIN).`,
-        });
-        return { success: true };
-      }
-
-      // 1. Direct Teacher / Staff / Leadership Recognition & Individual Auth
-      // (Prompt: Admin assigns email & initial password to each teacher, system auto-identifies role)
-      const teacherProfile = getTeacherAuthProfile(cleanEmail);
-      if (teacherProfile) {
-        const teacherAuthRes = verifyTeacherIndividualLogin(teacherProfile.id, password);
-        if (teacherAuthRes.success) {
-          // Identify role automatically:
-          // Academic Master -> academic_master
-          // Bursar -> bursar
-          // Headmaster / Administrator -> admin
-          // Teacher -> teacher
-          let detectedRole: UserRole = 'teacher';
-          const roleLower = teacherProfile.role.toLowerCase();
-          if (roleLower.includes('taaluma') || roleLower.includes('academic') || teacherProfile.id === 'tch-003') {
-            detectedRole = 'academic_master';
-          } else if (roleLower.includes('bursar') || roleLower.includes('hasibu') || roleLower.includes('accountant') || teacherProfile.id === 'tch-002') {
-            detectedRole = 'bursar';
-          } else if (
-            roleLower.includes('mkuu wa shule') ||
-            roleLower.includes('headmaster') ||
-            roleLower.includes('admin') ||
-            teacherProfile.id === 'tch-001' ||
-            teacherProfile.id === 'tch-admin' ||
-            teacherProfile.id === 'tch-admin-desk'
-          ) {
-            detectedRole = 'admin';
-          }
-
-          const now = new Date().toISOString();
-          const mappedProfile: UserProfile = {
-            uid: `staff-${teacherProfile.id}`,
-            email: teacherProfile.email,
-            fullName: teacherProfile.name,
-            phone: teacherProfile.phone || '',
-            role: detectedRole,
-            photoURL: null,
-            school: 'UOMBONI SECONDARY SCHOOL',
-            createdAt: now,
-            updatedAt: now,
-            lastLogin: now,
-            emailVerified: true,
-          };
-
-          const mappedUser: User = {
-            uid: `staff-${teacherProfile.id}`,
-            email: teacherProfile.email,
-            displayName: teacherProfile.name,
-            photoURL: null,
-            emailVerified: true,
-          } as unknown as User;
-
-          setUser(mappedUser);
-          setUserProfile(mappedProfile);
-          setActiveRoleDashboard(detectedRole);
-          setActiveView('portal');
-          try {
-            localStorage.setItem('uomboni_active_session', JSON.stringify({ user: mappedUser, profile: mappedProfile }));
-          } catch (e) {}
-
-          setAuthMessage({
-            type: 'success',
-            text: `Karibu, ${teacherProfile.name}! Mfumo umekutambua: ${teacherProfile.role} (${detectedRole.toUpperCase()}).`,
-          });
-          return { success: true };
-        } else {
-          const err =
-            teacherAuthRes.errorSw ||
-            teacherAuthRes.error ||
-            'Nenosiri/PIN ya mwalimu si sahihi. Wasiliana na Admin kureset ikiwa umesahau.';
-          setAuthMessage({ type: 'error', text: err });
-          return { success: false, error: err };
-        }
-      }
-
-      // 2. Supabase / Firebase Auth for Students, Parents and Registered Users
-      if (isSupabaseConfigured()) {
-        const res = await loginWithSupabaseAuth(cleanEmail, password);
-        if (res.success && res.user) {
-          const mappedRole: UserRole = (res.profile?.role as UserRole) || preferredRole || 'student';
-          const mappedProfile: UserProfile = {
-            uid: res.user.id,
-            email: res.user.email || cleanEmail,
-            fullName: res.profile?.full_name || cleanEmail.split('@')[0],
-            phone: res.profile?.phone || '',
-            role: mappedRole,
-            photoURL: res.profile?.avatar_url || null,
-            school: 'UOMBONI SECONDARY SCHOOL',
-            createdAt: res.profile?.created_at || new Date().toISOString(),
-            updatedAt: res.profile?.updated_at || new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            emailVerified: Boolean(res.user.email_confirmed_at),
-          };
-
-          const mappedUser: User = {
-            uid: res.user.id,
-            email: res.user.email || cleanEmail,
-            displayName: mappedProfile.fullName,
-            photoURL: mappedProfile.photoURL,
-            emailVerified: Boolean(res.user.email_confirmed_at),
-          } as unknown as User;
-
-          setUser(mappedUser);
-          setUserProfile(mappedProfile);
-          setActiveRoleDashboard(mappedRole);
-          setActiveView('portal');
-          try {
-            localStorage.setItem('uomboni_active_session', JSON.stringify({ user: mappedUser, profile: mappedProfile }));
-          } catch (e) {}
-
-          setAuthMessage({
-            type: 'success',
-            text: `Karibu tena, ${mappedProfile.fullName}! (${mappedRole.toUpperCase()}).`,
-          });
-          return { success: true };
-        }
-      }
-
-      // 3. Fallback to Firebase Auth
-      const res = await loginWithEmailPassword(cleanEmail, password, preferredRole);
+      const res = await loginWithEmailPassword(email.trim(), password, preferredRole);
       if (res.success && res.user && res.profile) {
         setUser(res.user);
         setUserProfile(res.profile);
@@ -438,20 +189,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (e) {}
         setAuthMessage({
           type: 'success',
-          text: `Karibu tena, ${res.profile.fullName}! (${res.profile.role.toUpperCase()}).`,
+          text: `Karibu tena, ${res.profile.fullName}! Umeingia kikamilifu kwenye Portal ya Uomboni (${res.profile.role.toUpperCase()}).`,
         });
         return { success: true };
       }
-
-      // 4. Intelligent Guidance for Unregistered / First-time Users
-      const notFoundMessage =
-        'Akaunti hii haijasajiliwa au nenosiri si sahihi.\n' +
-        '• Kama wewe ni Mwanafunzi: jaza Fomu ya Kujiunga (Student Admission)\n' +
-        '• Kama wewe ni Mwalimu: omba akaunti kwa Mkuu wa Shule (Admin)\n' +
-        '• Kama wewe ni Mzazi: jisajili ukiwa na Student ID, Namba na Mwaka 2026 wa mwanafunzi wako.';
-      
-      setAuthMessage({ type: 'error', text: notFoundMessage });
-      return { success: false, error: notFoundMessage };
+      const err = res.error || 'Imeshindwa kuingia.';
+      setAuthMessage({ type: 'error', text: err });
+      return { success: false, error: err };
     } catch (e: any) {
       const err = formatAuthError(e);
       setAuthMessage({ type: 'error', text: err });
@@ -466,64 +210,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     email: string;
     phone?: string;
     password: string;
-    role: 'student' | 'parent';
+    role: 'student' | 'parent' | 'teacher' | 'staff';
   }) => {
     setLoading(true);
     setAuthMessage(null);
     try {
-      // Rule 3: Enforce that public signup only allows 'student' or 'parent'
-      const safeRole: 'student' | 'parent' = data.role === 'parent' ? 'parent' : 'student';
-
-      if (isSupabaseConfigured()) {
-        const res = await registerWithSupabaseAuth({
-          fullName: data.fullName,
-          email: data.email.trim(),
-          phone: data.phone,
-          password: data.password,
-          role: safeRole,
-        });
-
-        if (res.success && res.user) {
-          const profile: UserProfile = {
-            uid: res.user.id,
-            email: data.email.trim(),
-            fullName: data.fullName,
-            phone: data.phone || '',
-            role: safeRole,
-            photoURL: null,
-            school: 'UOMBONI SECONDARY SCHOOL',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            emailVerified: false,
-          };
-          const mappedUser: User = {
-            uid: res.user.id,
-            email: data.email.trim(),
-            displayName: data.fullName,
-            emailVerified: false,
-          } as unknown as User;
-
-          setUser(mappedUser);
-          setUserProfile(profile);
-          setActiveRoleDashboard(safeRole);
-          setActiveView('verify-email');
-          setAuthMessage({
-            type: 'success',
-            text: 'Akaunti yako imeundwa kwenye Supabase! Tafadhali thibitisha barua pepe yako.',
-          });
-          return { success: true };
-        }
-        const err = res.error || 'Imeshindwa kuunda akaunti kwenye Supabase.';
-        setAuthMessage({ type: 'error', text: err });
-        return { success: false, error: err };
-      }
-
-      // Firebase registration fallback
       const res = await registerWithEmailPassword({
         ...data,
         email: data.email.trim(),
-        role: safeRole,
       });
       if (res.success && res.user && res.profile) {
         setUser(res.user);
@@ -582,11 +276,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Demo accounts removed in accordance with security policies
-  const loginWithDemoRole = async (_role: UserRole) => {
-    const errorMsg = 'Akaunti za majaribio (demo accounts) zimeondolewa kwa mujibu wa taratibu za kiusalama za Shule ya Sekondari Uomboni. Tafadhali tumia akaunti halisi iliyoidhinishwa.';
-    setAuthMessage({ type: 'error', text: errorMsg });
-    return { success: false, error: errorMsg };
+  const loginWithDemoRole = async (role: UserRole) => {
+    setLoading(true);
+    setAuthMessage(null);
+    try {
+      const res = await signInAsDemoRole(role);
+      if (res.success && res.user && res.profile) {
+        setUser(res.user);
+        setUserProfile(res.profile);
+        setActiveRoleDashboard(res.profile.role);
+        setActiveView('portal');
+        try {
+          localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
+        } catch (e) {}
+        setAuthMessage({
+          type: 'success',
+          text: `Umeingia kama ${res.profile.fullName} (${role.toUpperCase()}) - Uomboni Portal.`,
+        });
+        return { success: true };
+      }
+      return { success: false, error: 'Imeshindwa kuingia kama demo.' };
+    } catch (e: any) {
+      const err = formatAuthError(e);
+      setAuthMessage({ type: 'error', text: err });
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
@@ -595,16 +311,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         localStorage.removeItem('uomboni_active_session');
       } catch (e) {}
-      if (isSupabaseConfigured()) {
-        await signOutFromSupabase();
-      }
       await logOutFromFirebase();
       setUser(null);
       setUserProfile(null);
       handleSetActiveView('login');
       setAuthMessage({
         type: 'info',
-        text: 'Umefanikiwa kutoka kwenye mfumo wa Uomboni Secondary School.',
+        text: 'You have been successfully logged out. Umefanikiwa kutoka kwenye mfumo wa Uomboni.',
       });
     } catch (err) {
       console.error("Logout error:", err);
@@ -617,27 +330,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     setAuthMessage(null);
     try {
-      if (isSupabaseConfigured()) {
-        const res = await sendSupabasePasswordReset(email.trim());
-        if (res.success) {
-          setAuthMessage({
-            type: 'success',
-            text: 'Ikiwa barua pepe hii imesajiliwa Supabase, kiungo cha kurejesha nenosiri kimetumwa.',
-          });
-          return { success: true };
-        }
-        return { success: false, error: res.error };
-      }
-
       const res = await sendResetPassword(email.trim());
       if (res.success) {
         setAuthMessage({
           type: 'success',
-          text: 'Ikiwa barua pepe hii imesajiliwa, kiungo cha kurejesha nenosiri kimetumwa.',
+          text: 'Maelekezo ya kurejesha nenosiri yametumwa ikiwa akaunti hiyo ipo.',
         });
         return { success: true };
       }
-      return { success: false, error: res.error };
+      const err = res.error || 'Imeshindwa kutuma kiungo cha kurejesha nenosiri.';
+      setAuthMessage({ type: 'error', text: err });
+      return { success: false, error: err };
     } catch (e: any) {
       const err = formatAuthError(e);
       setAuthMessage({ type: 'error', text: err });

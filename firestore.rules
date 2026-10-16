@@ -28,7 +28,6 @@ service cloud.firestore {
       return (isAuthenticated() && (
         request.auth.uid == 'google-dev-user-tumaini' ||
         (request.auth.token.email != null && (
-          request.auth.token.email == 'yohanabahati665@gmail.com' ||
           request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
           request.auth.token.email == 'adolphmassawe@gmail.com' ||
           request.auth.token.email.matches('.*admin.*@uomboni.*')
@@ -39,7 +38,6 @@ service cloud.firestore {
     function isAcademicMaster() {
       return isAdmin() || hasRole('academic_master') || hasRole('teacher') || (
         isAuthenticated() && request.auth.token.email != null && (
-          request.auth.token.email == 'yohanabahati665@gmail.com' ||
           request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
           request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
           request.auth.token.email.matches('.*academic.*@uomboni.*')
@@ -235,6 +233,15 @@ service cloud.firestore {
     }
 
     // ====================================================
+    // EXAM TYPES (Aina za Mitihani)
+    // Read: all teachers & public; Write: Academic Master & Admin
+    // ====================================================
+    match /examTypes/{examTypeDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(examTypeDocId) && (isAcademicMaster() || isAdmin() || isStaff());
+    }
+
+    // ====================================================
     // SETTINGS (School Profile, Contacts, Registration)
     // Read: all; Write: admin
     // ====================================================
@@ -276,43 +283,6 @@ service cloud.firestore {
       allow get, list: if isAdmin();
       allow create: if (isAuthenticated() || request.auth == null) && isValidId(logId);
       allow update, delete: if false;
-    }
-
-    // ====================================================
-    // SCHOOL VIDEOS COLLECTION
-    // Public can view published videos; only admin can add/edit/delete
-    // ====================================================
-    match /school_videos/{videoId} {
-      allow get, list: if true;
-      allow create, update, delete: if isValidId(videoId) && isAdmin();
-    }
-
-    // ====================================================
-    // ONLINE ADMISSION APPLICATIONS & MEDICAL RECORDS
-    // Applicants can submit; only authorized staff/admin can review
-    // Sensitive medical records are strictly protected
-    // ====================================================
-    match /onlineApplications/{appId} {
-      allow get: if isStaff() || isAdmin();
-      allow list: if isStaff() || isAdmin();
-      allow create: if isValidId(appId);
-      allow update, delete: if isValidId(appId) && (isStaff() || isAdmin());
-    }
-
-    match /studentMedicalRecords/{recordId} {
-      allow get, list: if isStaff() || isAdmin();
-      allow create: if isValidId(recordId);
-      allow update, delete: if isValidId(recordId) && (isStaff() || isAdmin());
-    }
-
-    // ====================================================
-    // ADMISSION DOCUMENTS COLLECTION
-    // Public can read published admission documents
-    // Only verified administrators can upload, update, or delete
-    // ====================================================
-    match /admission_documents/{docId} {
-      allow get, list: if true;
-      allow create, update, delete: if isValidId(docId) && isAdmin();
     }
   }
 }

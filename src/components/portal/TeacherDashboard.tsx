@@ -15,14 +15,11 @@ import {
   Layers,
   FileBarChart,
   User,
-  Megaphone,
-  KeyRound,
-  AlertCircle,
+  Megaphone
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { SchoolLogo } from '../SchoolLogo';
-import { teacherChangePin } from '../../services/teacherAuthDirectory';
 
 export const TeacherDashboard: React.FC = () => {
   const { userProfile } = useAuth();
@@ -86,46 +83,6 @@ export const TeacherDashboard: React.FC = () => {
     setAssignmentCreated(true);
     setNewAssignment({ title: '', subject: 'Basic Mathematics', dueDate: '', instructions: '' });
     setTimeout(() => setAssignmentCreated(false), 3500);
-  };
-
-  // Change Password State & Handler (Prompt requirement: teacher can change their password)
-  const [oldPin, setOldPin] = useState('');
-  const [newPin, setNewPin] = useState('');
-  const [confirmNewPin, setConfirmNewPin] = useState('');
-  const [pinChangeMsg, setPinChangeMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPinChangeMsg(null);
-    if (!oldPin.trim() || !newPin.trim()) {
-      setPinChangeMsg({ type: 'error', text: 'Tafadhali jaza manenosiri yote.' });
-      return;
-    }
-    if (newPin !== confirmNewPin) {
-      setPinChangeMsg({ type: 'error', text: 'Manenosiri mapya hayalingani. Hakiki tena.' });
-      return;
-    }
-    if (newPin.length < 4) {
-      setPinChangeMsg({ type: 'error', text: 'Nenosiri jipya lazima liwe na herufi au tarakimu angalau 4.' });
-      return;
-    }
-
-    const teacherId = userProfile?.uid?.replace('staff-', '') || 'tch-003';
-    const res = teacherChangePin(teacherId, oldPin.trim(), newPin.trim());
-    if (res.success) {
-      setPinChangeMsg({
-        type: 'success',
-        text: 'Nenosiri lako la kuingilia portal limebadilishwa kikamilifu! Utalitumia wakati ujao unapoingia.',
-      });
-      setOldPin('');
-      setNewPin('');
-      setConfirmNewPin('');
-    } else {
-      setPinChangeMsg({
-        type: 'error',
-        text: res.errorSw || res.error || 'Nenosiri la sasa si sahihi. Wasiliana na Admin ikiwa umesahau.',
-      });
-    }
   };
 
   return (
@@ -347,113 +304,17 @@ export const TeacherDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* PROFILE & PASSWORD CHANGE TAB (Prompt requirement: teacher can change their password) */}
-      {activeTeacherTab === 'profile' && (
-        <div className="max-w-2xl bg-white border border-[#704214]/15 rounded-lg p-6 sm:p-8 space-y-6 shadow-xs">
-          <div className="flex items-center gap-4 pb-4 border-b border-[#704214]/10">
-            <div className="w-14 h-14 rounded-lg bg-[#704214] text-[#FFFFF0] font-bold text-xl flex items-center justify-center border border-[#C9A227]">
-              {(userProfile?.fullName || 'T').charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-[#704214]">{userProfile?.fullName || 'Mwalimu'}</h2>
-              <p className="text-xs text-[#704214]/70 font-mono">{userProfile?.email || 'mwalimu@uombonisec.ac.tz'}</p>
-              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[#F5EBD7] text-[#704214] border border-[#704214]/20 uppercase">
-                Kitengo: Mwalimu wa Shule / Staff (2026)
-              </span>
-            </div>
-          </div>
-
-          {/* Change Password / PIN Form */}
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-2 text-[#704214]">
-              <KeyRound className="w-5 h-5 text-[#C9A227]" />
-              <h3 className="text-sm font-bold">Badili Nenosiri / PIN Yako ya Kuingilia</h3>
-            </div>
-            <p className="text-xs text-[#704214]/70 leading-relaxed">
-              Mwalimu anaweza kubadili nenosiri alilopewa na Mkuu wa Shule (Admin) wakati wowote kwa usalama wa akaunti yake.
-            </p>
-
-            {pinChangeMsg && (
-              <div
-                className={`p-3 rounded-lg text-xs font-semibold flex items-start gap-2 ${
-                  pinChangeMsg.type === 'success'
-                    ? 'bg-emerald-50 border border-emerald-300 text-emerald-800'
-                    : 'bg-rose-50 border border-rose-300 text-rose-800'
-                }`}
-              >
-                {pinChangeMsg.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                )}
-                <span>{pinChangeMsg.text}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleChangePassword} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-semibold mb-1">Nenosiri / PIN ya Sasa *</label>
-                <input
-                  type="password"
-                  required
-                  value={oldPin}
-                  onChange={(e) => setOldPin(e.target.value)}
-                  placeholder="Weka nenosiri la sasa ulilopewa na admin"
-                  className="w-full px-3 py-2 border border-[#704214]/25 rounded bg-[#FFFFF0] text-[#704214] font-mono"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Nenosiri Jipya *</label>
-                  <input
-                    type="password"
-                    required
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value)}
-                    placeholder="Angalau herufi/namba 4"
-                    className="w-full px-3 py-2 border border-[#704214]/25 rounded bg-[#FFFFF0] text-[#704214] font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Thibitisha Nenosiri Jipya *</label>
-                  <input
-                    type="password"
-                    required
-                    value={confirmNewPin}
-                    onChange={(e) => setConfirmNewPin(e.target.value)}
-                    placeholder="Rudia nenosiri jipya"
-                    className="w-full px-3 py-2 border border-[#704214]/25 rounded bg-[#FFFFF0] text-[#704214] font-mono"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-[#704214] text-white font-bold rounded hover:bg-[#58330F] transition-colors cursor-pointer shadow-xs flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Hifadhi Nenosiri Jipya</span>
-              </button>
-            </form>
-          </div>
+      {/* TIMETABLE / OTHER TABS */}
+      {activeTeacherTab !== 'attendance' && activeTeacherTab !== 'results' && activeTeacherTab !== 'assignments' && (
+        <div className="bg-white border border-[#704214]/15 rounded-lg p-6 shadow-xs space-y-2 text-xs">
+          <h3 className="text-base font-bold text-[#704214]">
+            {activeTeacherTab.charAt(0).toUpperCase() + activeTeacherTab.slice(1)} Module
+          </h3>
+          <p className="text-[#704214]/70">
+            Official records for {activeTeacherTab} synchronized with the Uomboni Secondary School central database.
+          </p>
         </div>
       )}
-
-      {/* TIMETABLE / OTHER TABS */}
-      {activeTeacherTab !== 'attendance' &&
-        activeTeacherTab !== 'results' &&
-        activeTeacherTab !== 'assignments' &&
-        activeTeacherTab !== 'profile' && (
-          <div className="bg-white border border-[#704214]/15 rounded-lg p-6 shadow-xs space-y-2 text-xs">
-            <h3 className="text-base font-bold text-[#704214]">
-              {activeTeacherTab.charAt(0).toUpperCase() + activeTeacherTab.slice(1)} Module
-            </h3>
-            <p className="text-[#704214]/70">
-              Official records for {activeTeacherTab} synchronized with the Uomboni Secondary School central database.
-            </p>
-          </div>
-        )}
     </div>
   );
 };

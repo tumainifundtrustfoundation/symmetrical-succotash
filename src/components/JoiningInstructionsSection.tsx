@@ -187,8 +187,8 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                     <div className="space-y-3 text-xs text-blue-100">
                       <div className="p-3.5 rounded-xl bg-blue-900/40 border border-blue-700/50">
                         <span className="text-[10px] font-mono uppercase text-amber-300 font-bold block">Kaulimbiu Kuu:</span>
-                        <p className="font-serif text-lg font-bold text-amber-300 mt-0.5">“TUJIENDELEZE SISI WENYEWE”</p>
-                        <p className="text-[11px] text-blue-200">Prayer · Education · Work (Sala, Elimu na Kazi)</p>
+                        <p className="font-serif text-lg font-bold text-amber-300 mt-0.5">“ELIMU NI MAISHA”</p>
+                        <p className="text-[11px] text-blue-200">Tujendelee Sisi Wenyewe: Prayer · Education · Work</p>
                       </div>
 
                       <div className="space-y-2 pt-1 text-[11px]">
@@ -288,24 +288,19 @@ export const JoiningInstructionsSection: React.FC<JoiningInstructionsSectionProp
                         {language === 'sw' ? '📞 Mawasiliano Rasmi ya Udahili & Shuleni' : '📞 Official Admissions & Campus Contacts'}
                       </span>
                       <div className="flex flex-wrap items-center gap-2">
-                        {[
-                          { num: '0782 558 127', label: 'Mkuu wa Shule' },
-                          { num: '0754 532 949', label: 'Makamu Mkuu' },
-                          { num: '0752 000 939', label: 'Mhasibu' },
-                          { num: '0745 548 225', label: 'Taaluma' },
-                        ].map((ph, idx) => (
+                        {['+255 802 2000', '+255 000 0000', '0752 000 939', '0782 558 127', '0745 548 225', '0754 532 949'].map((ph, idx) => (
                           <a
                             key={idx}
-                            href={`tel:${ph.num.replace(/\s+/g, '')}`}
+                            href={`tel:${ph.replace(/\s+/g, '')}`}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0b2545] hover:bg-blue-950 text-white text-xs font-mono font-bold border border-blue-600 transition-colors"
                           >
                             <PhoneCall className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{ph.num} ({ph.label})</span>
+                            <span>{ph}</span>
                           </a>
                         ))}
                       </div>
                       <p className="text-[11px] text-blue-200 font-mono mt-1">
-                        S.L.P 361 Marangu - Kilimanjaro · uombonisec@gmail.com · info@uomboniss.ac.tz
+                        P.O. Box 90000 Marangu - Moshi · info@uomboniss.ac.tz · www.uomboniss.ac.tz
                       </p>
                     </div>
 

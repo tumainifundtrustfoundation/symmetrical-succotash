@@ -24,7 +24,7 @@ const translations: Record<string, Record<Language, string>> = {
   // School Identity
   'school.name': { sw: 'SHULE YA SEKONDARI UOMBONI', en: 'UOMBONI SECONDARY SCHOOL' },
   'school.tagline': { sw: 'Jimbo Katoliki Moshi • Marangu, Kilimanjaro', en: 'Catholic Diocese of Moshi • Marangu, Kilimanjaro' },
-  'school.motto': { sw: '“TUJIENDELEZE SISI WENYEWE” • Sala, Elimu na Kazi', en: '“STRIVE FOR SELF-RELIANCE” • Prayer, Education and Work' },
+  'school.motto': { sw: 'Elimu ni Mwanga na Maadili Mema', en: 'Education, Faith & Moral Excellence' },
   'school.nectaCode': { sw: 'Kituo cha Mitihani NECTA: S0486', en: 'NECTA Examination Centre: S0486' },
 
   // Hero Section

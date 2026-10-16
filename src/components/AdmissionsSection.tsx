@@ -22,14 +22,12 @@ interface AdmissionsSectionProps {
   onOpenAdmissions?: () => void;
   onOpenVituMuhimu?: () => void;
   onOpenJoiningInstructions?: () => void;
-  onOpenMedicalForm?: () => void;
 }
 
 export const AdmissionsSection: React.FC<AdmissionsSectionProps> = ({
   onOpenAdmissions,
   onOpenVituMuhimu,
   onOpenJoiningInstructions,
-  onOpenMedicalForm,
 }) => {
   const [activeVituCategory, setActiveVituCategory] = useState<'academic' | 'uniform' | 'boarding' | 'documents'>('academic');
 
@@ -362,18 +360,6 @@ export const AdmissionsSection: React.FC<AdmissionsSectionProps> = ({
             >
               <Download className="w-4 h-4 text-amber-600" />
               <span>Pakua Fomu (PDF)</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (onOpenMedicalForm) onOpenMedicalForm();
-                else window.location.hash = '#medical';
-              }}
-              className="w-full sm:w-auto px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold text-xs sm:text-sm border border-emerald-300 transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
-              title="Fomu Rasmi ya Upimaji Afya ya Daktari (Print-Ready PDF)"
-            >
-              <FileCheck className="w-4 h-4 text-emerald-700" />
-              <span>Fomu ya Afya (Medical)</span>
             </button>
 
             <button

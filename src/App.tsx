@@ -8,7 +8,6 @@ import { Hero } from './components/Hero';
 import { AboutSection } from './components/AboutSection';
 import { AcademicsSection } from './components/AcademicsSection';
 import { LeadershipTeachersSection } from './components/LeadershipTeachersSection';
-import { InteractiveCampusTour } from './components/InteractiveCampusTour';
 import { GallerySection } from './components/GallerySection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
@@ -17,20 +16,9 @@ import { AcademicRole } from './components/AcademicPortalModal';
 import { Loader2 } from 'lucide-react';
 import { useDynamicMetaTags } from './hooks/useDynamicMetaTags';
 
-// Homepage sections
-import { UrgentNotificationBanner } from './components/UrgentNotificationBanner';
-import { QuickStatsSection } from './components/QuickStatsSection';
-import { ResultsSection } from './components/ResultsSection';
-import { AdmissionsSection } from './components/AdmissionsSection';
-import { FeePaymentSection } from './components/FeePaymentSection';
-import { VideoSection } from './components/VideoSection';
-import { MapSection } from './components/MapSection';
-import { FAQSection } from './components/FAQSection';
-
 // Modals statically imported for guaranteed availability and zero dynamic import fetch failures
 import { StaffSecurityGateModal } from './components/StaffSecurityGateModal';
 import { StudentPortalModal } from './components/StudentPortalModal';
-import { ParentPortalModal } from './components/portal/ParentPortalModal';
 import { ApplyNowModal } from './components/ApplyNowModal';
 import { AdminPortalModal } from './components/AdminPortalModal';
 import { BursarPortalModal } from './components/BursarPortalModal';
@@ -41,8 +29,12 @@ import { SchoolResultsModal } from './components/results/SchoolResultsModal';
 import { SystemArchitectureModal } from './components/SystemArchitectureModal';
 import { VituMuhimuModal } from './components/VituMuhimuModal';
 import { OfficialJoiningInstructions2027Viewer } from './components/OfficialJoiningInstructions2027Viewer';
-import { MedicalExaminationFormModal } from './components/MedicalExaminationFormModal';
 import { NewsModal } from './components/NewsModal';
+import { AdmissionDocumentsPage } from './components/AdmissionDocumentsPage';
+import { OfflineIndicator } from './components/OfflineIndicator';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { InstallAppModal } from './components/InstallAppModal';
+import { FAQSection } from './components/FAQSection';
 
 // Auth Views
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -62,14 +54,9 @@ const ModalFallback = () => (
 );
 
 function MainSchoolApp() {
-  const { activeView, setActiveView, loading, user, userProfile } = useAuth();
+  const { activeView, setActiveView, loading } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
   const [currentHash, setCurrentHash] = useState(() => window.location.hash);
-
-  const isAdmin = !!(user && userProfile?.role === 'admin');
-  const isAcademicMaster = !!(user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin'));
-  const isStaffOrTeacher = !!(user && (userProfile?.role === 'teacher' || userProfile?.role === 'staff' || userProfile?.role === 'academic_master' || userProfile?.role === 'admin'));
-  const isParent = !!(user && (userProfile?.role === 'parent' || userProfile?.role === 'admin'));
 
   // Modals state
   const [isStaffGateOpen, setIsStaffGateOpen] = useState(false);
@@ -84,8 +71,8 @@ function MainSchoolApp() {
   const [isBursarModalOpen, setIsBursarModalOpen] = useState(false);
   const [isAcademicPortalOpen, setIsAcademicPortalOpen] = useState(false);
   const [isArchitectureModalOpen, setIsArchitectureModalOpen] = useState(false);
-  const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Dynamic Meta-Tag Generator: updates title, description, OG tags & canonical in document head
   useDynamicMetaTags({
@@ -106,13 +93,6 @@ function MainSchoolApp() {
   const [staffGateInitialRole, setStaffGateInitialRole] = useState<StaffRole>('admin');
   const [academicInitialRole, setAcademicInitialRole] = useState<AcademicRole>('academic_master');
   const [isAcademicInitialAuthenticated, setIsAcademicInitialAuthenticated] = useState<boolean>(false);
-
-  const [admissionInitialTab, setAdmissionInitialTab] = useState<'overview' | 'apply' | 'checklist' | 'forms' | 'fees'>('overview');
-
-  const handleOpenAdmissionPortalWithTab = (tab: 'overview' | 'apply' | 'checklist' | 'forms' | 'fees' = 'overview') => {
-    setAdmissionInitialTab(tab);
-    setIsAdmissionsModalOpen(true);
-  };
 
   const handleOpenStaffGate = (role: StaffRole = 'admin') => {
     setStaffGateInitialRole(role);
@@ -136,12 +116,53 @@ function MainSchoolApp() {
     }
   };
 
-  // URL Hash Listener & Hotkeys
+  // URL Route & Hash Listener & Hotkeys
   useEffect(() => {
-    const checkHash = () => {
+    const checkRoute = () => {
+      const pathname = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      setCurrentHash(hash);
-      if (hash === '#welcome' || hash === '#karibu') {
+      setCurrentHash(hash || pathname);
+
+      // Check direct clean paths first (for direct search engine crawler landing & navigation)
+      if (
+        pathname === '/admission-documents' ||
+        pathname === '/joining-instructions' ||
+        hash === '#admission-documents' ||
+        hash === '#admissions-documents' ||
+        hash === '#admission-docs' ||
+        hash === '#documents' ||
+        hash === '#joining-instructions' ||
+        hash === '#joining' ||
+        hash === '#fomu-kujiunga' ||
+        hash === '#fomu' ||
+        hash === '#maelekezo-kujiunga'
+      ) {
+        setActiveView('admission-documents');
+        return;
+      }
+
+      if (pathname === '/results' || hash === '#results' || hash === '#matokeo') {
+        setIsSchoolResultsOpen(true);
+      } else if (pathname === '/necta' || hash === '#necta') {
+        setIsNectaResultsOpen(true);
+      } else if (pathname === '/admissions' || hash === '#admissions' || hash === '#kujiunga') {
+        setIsAdmissionsModalOpen(true);
+      } else if (pathname === '/news' || hash === '#news' || hash === '#habari' || hash === '#matangazo') {
+        setIsNewsModalOpen(true);
+      } else if (pathname === '/faq' || hash === '#faq' || hash === '#maswali') {
+        const el = document.getElementById('faq');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      } else if (pathname === '/about' || hash === '#about') {
+        handleNavigate('about');
+      } else if (pathname === '/academics' || hash === '#academics') {
+        handleNavigate('academics');
+      } else if (pathname === '/facilities') {
+        handleNavigate('about');
+      } else if (pathname === '/contact' || pathname === '/location' || hash === '#contact') {
+        handleNavigate('contact');
+      } else if (pathname === '/teachers' || hash === '#teachers') {
+        handleNavigate('teachers');
+      } else if (hash === '#welcome' || hash === '#karibu') {
         setActiveView('welcome');
       } else if (hash === '#login' || hash === '#ingia') {
         setActiveView('login');
@@ -157,23 +178,11 @@ function MainSchoolApp() {
         hash === '#administrate' ||
         hash === '#utawala'
       ) {
-        if (isAdmin) {
-          setIsAdminModalOpen(true);
-        } else {
-          setActiveView('login');
-        }
+        setIsAdminModalOpen(true);
       } else if (hash === '#staff' || hash === '#teacher' || hash === '#walimu' || hash === '#staffportal') {
-        if (isStaffOrTeacher) {
-          setIsTeacherStaffPortalOpen(true);
-        } else {
-          setActiveView('login');
-        }
+        setIsTeacherStaffPortalOpen(true);
       } else if (hash === '#bursar' || hash === '#mhasibu') {
-        if (isAdmin || isStaffOrTeacher) {
-          handleOpenStaffGate('bursar');
-        } else {
-          setActiveView('login');
-        }
+        handleOpenStaffGate('bursar');
       } else if (
         hash === '#academic' ||
         hash === '#taaluma' ||
@@ -182,58 +191,26 @@ function MainSchoolApp() {
         hash === '#mitihani' ||
         hash === '#broadsheet'
       ) {
-        if (isAcademicMaster) {
-          handleOpenAcademicPortalWithRole('academic_master');
-        } else {
-          setActiveView('login');
-        }
+        handleOpenAcademicPortalWithRole('academic_master');
       } else if (hash === '#parent' || hash === '#wazazi') {
-        if (isParent) {
-          setIsParentPortalOpen(true);
-        } else {
-          setActiveView('login');
-        }
-      } else if (hash === '#necta') {
-        setIsNectaResultsOpen(true);
+        setIsParentPortalOpen(true);
       } else if (hash === '#architecture' || hash === '#tech') {
         setIsArchitectureModalOpen(true);
-      } else if (hash === '#admissions' || hash === '#kujiunga' || hash === '#admission') {
-        handleOpenAdmissionPortalWithTab('overview');
-      } else if (hash === '#apply' || hash === '#omba') {
-        handleOpenAdmissionPortalWithTab('apply');
-      } else if (
-        hash === '#joining-instructions' ||
-        hash === '#joining' ||
-        hash === '#fomu-kujiunga' ||
-        hash === '#fomu' ||
-        hash === '#maelekezo-kujiunga'
-      ) {
-        handleOpenAdmissionPortalWithTab('forms');
+      } else if (hash === '#install' || hash === '#pwa') {
+        setIsInstallModalOpen(true);
       } else if (hash === '#vitu-muhimu' || hash === '#mahitaji' || hash === '#vitu' || hash === '#requirements') {
-        handleOpenAdmissionPortalWithTab('checklist');
-      } else if (hash === '#fees' || hash === '#ada' || hash === '#malipo') {
-        handleOpenAdmissionPortalWithTab('fees');
-      } else if (hash === '#results' || hash === '#matokeo') {
-        setIsSchoolResultsOpen(true);
-      } else if (hash === '#news' || hash === '#habari' || hash === '#matangazo') {
-        setIsNewsModalOpen(true);
-      } else if (hash === '#medical' || hash === '#afya' || hash === '#fomu-ya-afya' || hash === '#medical-form') {
-        setIsMedicalModalOpen(true);
-      } else if (hash === '#videos' || hash === '#video') {
-        handleNavigate('videos');
-      } else if (hash === '#location' || hash === '#ramani' || hash === '#map') {
-        handleNavigate('location');
-      } else if (hash === '#faq' || hash === '#maswali' || hash === '#faqs' || hash === '#swali') {
-        handleNavigate('faq');
-      } else if (hash === '#campus-tour' || hash === '#tour' || hash === '#majengo' || hash === '#majengo-ya-shule') {
-        handleNavigate('campus-tour');
+        setIsVituMuhimuModalOpen(true);
       }
     };
 
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
-  }, [setActiveView, isAdmin, isStaffOrTeacher, isAcademicMaster, isParent]);
+    checkRoute();
+    window.addEventListener('hashchange', checkRoute);
+    window.addEventListener('popstate', checkRoute);
+    return () => {
+      window.removeEventListener('hashchange', checkRoute);
+      window.removeEventListener('popstate', checkRoute);
+    };
+  }, [setActiveView]);
 
   // Section Observer for Dynamic SEO on Scroll
   useEffect(() => {
@@ -241,9 +218,8 @@ function MainSchoolApp() {
       'about',
       'academics',
       'teachers',
-      'campus-tour',
-      'faq',
       'gallery',
+      'faq',
       'contact',
     ];
 
@@ -270,13 +246,7 @@ function MainSchoolApp() {
     return () => observer.disconnect();
   }, []);
 
-  const [forceReady, setForceReady] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setForceReady(true), 400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading && !forceReady) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#102A43] flex flex-col items-center justify-center p-6 text-white text-center">
         <div className="w-16 h-16 mb-4 animate-pulse bg-white p-2 rounded-lg">
@@ -308,6 +278,27 @@ function MainSchoolApp() {
   if (activeView === 'forgot-password') return <Suspense fallback={<ModalFallback />}><ForgotPasswordPage /></Suspense>;
   if (activeView === 'verify-email') return <Suspense fallback={<ModalFallback />}><VerifyEmailPage /></Suspense>;
   if (activeView === 'portal') return <Suspense fallback={<ModalFallback />}><PortalContainer /></Suspense>;
+  if (activeView === 'admission-documents') {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC]">
+        <AdmissionDocumentsPage
+          onBackToHome={() => {
+            setActiveView('website');
+            window.location.hash = '';
+          }}
+          onOpenApplyNow={() => setIsAdmissionsModalOpen(true)}
+          onOpenAdminPortal={() => setIsAdminModalOpen(true)}
+        />
+        <OfflineIndicator />
+        {isInstallModalOpen && (
+          <InstallAppModal
+            isOpen={isInstallModalOpen}
+            onClose={() => setIsInstallModalOpen(false)}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFFF0] text-[#102A43] font-sans flex flex-col selection:bg-[#102A43] selection:text-white">
@@ -316,94 +307,62 @@ function MainSchoolApp() {
         activeSection={activeSection}
         onNavigate={handleNavigate}
         onOpenNews={() => setIsNewsModalOpen(true)}
-        onOpenAdmin={isAdmin ? () => setIsAdminModalOpen(true) : undefined}
-        onOpenParentPortal={isParent ? () => setIsParentPortalOpen(true) : undefined}
-        onOpenStaffPortal={isStaffOrTeacher ? () => setIsTeacherStaffPortalOpen(true) : undefined}
-        onOpenAcademicPortal={isAcademicMaster ? () => handleOpenAcademicPortalWithRole('academic_master') : undefined}
-        onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')}
-        onOpenJoiningInstructions={() => handleOpenAdmissionPortalWithTab('forms')}
-        onOpenVituMuhimu={() => handleOpenAdmissionPortalWithTab('checklist')}
+        onOpenAdmin={() => setIsAdminModalOpen(true)}
+        onOpenParentPortal={() => setIsParentPortalOpen(true)}
+        onOpenStaffPortal={() => setIsTeacherStaffPortalOpen(true)}
+        onOpenAcademicPortal={() => handleOpenAcademicPortalWithRole('academic_master')}
+        onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
+        onOpenAdmissionDocuments={() => {
+          setActiveView('admission-documents');
+          window.location.hash = '#admission-documents';
+        }}
+        onOpenJoiningInstructions={() => {
+          setActiveView('admission-documents');
+          window.location.hash = '#admission-documents';
+        }}
+        onOpenVituMuhimu={() => setIsVituMuhimuModalOpen(true)}
+        onOpenWelcome={() => setActiveView('welcome')}
         onOpenLogin={() => setActiveView('login')}
       />
 
-      {/* 2. Live Announcements Running Marquee */}
-      <UrgentNotificationBanner
-        onActionClick={(target) => {
-          if (target === 'admissions' || target === 'apply') {
-            handleOpenAdmissionPortalWithTab('overview');
-          } else if (target === 'fees') {
-            handleOpenAdmissionPortalWithTab('fees');
-          } else if (target === 'results') {
-            setIsSchoolResultsOpen(true);
-          } else if (target === 'news') {
-            setIsNewsModalOpen(true);
-          } else if (target === 'vitu-muhimu') {
-            handleOpenAdmissionPortalWithTab('checklist');
-          } else if (target === 'joining') {
-            handleOpenAdmissionPortalWithTab('forms');
-          } else {
-            handleNavigate(target);
-          }
-        }}
-      />
-
       <main className="flex-grow">
-        {/* 1. Hero with Official Branding and Action Buttons */}
+        {/* 1. Hero */}
         <Hero
           onNavigate={handleNavigate}
-          onOpenResults={() => setIsSchoolResultsOpen(true)}
-          onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')}
-          onOpenFees={() => handleOpenAdmissionPortalWithTab('fees')}
+          onOpenAdmin={() => setIsAdminModalOpen(true)}
+          onOpenAdmissionDocuments={() => {
+            setActiveView('admission-documents');
+            window.location.hash = '#admission-documents';
+          }}
         />
 
-        {/* 2. Quick Institutional Key Stats */}
-        <QuickStatsSection onNavigate={handleNavigate} />
-
-        {/* 3. Academic Results & NECTA S0486 Performance */}
-        <ResultsSection
-          onOpenNectaResults={() => setIsNectaResultsOpen(true)}
-          onOpenSchoolResults={() => setIsSchoolResultsOpen(true)}
-        />
-
-        {/* 4. About Our School */}
+        {/* 2. About */}
         <AboutSection
           onNavigate={handleNavigate}
         />
 
-        {/* 5. Academics & Performance */}
+        {/* 3. Academics & Performance */}
         <AcademicsSection
           onOpenResults={() => setIsNectaResultsOpen(true)}
-          onOpenAcademicPortal={isAcademicMaster ? () => handleOpenAcademicPortalWithRole('academic_master') : undefined}
+          onOpenAcademicPortal={() => handleOpenAcademicPortalWithRole('academic_master')}
         />
 
-        {/* 6. Frequently Asked Questions (FAQ) - School Fees, Joining Instructions & Academic Schedules */}
-        <FAQSection
-          onOpenJoiningInstructions={() => handleOpenAdmissionPortalWithTab('forms')}
-          onOpenVituMuhimu={() => handleOpenAdmissionPortalWithTab('checklist')}
-          onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')}
-          onOpenMedicalForm={() => setIsMedicalModalOpen(true)}
-          onNavigate={handleNavigate}
-        />
-
-        {/* 7. Teachers (Meet Our Faculty) */}
+        {/* 4. Teachers (Meet Our Faculty) */}
         <LeadershipTeachersSection />
 
-        {/* 8. School Video Management Gallery & Spotlight */}
-        <VideoSection />
-
-        {/* 9. Interactive 3D Campus Tour (Library, Science Lab, Dormitories, Sports Field) */}
-        <InteractiveCampusTour
-          onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')}
-          onNavigate={handleNavigate}
-        />
-
-        {/* 10. Campus Photo Gallery */}
+        {/* 5. Campus Photo Gallery (Animated) */}
         <GallerySection />
 
-        {/* 11. School Geographical Location & Verified Map */}
-        <MapSection onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')} />
+        {/* 6. Frequently Asked Questions (FAQ) Accordion */}
+        <FAQSection
+          onOpenAdmissionDocuments={() => {
+            setActiveView('admission-documents');
+            window.location.hash = '#admission-documents';
+          }}
+          onOpenContact={() => handleNavigate('contact')}
+        />
 
-        {/* 12. Contact */}
+        {/* 7. Contact & Location */}
         <ContactSection />
       </main>
 
@@ -411,16 +370,21 @@ function MainSchoolApp() {
       <Footer
         onNavigate={handleNavigate}
         onOpenNews={() => setIsNewsModalOpen(true)}
-        onOpenAdmin={isAdmin ? () => setIsAdminModalOpen(true) : undefined}
-        onOpenStaffPortal={isStaffOrTeacher ? () => setIsTeacherStaffPortalOpen(true) : undefined}
-        onOpenParentPortal={isParent ? () => setIsParentPortalOpen(true) : undefined}
-        onOpenAcademicPortal={isAcademicMaster ? () => handleOpenAcademicPortalWithRole('academic_master') : undefined}
-        onOpenAdmissions={() => handleOpenAdmissionPortalWithTab('overview')}
-        onOpenJoiningInstructions={() => handleOpenAdmissionPortalWithTab('forms')}
-        onOpenVituMuhimu={() => handleOpenAdmissionPortalWithTab('checklist')}
-        onOpenMedicalForm={() => setIsMedicalModalOpen(true)}
+        onOpenAdmin={() => setIsAdminModalOpen(true)}
+        onOpenStaffPortal={() => setIsTeacherStaffPortalOpen(true)}
+        onOpenParentPortal={() => setIsParentPortalOpen(true)}
+        onOpenAcademicPortal={() => handleOpenAcademicPortalWithRole('academic_master')}
+        onOpenAdmissions={() => setIsAdmissionsModalOpen(true)}
+        onOpenAdmissionDocuments={() => {
+          setActiveView('admission-documents');
+          window.location.hash = '#admission-documents';
+        }}
+        onOpenJoiningInstructions={() => {
+          setActiveView('admission-documents');
+          window.location.hash = '#admission-documents';
+        }}
+        onOpenVituMuhimu={() => setIsVituMuhimuModalOpen(true)}
         onOpenResults={() => setIsSchoolResultsOpen(true)}
-        onOpenLogin={() => setActiveView('login')}
       />
 
       {/* Modals */}
@@ -477,10 +441,10 @@ function MainSchoolApp() {
         </Suspense>
       )}
 
-      {/* Parent Portal Modal */}
+      {/* Parent Portal Modal (Sepia Identity) */}
       {isParentPortalOpen && (
         <Suspense fallback={<ModalFallback />}>
-          <ParentPortalModal
+          <StudentPortalModal
             isOpen={isParentPortalOpen}
             onClose={() => setIsParentPortalOpen(false)}
           />
@@ -613,14 +577,14 @@ function MainSchoolApp() {
         </Suspense>
       )}
 
-      {/* Official Medical Examination Form Modal */}
-      {isMedicalModalOpen && (
-        <Suspense fallback={<ModalFallback />}>
-          <MedicalExaminationFormModal
-            isOpen={isMedicalModalOpen}
-            onClose={() => setIsMedicalModalOpen(false)}
-          />
-        </Suspense>
+      {/* PWA Floating Install Banner and Offline Indicator */}
+      <OfflineIndicator />
+      <PWAInstallBanner onOpenInstallModal={() => setIsInstallModalOpen(true)} />
+      {isInstallModalOpen && (
+        <InstallAppModal
+          isOpen={isInstallModalOpen}
+          onClose={() => setIsInstallModalOpen(false)}
+        />
       )}
     </div>
   );

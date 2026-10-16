@@ -24,7 +24,7 @@ export interface DynamicMetaOptions {
   language?: 'sw' | 'en';
 }
 
-const BASE_URL = 'https://uombonisecondaryschool.netlify.app';
+const BASE_URL = 'https://www.uomboniss.sc.tz';
 const DEFAULT_IMAGE = `${BASE_URL}/uomboni_flyer_2026.jpg`;
 
 /**

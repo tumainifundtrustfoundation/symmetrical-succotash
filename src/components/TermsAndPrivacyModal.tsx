@@ -177,8 +177,8 @@ export const TermsAndPrivacyModal: React.FC<TermsAndPrivacyModalProps> = ({
                 </h4>
                 <p className="text-slate-400 text-xs">
                   {language === 'sw'
-                    ? 'Malipo yote ya ada lazima yafanywe kupitia namba rasmi za akaunti ya benki ya Shule ya Sekondari Uomboni (CRDB Bank: 01J1079051400, NMB Bank: 40302507439, au Mkombozi Commercial Bank: 0051150397901 - Jina la Akaunti: UOMBONI SECONDARY SCHOOL). Stakabadhi rasmi hutolewa na Mhasibu wa Shule.'
-                    : 'All school fees must be paid through designated official school bank accounts (CRDB Bank: 01J1079051400, NMB Bank: 40302507439, or Mkombozi Bank: 0051150397901 - A/C: UOMBONI SECONDARY SCHOOL). Verified receipts are reconciled by the school bursar.'}
+                    ? 'Malipo yote ya ada lazima yafanywe kupitia namba rasmi za akaunti ya benki ya Shule ya Sekondari Uomboni (CRDB Bank au KCB Bank) au namba rasmi ya Udahili iliyotangazwa kwenye tovuti hii. Stakabadhi rasmi hutolewa na Mhasibu wa Shule.'
+                    : 'All school fees must be paid through designated official school bank accounts or payment instructions authorized by Uomboni Secondary School. Verified receipts are reconciled by the school bursar.'}
                 </p>
               </div>
 

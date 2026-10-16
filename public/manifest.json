@@ -1,60 +1,34 @@
 {
-  "name": "Shule ya Sekondari Uomboni - Mfumo wa Shule na Matokeo",
-  "short_name": "Uomboni Sec",
-  "description": "Mfumo Rasmi wa Shule ya Sekondari Uomboni (NECTA S0486), Portal ya Walimu, Matokeo ya Mitihani, na Taarifa za Wanafunzi na Wazazi.",
-  "start_url": "/",
   "id": "/",
+  "name": "Uomboni Secondary School",
+  "short_name": "Uomboni SS",
+  "description": "Tovuti Rasmi & Mfumo wa Shule ya Sekondari Uomboni (NECTA S0486), Marangu, Moshi Vijijini, Kilimanjaro. Mfumo wa Udahili, Matokeo na Portal ya Shule.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
-  "background_color": "#030712",
-  "theme_color": "#059669",
-  "categories": ["education", "productivity", "utilities"],
+  "background_color": "#102A43",
+  "theme_color": "#102A43",
+  "categories": ["education", "productivity"],
   "icons": [
-    {
-      "src": "/favicon-16x16.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "/pwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/favicon.ico",
-      "sizes": "16x16 32x32 48x48",
-      "type": "image/x-icon"
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/favicon.svg",
@@ -65,25 +39,25 @@
   ],
   "shortcuts": [
     {
+      "name": "STUDENT ADMISSION",
+      "short_name": "Admission",
+      "description": "Fomu na Nyaraka Rasmi za Udahili Uomboni Secondary",
+      "url": "/#admissions-documents",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Matokeo ya Mitihani",
       "short_name": "Matokeo",
-      "description": "Tafuta na pakua matokeo ya wanafunzi na NECTA",
+      "description": "Angalia matokeo ya wanafunzi na NECTA",
       "url": "/#results",
-      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Portal ya Walimu & Taaluma",
-      "short_name": "Walimu",
-      "description": "Ingiza alama na kuchapisha matokeo mtandaoni",
+      "name": "Portal ya Taaluma",
+      "short_name": "Taaluma",
+      "description": "Lango la walimu na usimamizi wa masomo",
       "url": "/#academic",
-      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
-    },
-    {
-      "name": "Fomu za Kujiunga & Udahili",
-      "short_name": "Fomu za Kujiunga",
-      "description": "Pakua joining instructions na maombi ya kidato cha 1-4",
-      "url": "/#joining",
-      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

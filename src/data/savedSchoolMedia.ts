@@ -3281,6 +3281,48 @@ export const SAVED_JOINING_DOCS: JoiningDocument[] = [
       "feesSummary": "Uzingatiaji wa maadili ni nguzo kuu ya Uomboni.",
       "reportingDate": "Kusomwa na kutiwa saini na mzazi na mwanafunzi kabla ya usajili."
     }
+  },
+  {
+    "id": "doc-005",
+    "titleSw": "Fomu ya Ahadi ya Mzazi/Mlezi na Makubaliano ya Malezi & Malipo ya Ada",
+    "titleEn": "Parent / Guardian Commitment & Fee Settlement Agreement Form",
+    "descriptionSw": "Makubaliano rasmi ya kisheria kati ya mzazi/mlezi na shule kuhusu ufuatiliaji wa maendeleo ya mwanafunzi, nidhamu, na ratiba ya ulipaji wa ada kwa kila muhula.",
+    "descriptionEn": "Official legal declaration and covenant between parent/guardian and school administration governing academic follow-up, moral guidance, and termly fee payment schedule.",
+    "fileSize": "580 KB (PDF Document)",
+    "targetGroup": "Wazazi na Walezi",
+    "downloadCount": 1420,
+    "pdfContentPreview": {
+      "header": "SHULE YA SEKONDARI UOMBONI - FOMU YA MAKUBALIANO YA MZAZI/MLEZI\nIDARA YA MALEZI NA UONGOZI",
+      "requirements": [
+        "Mzazi anathibitisha kugharamia ada ya masomo na malazi kwa awamu kama ilivyoainishwa.",
+        "Kushirikiana na walimu na uongozi pindi mwanafunzi anapohitaji ushauri nasaha au tathmini ya tabia.",
+        "Kuhudhuria mikutano mikuu ya wazazi na siku za tathmini ya kitaaluma (Academic Consultation Days)."
+      ],
+      "feesSummary": "Ada inalipwa kupitia akaunti rasmi za benki za shule pekee (CRDB, NMB, Mkombozi).",
+      "reportingDate": "Kutiwa saini kabla ya mwanafunzi kukabidhiwa namba ya usajili."
+    }
+  },
+  {
+    "id": "doc-006",
+    "titleSw": "Orodha Rasmi ya Nyaraka na Mahitaji ya Kuripoti Shuleni (Document Checklist)",
+    "titleEn": "Official Reporting Document Checklist & Boarding Supplies",
+    "descriptionSw": "Orodha hakiki ya nyaraka zote za lazima (Cheti cha Kuzaliwa RITA, Result Slip ya PSLE, Picha 4 za pasipoti za rangi ya anga) na vifaa vya bweni kabla ya kuripoti.",
+    "descriptionEn": "Exhaustive verification checklist of required identification documents (RITA Birth Certificate, PSLE Result Slip, 4 Sky-blue background photos) and essential hostel items.",
+    "fileSize": "820 KB (PDF Document)",
+    "targetGroup": "Wanafunzi Wote",
+    "downloadCount": 2890,
+    "pdfContentPreview": {
+      "header": "ORODHA HAKIKI YA NYARAKA ZA USAJILI NA MAANDALIZI - UOMBONI SECONDARY SCHOOL\nKITUO S0486 · MARANGU, MOSHI",
+      "requirements": [
+        "Cheti Halisi cha Kuzaliwa (RITA) au Cheti cha Ubatizo (Nakala iliyothibitishwa).",
+        "Result Slip halisi ya Mtihani wa Taifa wa Darasa la Saba (PSLE) au fomu ya uhamisho.",
+        "Picha nne (4) za pasipoti zenye mandhari ya bluu ya anga (Sky Blue background).",
+        "Ripoti ya Uchunguzi wa Afya iliyosainiwa na kupigwa muhuri na Daktari aliyesajiliwa.",
+        "Risiti halisi ya benki (Pay-in-slip) yenye jina kamili la mwanafunzi na darasa lake."
+      ],
+      "feesSummary": "Kukamilisha orodha hii ni kigezo cha mwisho cha usajili kamili wa mwanafunzi.",
+      "reportingDate": "Siku ya Kuripoti: Tarehe 07/01/2027 saa 2:00 Asubuhi."
+    }
   }
 ];
 
@@ -3305,8 +3347,8 @@ export const SAVED_SCHOOL_PROFILE = {
     "+255 754 532 949"
   ],
   "location": "Marangu, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
-  "motto": "“TUJIENDELEZE SISI WENYEWE” — PRAYER, EDUCATION AND WORK",
-  "mottoSw": "“TUJIENDELEZE SISI WENYEWE” — SALA, ELIMU NA KAZI",
+  "motto": "“ELIMU NI MAISHA” — PRAYER, EDUCATION AND WORK",
+  "mottoSw": "“ELIMU NI MAISHA” — SALA, ELIMU NA KAZI",
   "slogan": "TUJIENDELEZE SISI WENYEWE (TUJENDELEE SISI WENYEWE)",
   "diocese": "Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)",
   "website": "www.uomboniss.ac.tz",

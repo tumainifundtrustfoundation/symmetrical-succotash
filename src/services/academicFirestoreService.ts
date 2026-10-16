@@ -7,10 +7,11 @@ import {
   query,
   where,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { PendingSubjectSubmission, PendingStudentScore, StudentResult, AcademicDirective } from '../types';
+import { PendingSubjectSubmission, PendingStudentScore, StudentResult, AcademicDirective, ExamTypeConfig } from '../types';
 
 const PENDING_RESULTS_COLLECTION = 'pendingResults';
 const LOCAL_STORAGE_PENDING_KEY = 'uomboni_pending_subject_results';
@@ -368,5 +369,116 @@ export async function getAcademicDirectivesFromFirestore(): Promise<AcademicDire
   }
 
   return getDirectivesFromLocalStorage();
+}
+
+const EXAM_TYPES_COLLECTION = 'examTypes';
+const LOCAL_STORAGE_EXAM_TYPES_KEY = 'uomboni_exam_types';
+
+function backupExamTypesToLocalStorage(list: ExamTypeConfig[]) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_EXAM_TYPES_KEY, JSON.stringify(list));
+  } catch (err) {
+    console.warn('Could not backup exam types to localStorage:', err);
+  }
+}
+
+export function getExamTypesFromLocalStorage(): ExamTypeConfig[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_EXAM_TYPES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Save or update Exam Type configuration in Firestore & LocalStorage
+ */
+export async function saveExamTypeToFirestore(examType: ExamTypeConfig): Promise<void> {
+  const locals = getExamTypesFromLocalStorage();
+  const filtered = locals.filter((e) => e.id !== examType.id);
+  filtered.unshift(examType);
+  backupExamTypesToLocalStorage(filtered);
+
+  if (!auth.currentUser) {
+    return;
+  }
+
+  try {
+    const docRef = doc(db, EXAM_TYPES_COLLECTION, examType.id);
+    await setDoc(
+      docRef,
+      {
+        ...examType,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err: any) {
+    if (err?.code === 'permission-denied') {
+      try {
+        handleFirestoreError(err, OperationType.WRITE, `${EXAM_TYPES_COLLECTION}/${examType.id}`);
+      } catch (e) {
+        console.warn('Exam type save notice, cached locally:', e);
+      }
+    } else {
+      console.warn('Could not save exam type to Firestore, cached locally:', err);
+    }
+  }
+}
+
+/**
+ * Delete Exam Type configuration from Firestore & LocalStorage
+ */
+export async function deleteExamTypeFromFirestore(id: string): Promise<void> {
+  const locals = getExamTypesFromLocalStorage();
+  const filtered = locals.filter((e) => e.id !== id);
+  backupExamTypesToLocalStorage(filtered);
+
+  if (!auth.currentUser) {
+    return;
+  }
+
+  try {
+    const docRef = doc(db, EXAM_TYPES_COLLECTION, id);
+    await deleteDoc(docRef);
+  } catch (err: any) {
+    console.warn('Could not delete exam type from Firestore:', err);
+  }
+}
+
+/**
+ * Fetch Exam Types from Firestore
+ */
+export async function getExamTypesFromFirestore(): Promise<ExamTypeConfig[]> {
+  try {
+    const q = collection(db, EXAM_TYPES_COLLECTION);
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const remoteList: ExamTypeConfig[] = [];
+      snap.forEach((d) => {
+        const data = d.data();
+        remoteList.push({
+          id: d.id,
+          name: data.name || '',
+          category: data.category || 'Other',
+          targetForm: data.targetForm || 'ALL',
+          academicYear: data.academicYear || '2025/2026',
+          term: data.term || 'Muhula wa 1 (Term 1)',
+          status: data.status || 'active',
+          isCurrentForEntry: typeof data.isCurrentForEntry === 'boolean' ? data.isCurrentForEntry : true,
+          dateCreated: data.dateCreated || new Date().toISOString().split('T')[0],
+          createdBy: data.createdBy || 'Mkuu wa Taaluma',
+          description: data.description || '',
+        });
+      });
+      backupExamTypesToLocalStorage(remoteList);
+      return remoteList;
+    }
+  } catch (err: any) {
+    console.warn('Could not read exam types from Firestore, using local cache:', err);
+  }
+
+  return getExamTypesFromLocalStorage();
 }
 

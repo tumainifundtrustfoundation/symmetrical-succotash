@@ -5,112 +5,78 @@ export interface SitemapUrlEntry {
   priority?: number;
 }
 
+export const CANONICAL_DOMAIN = 'https://www.uomboniss.sc.tz';
+
+/**
+ * Valid canonical public pages for search engines (RFC sitemap standard).
+ * Hash URLs (#) are omitted per Google Search Console and Bing Webmaster guidelines.
+ * Private administration, student dashboards, staff gates, and login portals are excluded.
+ */
 export const OFFICIAL_SITEMAP_ENTRIES: SitemapUrlEntry[] = [
   // 1. Root Homepage
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/',
+    loc: `${CANONICAL_DOMAIN}/`,
     changefreq: 'daily',
     priority: 1.0,
   },
-  // 2. High-Priority Official Results & National Exam Hub
+  // 2. Admissions & Joining Instructions
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#necta',
-    changefreq: 'daily',
+    loc: `${CANONICAL_DOMAIN}/admissions`,
+    changefreq: 'weekly',
     priority: 0.95,
   },
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#results',
+    loc: `${CANONICAL_DOMAIN}/admission-documents`,
+    changefreq: 'weekly',
+    priority: 0.95,
+  },
+  // 3. Official Results & Academic Performance
+  {
+    loc: `${CANONICAL_DOMAIN}/results`,
     changefreq: 'weekly',
     priority: 0.9,
   },
-  // 3. Portals & Intranets
+  // 4. Academics, Curriculum & Examination Preparation
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#portal',
+    loc: `${CANONICAL_DOMAIN}/academics`,
+    changefreq: 'weekly',
+    priority: 0.9,
+  },
+  // 5. About Uomboni Secondary School (History, Motto, Mission)
+  {
+    loc: `${CANONICAL_DOMAIN}/about`,
+    changefreq: 'monthly',
+    priority: 0.85,
+  },
+  // 6. School Facilities & Campus Infrastructure
+  {
+    loc: `${CANONICAL_DOMAIN}/facilities`,
+    changefreq: 'monthly',
+    priority: 0.8,
+  },
+  // 7. News, Announcements & School Events
+  {
+    loc: `${CANONICAL_DOMAIN}/news`,
     changefreq: 'daily',
-    priority: 0.9,
+    priority: 0.85,
   },
+  // 8. Frequently Asked Questions (FAQ - Admissions, Fees, Routine)
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#parent',
+    loc: `${CANONICAL_DOMAIN}/faq`,
     changefreq: 'weekly',
     priority: 0.85,
   },
+  // 9. Contact Information & Administrative Offices
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#staff',
-    changefreq: 'weekly',
-    priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#academic',
-    changefreq: 'weekly',
-    priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#bursar',
+    loc: `${CANONICAL_DOMAIN}/contact`,
     changefreq: 'monthly',
-    priority: 0.75,
-  },
-  // 4. Admissions & Joining Instructions
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#admissions',
-    changefreq: 'weekly',
-    priority: 0.9,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#joining',
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#fees',
-    changefreq: 'monthly',
-    priority: 0.8,
-  },
-  // 5. School Curriculum & Academics
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#academics',
-    changefreq: 'weekly',
     priority: 0.85,
   },
+  // 10. Location, Physical Address & Directions (Marangu, Moshi, Kilimanjaro)
   {
-    loc: 'https://uombonisecondaryschool.netlify.app/#teachers',
-    changefreq: 'monthly',
-    priority: 0.75,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#students',
-    changefreq: 'monthly',
-    priority: 0.75,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#about',
+    loc: `${CANONICAL_DOMAIN}/location`,
     changefreq: 'monthly',
     priority: 0.8,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#gallery',
-    changefreq: 'monthly',
-    priority: 0.7,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#news',
-    changefreq: 'weekly',
-    priority: 0.75,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#contact',
-    changefreq: 'monthly',
-    priority: 0.7,
-  },
-  // 6. Auth Entry Points
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#login',
-    changefreq: 'monthly',
-    priority: 0.6,
-  },
-  {
-    loc: 'https://uombonisecondaryschool.netlify.app/#signup',
-    changefreq: 'monthly',
-    priority: 0.5,
   },
 ];
 

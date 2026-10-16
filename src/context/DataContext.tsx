@@ -25,14 +25,20 @@ import {
   StudentCouncilMember,
   SchoolProfile,
   AcademicDirective,
+  ExamTypeConfig,
 } from '../types';
 import {
   saveAcademicDirectiveToFirestore,
   getAcademicDirectivesFromFirestore,
   getDirectivesFromLocalStorage,
+  saveExamTypeToFirestore,
+  deleteExamTypeFromFirestore,
+  getExamTypesFromFirestore,
 } from '../services/academicFirestoreService';
+import { isTeacherAuthorizedForSubject } from '../services/teacherAuthDirectory';
 import {
   INITIAL_STUDENT_RESULTS,
+  INITIAL_EXAM_TYPES,
   SAMPLE_MOCK_STUDENT_RESULTS,
   INITIAL_NEWS,
   INITIAL_EVENTS,
@@ -130,6 +136,13 @@ interface DataContextType {
     form: string,
     examType: string
   ) => { isAllowed: boolean; directive?: AcademicDirective; reason: string; deadlineDate?: string };
+
+  // Exam Types Management (Aina za Mitihani - Mtaaluma / Academic Master)
+  examTypes: ExamTypeConfig[];
+  addExamType: (examType: Omit<ExamTypeConfig, 'id'>) => ExamTypeConfig;
+  updateExamType: (id: string, updates: Partial<ExamTypeConfig>) => void;
+  deleteExamType: (id: string) => void;
+  toggleExamTypeEntryStatus: (id: string, isOpen: boolean) => void;
 
   // Students Directory & Profiles Management
   students: StudentProfile[];
@@ -237,6 +250,8 @@ interface DataContextType {
   joiningDocs: JoiningDocument[];
   incrementDocDownload: (id: string) => void;
   addJoiningDoc: (doc: JoiningDocument) => void;
+  updateJoiningDoc: (doc: JoiningDocument) => void;
+  deleteJoiningDoc: (id: string) => void;
 
   // Gallery
   galleryPhotos: GalleryPhoto[];
@@ -506,6 +521,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       })
       .catch((err) => console.warn('Could not load academic directives from Firestore on mount:', err));
+  }, []);
+
+  // Exam Types (Aina za Mitihani) state for Academic Master
+  const [examTypes, setExamTypes] = useState<ExamTypeConfig[]>(() => {
+    const loaded = safeGetStorage<ExamTypeConfig[]>('uomboni_exam_types', INITIAL_EXAM_TYPES);
+    return Array.isArray(loaded) && loaded.length > 0 ? loaded : INITIAL_EXAM_TYPES;
+  });
+
+  // Sync exam types from Firestore on mount
+  useEffect(() => {
+    getExamTypesFromFirestore()
+      .then((remoteList) => {
+        if (remoteList && remoteList.length > 0) {
+          setExamTypes(remoteList);
+          safeSetStorage('uomboni_exam_types', remoteList);
+        }
+      })
+      .catch((err) => console.warn('Could not load exam types from Firestore on mount:', err));
   }, []);
 
   const [isOffline, setIsOffline] = useState<boolean>(() => {
@@ -1498,7 +1531,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     examType: string,
     teacherName: string,
     marksDraft: { [examNumber: string]: { score: number; remarks: string } }
-  ): { updatedCount: number } => {
+  ): { updatedCount: number; unauthorized?: boolean; error?: string } => {
+    // SECURITY RESTRICTION: Ensure teacher cannot enter marks for an unassigned subject
+    const isAcademicMasterTeacher =
+      !teacherName ||
+      teacherName.toLowerCase().includes('mtaaluma') ||
+      teacherName.toLowerCase().includes('yohana bahati') ||
+      teacherName.toLowerCase().includes('adela') ||
+      teacherName.toLowerCase().includes('admin') ||
+      teacherName.toLowerCase().includes('headmaster') ||
+      teacherName.toLowerCase().includes('taaluma');
+
+    if (!isAcademicMasterTeacher && teacherName) {
+      const authorized = isTeacherAuthorizedForSubject(teacherName, subject);
+      if (!authorized) {
+        console.warn(`[SECURITY PREVENTED] Mwalimu "${teacherName}" hana idhini ya kuingiza alama za somo la "${subject}".`);
+        return {
+          updatedCount: 0,
+          unauthorized: true,
+          error: `Huna idhini ya kuingiza au kubadilisha matokeo ya somo la ${subject}. Ni mwalimu aliyepangiwa somo hili au Mkuu wa Taaluma pekee anayeweza kujaza alama hizi.`,
+        };
+      }
+    }
+
     let count = 0;
     const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
@@ -1739,6 +1794,63 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       reason: 'Ruhusa ya uingizaji matokeo iko wazi kulingana na maelekezo ya Mkuu wa Taaluma.',
       deadlineDate: matching.deadlineDate,
     };
+  };
+
+  // Exam Types Management (Aina za Mitihani - Mtaaluma / Academic Master)
+  const addExamType = (data: Omit<ExamTypeConfig, 'id'>): ExamTypeConfig => {
+    const newExam: ExamTypeConfig = {
+      ...data,
+      id: `exam-${data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`,
+      dateCreated: data.dateCreated || new Date().toISOString().split('T')[0],
+      status: data.status || 'active',
+      isCurrentForEntry: typeof data.isCurrentForEntry === 'boolean' ? data.isCurrentForEntry : true,
+    };
+
+    setExamTypes((prev) => {
+      const next = [newExam, ...prev.filter((e) => e.name.toLowerCase() !== newExam.name.toLowerCase())];
+      safeSetStorage('uomboni_exam_types', next);
+      saveExamTypeToFirestore(newExam);
+      return next;
+    });
+
+    return newExam;
+  };
+
+  const updateExamType = (id: string, updates: Partial<ExamTypeConfig>) => {
+    setExamTypes((prev) => {
+      const next = prev.map((e) => (e.id === id ? { ...e, ...updates } : e));
+      safeSetStorage('uomboni_exam_types', next);
+      const updated = next.find((e) => e.id === id);
+      if (updated) saveExamTypeToFirestore(updated);
+      return next;
+    });
+  };
+
+  const deleteExamType = (id: string) => {
+    setExamTypes((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      safeSetStorage('uomboni_exam_types', next);
+      deleteExamTypeFromFirestore(id);
+      return next;
+    });
+  };
+
+  const toggleExamTypeEntryStatus = (id: string, isOpen: boolean) => {
+    setExamTypes((prev) => {
+      const next = prev.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              isCurrentForEntry: isOpen,
+              status: isOpen ? ('active' as const) : ('closed' as const),
+            }
+          : e
+      );
+      safeSetStorage('uomboni_exam_types', next);
+      const updated = next.find((e) => e.id === id);
+      if (updated) saveExamTypeToFirestore(updated);
+      return next;
+    });
   };
 
   const syncResultsToOfflineStorage = async (): Promise<{ success: boolean; count: number }> => {
@@ -2369,6 +2481,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const updateJoiningDoc = (doc: JoiningDocument) => {
+    setJoiningDocs((prev) => {
+      const updated = prev.map((d) => (d.id === doc.id ? doc : d));
+      safeSetStorage('uomboni_docs', updated);
+      pushEntityToServer('joiningDocs', updated);
+      return updated;
+    });
+  };
+
+  const deleteJoiningDoc = (id: string) => {
+    setJoiningDocs((prev) => {
+      const updated = prev.filter((d) => d.id !== id);
+      safeSetStorage('uomboni_docs', updated);
+      pushEntityToServer('joiningDocs', updated);
+      return updated;
+    });
+  };
+
   const addGalleryPhoto = (photo: GalleryPhoto) => {
     setGalleryPhotos((prev) => {
       const updated = [photo, ...prev];
@@ -2852,6 +2982,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteAcademicDirective,
         toggleMarkEntryAuthorization,
         checkMarkEntryPermission,
+        examTypes,
+        addExamType,
+        updateExamType,
+        deleteExamType,
+        toggleExamTypeEntryStatus,
         students,
         addStudent,
         updateStudent,
@@ -2921,6 +3056,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         joiningDocs,
         incrementDocDownload,
         addJoiningDoc,
+        updateJoiningDoc,
+        deleteJoiningDoc,
         galleryPhotos,
         addGalleryPhoto,
         updateGalleryPhoto,

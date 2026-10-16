@@ -4,822 +4,364 @@ import {
   HelpCircle,
   ChevronDown,
   Search,
-  CreditCard,
-  FileText,
-  Calendar,
   BookOpen,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  ExternalLink,
-  Phone,
-  MessageCircle,
-  Download,
+  DollarSign,
   Clock,
-  Layers,
-  ArrowRight,
-  ShieldCheck,
-  Building,
-  Home
+  CheckCircle2,
+  PhoneCall,
+  Sparkles,
+  FileText
 } from 'lucide-react';
-
-interface FAQSectionProps {
-  onOpenJoiningInstructions?: () => void;
-  onOpenVituMuhimu?: () => void;
-  onOpenAdmissions?: () => void;
-  onOpenMedicalForm?: () => void;
-  onNavigate?: (sectionId: string) => void;
-}
-
-type FAQCategory = 'all' | 'fees' | 'joining' | 'schedules' | 'academics';
 
 interface FAQItem {
   id: string;
-  category: 'fees' | 'joining' | 'schedules' | 'academics';
+  category: 'admissions' | 'fees' | 'schedule';
   questionSw: string;
   questionEn: string;
   answerSw: string;
   answerEn: string;
   highlightsSw?: string[];
   highlightsEn?: string[];
-  actionType?: 'joining' | 'fees' | 'vitu-muhimu' | 'medical' | 'contact' | 'call';
-  actionLabelSw?: string;
-  actionLabelEn?: string;
+}
+
+const FAQ_DATA: FAQItem[] = [
+  // 1. Admissions
+  {
+    id: 'faq-adm-1',
+    category: 'admissions',
+    questionSw: 'Ni vigezo gani vinavyohitajika kujiunga na Kidato cha Kwanza Shule ya Sekondari Uomboni?',
+    questionEn: 'What are the admission requirements for Form One at Uomboni Secondary School?',
+    answerSw: 'Mwanafunzi anapaswa kuwa amehitimu mtihani wa Darasa la Saba (PSLE) akiwa na ufaulu mzuri wa madaraja A, B au C. Anahitaji kuwasilisha cheti cha kuzaliwa (RITA), nakala ya matokeo ya NECTA (Result Slip), picha 4 za pasipoti za hivi karibuni zenye mandhari ya bluu, na fomu ya uchunguzi wa afya (Medical Examination Form) iliyojazwa na mganga mkuu wa hospitali inayotambuliwa na serikali.',
+    answerEn: 'The candidate must have completed and passed the Primary School Leaving Examination (PSLE) with grades A, B, or C. Required documents include an official birth certificate (RITA), NECTA PSLE result slip, 4 recent passport-size photos with sky-blue background, and an official medical examination form certified by a recognized government physician.',
+    highlightsSw: ['Cheti cha Kuzaliwa (RITA)', 'Result Slip ya Darasa la 7', 'Fomu ya Afya (Hospitali ya Serikali)', 'Picha 4 za Pasipoti'],
+    highlightsEn: ['Birth Certificate (RITA)', 'Grade 7 PSLE Result Slip', 'Official Medical Form', '4 Passport Photographs'],
+  },
+  {
+    id: 'faq-adm-2',
+    category: 'admissions',
+    questionSw: 'Je, mnapokea wanafunzi wa uhamisho wa Kidato cha Pili na Kidato cha Tatu?',
+    questionEn: 'Do you accept transfer students for Form Two and Form Three?',
+    answerSw: 'Ndiyo, nafasi za uhamisho kwa Kidato cha Pili na Tatu zipo wazi kwa wanafunzi wenye mwenendo mwema wa tabia na rekodi nzuri ya kitaaluma kutoka shule zilizosajiliwa na Wizara ya Elimu. Mtahiniwa atafanyiwa usaili mdogo wa kupima kiwango chake na atapaswa kuleta ripoti ya maendeleo ya shule aliyotoka pamoja na barua rasmi ya uhamisho.',
+    answerEn: 'Yes, transfer opportunities for Form 2 and Form 3 are available for students with good academic standing and exemplary discipline from registered schools. The student will undertake a placement test and must provide terminal progress reports from the previous school alongside official transfer documentation.',
+    highlightsSw: ['Ripoti ya maendeleo ya kimasomo', 'Barua rasmi ya uhamisho', 'Kipimo kidogo cha kujiunga (Placement Test)'],
+    highlightsEn: ['Previous Academic Reports', 'Official Transfer Release', 'Placement Evaluation'],
+  },
+  {
+    id: 'faq-adm-3',
+    category: 'admissions',
+    questionSw: 'Fomu za kujiunga na shule zinapatikana wapi na kwa njia gani?',
+    questionEn: 'Where and how can I obtain the school admission joining instructions form?',
+    answerSw: 'Fomu zote za kujiunga (Joining Instructions & Admission Forms) zinapatikana bure mtandaoni kwenye sehemu ya "Hati za Udahili" (STUDENT ADMISSION) kwa kubonyeza kitufe chekundu cha Liquid Button kilichopo juu au kupitia ofisi ya shule Marangu, Moshi Bookshop mjini Moshi, na parokia ya Ngarenaro Arusha.',
+    answerEn: 'All official joining instructions and admission forms are available online on this website under the "STUDENT ADMISSION" red liquid button with direct PDF download. Physical copies are also available at the School Administration Office in Marangu, Moshi Bookshop in Moshi Town, and Ngarenaro Parish.',
+  },
+
+  // 2. School Fees & Payment
+  {
+    id: 'faq-fee-1',
+    category: 'fees',
+    questionSw: 'Ada ya shule ni kiasi gani na inalipwaje kwa wanafunzi wa Bweni na Kutwa?',
+    questionEn: 'How much are the school fees and what are the payment terms for day and boarding scholars?',
+    answerSw: 'Shule ya Sekondari Uomboni inatoa ada nafuu na yenye unafuu mkubwa kwa wazazi inayozingatia ubora wa huduma na malezi ya Kikatoliki. Ada inaweza kulipwa kwa awamu nne (4 instalments) kulingana na mihula na kalenda ya shule, au kwa awamu mbili. Ada inajumuisha masomo, maabara, huduma ya chakula bora, malazi (kwa wanafunzi wa bweni), huduma ya kwanza na ulinzi wa masaa 24.',
+    answerEn: 'Uomboni Secondary School offers affordable and subsidized school fees structured into flexible instalments (up to 4 terms or 2 biannual payments). The fee covers tuition, science laboratory usage, balanced nutritional meals, hostel accommodation for boarders, first-aid health care, and 24/7 security.',
+    highlightsSw: ['Malipo ya awamu 4 yanaruhusiwa', 'Inajumuisha chakula na huduma za maabara', 'Nafuu kwa bweni na kutwa'],
+    highlightsEn: ['4 flexible payment terms', 'Includes meals & lab facilities', 'Subsidized day & boarding rates'],
+  },
+  {
+    id: 'faq-fee-2',
+    category: 'fees',
+    questionSw: 'Ni akaunti zipi rasmi za benki zinazotumika kulipa ada na michango ya shule?',
+    questionEn: 'Which official bank accounts are authorized for school fee deposits?',
+    answerSw: 'Malipo yote ya ada hufanyika benki moja kwa moja kupitia akaunti rasmi za Shule ya Sekondari Uomboni katika Benki ya CRDB, NMB Bank, au Mkombozi Commercial Bank. Hairuhusiwi kabisa kumlipa mtu yeyote pesa mkononi (cash). Hati ya malipo (Bank Pay-in Slip) halisi huwasilishwa kwa mhasibu (Bursar) wa shule kwa ajili ya kupatiwa stakabadhi rasmi.',
+    answerEn: 'All fee payments must be deposited directly into the registered institutional bank accounts at CRDB Bank, NMB Bank, or Mkombozi Commercial Bank under "UOMBONI SECONDARY SCHOOL". Cash payments to individuals are strictly prohibited. Original bank pay-in slips must be presented to the school Bursar for official receipting.',
+    highlightsSw: ['Benki ya CRDB', 'NMB Bank', 'Mkombozi Commercial Bank', 'Pay-in Slip inapewa stakabadhi rasmi'],
+    highlightsEn: ['CRDB Bank Account', 'NMB Bank Account', 'Mkombozi Commercial Bank', 'Official receipt issued on slip submission'],
+  },
+  {
+    id: 'faq-fee-3',
+    category: 'fees',
+    questionSw: 'Je, kuna michango ya ziada isiyotarajiwa katikati ya muhula?',
+    questionEn: 'Are there hidden or unexpected extra contributions during the academic term?',
+    answerSw: 'Hapana! Shule ya Sekondari Uomboni inazingatia uwazi kamili. Michango yote halali huainishwa kwa uwazi kwenye Fomu Rasmi ya Maelekezo ya Kujiunga (Joining Instructions) inayotolewa mwanzoni mwa mwaka wa masomo, ikijumuisha sare za shule, matibabu madogo na vitambulisho.',
+    answerEn: 'No! Uomboni Secondary School maintains utmost transparency. Every necessary cost is comprehensively detailed in the official Joining Instructions document issued at the beginning of the school year, covering uniforms, basic medical fund, and student ID cards without undisclosed levies.',
+  },
+
+  // 3. Daily Schedules & Life
+  {
+    id: 'faq-sch-1',
+    category: 'schedule',
+    questionSw: 'Ratiba ya siku ya shule inakuwaje kuanzia asubuhi hadi jioni?',
+    questionEn: 'What does the daily school routine look like from morning until evening?',
+    answerSw: 'Ratiba ya siku inaanza saa 11:30 asubuhi kwa maandalizi binafsi na sala ya asubuhi. Mkutano mkuu (Assembly) hufanyika saa 1:30 asubuhi. Masomo darasani huanzia saa 2:00 asubuhi hadi saa 9:00 alasiri kukiwa na mapumziko ya chai na chakula cha mchana. Saa 9:30 - 11:00 alasiri ni muda wa michezo, kilimo na usafi. Jioni saa 1:00 hadi 3:30 usiku ni muda wa masomo binafsi (Night Preparation/Prep) chini ya uangalizi wa mwalimu wa zamu, ikifuatiwa na ukimya na mapumziko saa 4:00 usiku.',
+    answerEn: 'The daily timetable begins at 5:30 AM with personal morning routines and dawn prayers. Morning parade assembly occurs at 7:30 AM. Academic periods run from 8:00 AM to 3:00 PM with structured tea and lunch breaks. Between 3:30 PM and 5:00 PM students engage in physical sports, extracurricular clubs, and environmental care. Evening prep runs from 7:00 PM to 9:30 PM under teacher supervision, with lights out at 10:00 PM.',
+    highlightsSw: ['07:30 Asubuhi: Assembly ya Shule', '08:00 - 15:00: Vipindi vya Masomo', '15:30 - 17:00: Michezo & Klabu za Taaluma', '19:00 - 21:30: Prep ya Jioni (Masomo Binafsi)'],
+    highlightsEn: ['07:30 AM: School Assembly', '08:00 AM - 03:00 PM: Classroom Lectures', '03:30 PM - 05:00 PM: Sports & Clubs', '07:00 PM - 09:30 PM: Supervised Evening Prep'],
+  },
+  {
+    id: 'faq-sch-2',
+    category: 'schedule',
+    questionSw: 'Utaratibu wa wazazi kutembelea wanafunzi (Visiting Days) ukoje?',
+    questionEn: 'What is the visiting schedule and protocol for parents and guardians?',
+    answerSw: 'Siku rasmi ya wazazi kuwatembelea wanafunzi (Visiting Day) hufanyika Jumapili ya kwanza ya kila mwezi kuanzia saa 4:00 asubuhi hadi saa 10:30 jioni. Wazazi wanatakiwa kujiandikisha getini kwa mlinzi na mwalimu wa zamu. Katika siku za kawaida za masomo, ugeni hauruhusiwi bila idhini maalum ya Mkuu wa Shule ili kutovuruga utulivu wa masomo.',
+    answerEn: 'Official Visiting Day takes place on the first Sunday of every month between 10:00 AM and 4:30 PM. Parents and guardians must sign in at the security gate and report to the teacher on duty. Weekday visits are strictly controlled and require prior clearance from the Head of School to safeguard instructional hours.',
+  },
+  {
+    id: 'faq-sch-3',
+    category: 'schedule',
+    questionSw: 'Je, simu za mkononi na vifaa vya kielektroniki vinaruhusiwa kwa wanafunzi?',
+    questionEn: 'Are smartphones and personal electronic gadgets permitted on campus?',
+    answerSw: 'HAPANA KABISA. Simu za mkononi, spika, redio, hita za umeme na vifaa vyote vya kielektroniki vimepigwa marufuku vikali shuleni. Mwanafunzi yeyote anayekutwa na simu atachukuliwa hatua kali za kinidhamu. Mawasiliano kati ya mzazi na mwanafunzi hufanyika kupitia simu rasmi ya ofisi ya shule au mwalimu wa malezi (Patron/Matron).',
+    answerEn: 'ABSOLUTELY NOT. Mobile phones, smart devices, immersion heaters, and unauthorized electronic gadgets are strictly forbidden on campus. Any student found in possession faces stern disciplinary measures. Parent-student communication is conducted seamlessly via the official school administration or residential patrons/matrons.',
+    highlightsSw: ['Simu za mkononi zimepigwa marufuku', 'Mawasiliano yote kupitia ofisi ya shule na walezi'],
+    highlightsEn: ['Mobile devices strictly prohibited', 'Official communication through school office & boarding masters'],
+  },
+  {
+    id: 'faq-sch-4',
+    category: 'schedule',
+    questionSw: 'Je, wanafunzi wa dini na madhehebu mbalimbali wanatendewaje haki shuleni?',
+    questionEn: 'How are students of diverse religious denominations accommodated?',
+    answerSw: 'Ingawa Uomboni ni shule inayomilikiwa na Kanisa Katoliki Jimbo la Moshi, tunapokea wanafunzi wa madhehebu na dini zote bila ubaguzi wowote. Uhusiano mwema, uvumilivu wa kidini na kuheshimiana ni msingi mkuu wa malezi yetu. Wanafunzi wote wanashiriki malezi imara ya kimaadili yanayomjenga mtoto kuwa raia mwema na mtiifu kwa Taifa.',
+    answerEn: 'Although Uomboni is a Catholic institution under the Diocese of Moshi, we warmly welcome students of all religious beliefs with complete respect and dignity. Inter-faith tolerance, unity, and shared moral ethics form the bedrock of student life, nurturing responsible citizens of Tanzania.',
+  },
+];
+
+interface FAQSectionProps {
+  onOpenAdmissionDocuments?: () => void;
+  onOpenContact?: () => void;
 }
 
 export const FAQSection: React.FC<FAQSectionProps> = ({
-  onOpenJoiningInstructions,
-  onOpenVituMuhimu,
-  onOpenAdmissions,
-  onOpenMedicalForm,
-  onNavigate,
+  onOpenAdmissionDocuments,
+  onOpenContact,
 }) => {
   const { language } = useLanguage();
-  const [selectedCategory, setSelectedCategory] = useState<FAQCategory>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'admissions' | 'fees' | 'schedule'>('all');
+  const [expandedId, setExpandedId] = useState<string | null>('faq-adm-1');
   const [searchQuery, setSearchQuery] = useState('');
-  const [openItemIds, setOpenItemIds] = useState<Record<string, boolean>>({
-    'fees-structure': true,
-    'joining-download': true,
-  });
 
-  const toggleItem = (id: string) => {
-    setOpenItemIds((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const toggleAccordion = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const faqData: FAQItem[] = useMemo(
-    () => [
-      // 1. School Fees & Payment Queries
-      {
-        id: 'fees-structure',
-        category: 'fees',
-        questionSw: 'Ada ya shule kwa wanafunzi wa Kutwa na Bweni ni kiasi gani kwa mwaka 2026/2027?',
-        questionEn: 'What are the tuition and boarding fees for Day and Boarding students in 2026/2027?',
-        answerSw:
-          'Ada ya shule inatofautiana kulingana na hadhi ya mwanafunzi (Kutwa au Bweni). Kwa wanafunzi wa Bweni, gharama inajumuisha chakula kamili mara tatu kwa siku, malazi salama, umeme na maji ya uhakika, huduma za afya ya kwanza, na ada ya mafunzo ya vitendo maabara. Kwa wanafunzi wa Kutwa, inajumuisha ada ya masomo na chakula cha mchana. Mwongozo kamili wa ada na mchanganuo wa steshenari na mitihani unapatikana kwenye fomu rasmi ya Kujiunga.',
-        answerEn:
-          'School fees vary based on enrollment status (Day Scholar or Boarder). Boarding fees cover full board meals (3 times daily), secure accommodation, reliable utilities, first aid health services, and science laboratory practicals. Day scholar fees cover academic tuition and daily lunch. A comprehensive breakdown including examination and stationery contributions is detailed in the official Joining Instructions.',
-        highlightsSw: [
-          'Malipo yanajumuisha bima ya afya ya awali na maabara za kisasa',
-          'Chakula bora chenye virutubisho kwa wanafunzi wote',
-          'Mchanganuo halisi upo kwenye mwongozo wa benki na fomu rasmi',
-        ],
-        highlightsEn: [
-          'Fees include basic health safety and modern laboratory practicals',
-          'Nutritious balanced meals provided daily',
-          'Exact itemized amounts appear on the official fee invoice schedule',
-        ],
-        actionType: 'fees',
-        actionLabelSw: 'Tazama Sehemu ya Malipo ya Ada',
-        actionLabelEn: 'View Fee Payment Section',
-      },
-      {
-        id: 'fees-installments',
-        category: 'fees',
-        questionSw: 'Je, ada ya shule inaweza kulipwa kwa awamu (installments)?',
-        questionEn: 'Can school fees be paid in installments?',
-        answerSw:
-          'Ndio, uongozi wa Shule ya Sekondari Uomboni unaruhusu malipo kwa awamu mbili kuu (Mhula wa Kwanza na Mhula wa Pili) ili kurahisisha wazazi na walezi kupanga bajeti. Awamu ya kwanza (60%) inatakiwa kulipwa kabla ya au wakati wa kuripoti shuleni mwanzoni mwa mwaka wa masomo, na awamu ya pili (40%) inalipwa kabla ya kuanza kwa muhula wa pili mwezi Julai.',
-        answerEn:
-          'Yes, Uomboni Secondary School management accommodates payment in two main termly installments to assist parents with financial planning. The first installment (60%) must be cleared before or upon reporting at the start of the academic year, and the second installment (40%) is due before the resumption of Term Two in July.',
-        highlightsSw: [
-          'Awamu ya 1 (60%): Kabla ya kufungua shule (Januari)',
-          'Awamu ya 2 (40%): Kabla ya kufungua mhula wa pili (Julai)',
-          'Hakuna mwanafunzi atakayeingia darasani bila stakabadhi rasmi ya benki',
-        ],
-        highlightsEn: [
-          'Installment 1 (60%): Due before opening day (January)',
-          'Installment 2 (40%): Due before Term 2 resumption (July)',
-          'Official stamped bank pay-in slip is mandatory for classroom entry',
-        ],
-        actionType: 'fees',
-        actionLabelSw: 'Mwongozo wa Malipo',
-        actionLabelEn: 'Payment Guidelines',
-      },
-      {
-        id: 'fees-bank-accounts',
-        category: 'fees',
-        questionSw: 'Je, akaunti rasmi za benki za shule na namba za malipo ni zipi?',
-        questionEn: 'What are the official school bank accounts and payment channels?',
-        answerSw:
-          'Malipo yote ya ada na michango lazima yafanyike kupitia akaunti rasmi ya benki ya Shule ya Sekondari Uomboni (CRDB Bank - Namba ya Akaunti: 01J1079051400) au kupitia Namba ya Udhibiti wa Serikali (Government Control Number / GePG) inayotolewa na ofisi ya Mhasibu. TAHADHARI KUBWA: Shule haipokei pesa taslimu mkononi wala malipo kwenda namba binafsi za simu.',
-        answerEn:
-          'All tuition fees and institutional contributions must be deposited directly into Uomboni Secondary School official bank account (CRDB Bank - Account Number: 01J1079051400) or via the Government Electronic Payment Gateway (GePG Control Number) generated by the Bursar. STRICT WARNING: The school does not accept direct cash in hand or transfers to personal phone numbers.',
-        highlightsSw: [
-          'CRDB Bank: 01J1079051400 (Tawi la Moshi / Marangu)',
-          'Andika jina kamili la mwanafunzi na namba ya mtihani kwenye pay-in slip',
-          'Wasilisha slip halisi ya benki kwa Mhasibu (Bursar) kupata risiti halisi',
-        ],
-        highlightsEn: [
-          'CRDB Bank: 01J1079051400 (Moshi / Marangu Branch)',
-          'Write student full name and index number clearly on the deposit slip',
-          'Submit original bank slip to the Bursar office to obtain the official receipt',
-        ],
-        actionType: 'fees',
-        actionLabelSw: 'Tazama Maelezo ya Benki',
-        actionLabelEn: 'View Bank Accounts',
-      },
-      {
-        id: 'fees-receipt-verification',
-        category: 'fees',
-        questionSw: 'Je, mzazi anapataje risiti rasmi baada ya kufanya malipo?',
-        questionEn: 'How does a parent receive an official receipt after payment?',
-        answerSw:
-          'Baada ya kulipa benki, mzazi anaweza kuleta stakabadhi halisi shuleni kwa Mhasibu au kutumia mfumo wetu wa mtandaoni (Online Fee Verification) kwenye tovuti hii kwa kuweka namba ya kumbukumbu ya muamala (Transaction Reference). Pia unaweza kutuma picha ya slip ya benki kupitia WhatsApp ya Ofisi ya Mhasibu (+255 782 558 127) na utatumiwa stakabadhi rasmi yenye muhuri ndani ya saa chache.',
-        answerEn:
-          'After depositing at the bank, parents can present the pay-in slip at the Bursar office or verify instantly through our online Fee Verification portal on this website by submitting the transaction reference. Alternatively, send a clear snapshot of the bank slip via official Bursar WhatsApp (+255 782 558 127) to receive an official stamped digital receipt.',
-        highlightsSw: [
-          'Uthibitisho wa papo hapo kupitia tovuti ya shule',
-          'WhatsApp ya Mhasibu: +255 782 558 127',
-          'Risiti inahifadhiwa kwenye kumbukumbu za mwanafunzi za kudumu',
-        ],
-        highlightsEn: [
-          'Instant verification available via the school website',
-          'Bursar WhatsApp Hotline: +255 782 558 127',
-          'Receipt is archived permanently into student academic record',
-        ],
-        actionType: 'fees',
-        actionLabelSw: 'Thibitisha Risiti Mtandaoni',
-        actionLabelEn: 'Verify Receipt Online',
-      },
-
-      // 2. Joining Instructions & Admission Queries
-      {
-        id: 'joining-download',
-        category: 'joining',
-        questionSw: 'Nawezaje kupata Fomu Rasmi ya Maelekezo ya Kujiunga (Joining Instructions 2026/2027)?',
-        questionEn: 'How can I obtain the official Joining Instructions Form for 2026/2027?',
-        answerSw:
-          'Fomu kamili ya Kujiunga (Official Joining Instructions 2026/2027) inapatikana bure kwa kupakua moja kwa moja hapa kwenye tovuti yetu kwa muundo wa PDF unaoweza kuchapishwa. Fomu hiyo inajumuisha maelekezo ya sheria za shule, vifaa vya bweni, mchanganuo wa sare, ratiba ya kuripoti, na Fomu ya Uchunguzi wa Afya (Medical Examination Form - Part B). Unaweza pia kuipata ofisini shuleni Marangu.',
-        answerEn:
-          'The complete official Joining Instructions 2026/2027 document is available for free instant PDF download directly on this website. The package incorporates school bylaws, boarding supplies checklist, uniform specifications, reporting dates, and the official Medical Examination Form (Part B). Hard copies are also accessible at the school administration office in Marangu.',
-        highlightsSw: [
-          'Inapakuliwa bure kwa muundo wa PDF tayari kwa kuchapishwa',
-          'Inajumuisha Fomu ya Daktari (Medical Form)',
-          'Ina maelekezo kamili ya sare za kike na kiume',
-        ],
-        highlightsEn: [
-          'Free PDF download ready for printing',
-          'Includes official Medical Examination Form',
-          'Complete guidelines on boys and girls uniform specifications',
-        ],
-        actionType: 'joining',
-        actionLabelSw: 'Pakua Fomu ya Kujiunga (PDF)',
-        actionLabelEn: 'Download Joining Instructions (PDF)',
-      },
-      {
-        id: 'joining-essential-items',
-        category: 'joining',
-        questionSw: 'Ni vitu gani muhimu (Vitu Muhimu) mwanafunzi wa bweni anatakiwa kuleta?',
-        questionEn: 'What essential items must boarding students bring on arrival day?',
-        answerSw:
-          'Kila mwanafunzi wa bweni anapaswa kufika na: Godoro la sponji saizi 2.5 x 6 ft lenye unene wa kawaida, mashuka mawili ya rangi ya bluu iliyokoza na taulo, neti ya mbu yenye pembe nne (bluu au nyeupe), ndoo mbili za plastiki (lita 10 au 20), sahani, kijiko na kikombe cha bati au plastiki ngumu, tochi au taa ya dharura ya kuchaji, vifaa vya usafi binafsi (sabuni, mswaki, dawa), sare rasmi za shule na nguo za michezo kama zilivyoainishwa.',
-        answerEn:
-          'Every boarding student must arrive with: A standard foam mattress (2.5 x 6 ft), two navy/light blue bedsheets and a bath towel, a four-corner mosquito net, two durable plastic buckets (10L/20L), stainless steel/durable plate, spoon and cup, rechargeable emergency light/torch, personal toiletries (soap, toothbrush, toothpaste), and official school uniforms and sports tracksuits as stipulated.',
-        highlightsSw: [
-          'Godoro 2.5 x 6 ft & Mashuka 2 ya bluu',
-          'Neti ya mbu ya pembe nne & Ndoo 2 za plastiki',
-          'Vyombo vya chakula vya kudumu & Vifaa vya usafi',
-        ],
-        highlightsEn: [
-          'Mattress 2.5 x 6 ft & 2 blue bedsheets',
-          'Four-corner mosquito net & 2 plastic buckets',
-          'Durable eating utensils & personal hygiene kit',
-        ],
-        actionType: 'vitu-muhimu',
-        actionLabelSw: 'Orodha ya Vitu Muhimu vya Bweni',
-        actionLabelEn: 'Boarding Essentials Checklist',
-      },
-      {
-        id: 'joining-medical-form',
-        category: 'joining',
-        questionSw: 'Je, fomu ya uchunguzi wa afya (Medical Examination) inajazwa wapi?',
-        questionEn: 'Where must the Medical Examination Form be completed and certified?',
-        answerSw:
-          'Sehemu ya uchunguzi wa afya (Medical Examination Form - Part B) lazima ijazwe na ithibitishwe na Mganga Mkuu wa Hospitali ya Serikali (District Medical Officer - DMO au Hospitali ya Wilaya/Mkoa). Uchunguzi huo unajumuisha upimaji wa kifua (TB/X-ray au Mantoux), maono ya macho, usikivu, magonjwa ya kuambukiza, na mzio (allergies). Fomu iliyosainiwa na kupigwa muhuri halisi wa hospitali lazima iwasilishwe siku ya kuripoti.',
-        answerEn:
-          'The Medical Examination Form (Part B) must be examined and signed by an official Government Medical Officer (DMO or recognized District/Regional Hospital). Health screening encompasses chest examination, vision acuity, hearing tests, infectious conditions, and chronic allergies. The certified form with hospital official rubber stamp must be physically submitted upon arrival on campus.',
-        highlightsSw: [
-          'Lazima ithibitishwe na Hospitali ya Serikali (DMO/RMO)',
-          'Kipimo cha maono, kifua na afya ya jumla',
-          'Inawasilishwa siku ya kwanza ya kuripoti shuleni',
-        ],
-        highlightsEn: [
-          'Must be endorsed by a recognized Government Hospital (DMO/RMO)',
-          'Eye screening, chest assessment, and general wellness tests',
-          'Must be submitted in physical hard copy on arrival day',
-        ],
-        actionType: 'medical',
-        actionLabelSw: 'Fungua Fomu ya Afya (PDF)',
-        actionLabelEn: 'Open Medical Form (PDF)',
-      },
-      {
-        id: 'joining-documents-needed',
-        category: 'joining',
-        questionSw: 'Ni nyaraka gani zinazotakiwa kuwasilishwa wakati wa kuripoti shuleni?',
-        questionEn: 'What documents must be presented during registration on reporting day?',
-        answerSw:
-          'Mwanafunzi anapaswa kuwasilisha: 1. Fomu ya Kujiunga iliyojazwa kikamilifu na kusainiwa na mzazi/mlezi; 2. Fomu ya Afya iliyothibitishwa na daktari wa serikali; 3. Nakala ya Cheti cha Kuzaliwa (kutoka RITA); 4. Nakala ya matokeo ya mtihani wa NECTA (PSLE kwa Kidato cha 1, au CSEE kwa Kidato cha 5); 5. Picha nne (4) ndogo za rangi (Passport size) zenye usuli wa bluu; 6. Stakabadhi halisi ya benki ya malipo ya ada.',
-        answerEn:
-          'Students must present: 1. Fully completed Joining Instructions signed by parent/guardian; 2. Medical Examination Form stamped by government medical authority; 3. Copy of original Birth Certificate (RITA); 4. Official NECTA Results slip (PSLE for Form 1, CSEE for Form 5); 5. Four (4) recent passport-sized photographs with blue background; 6. Original bank pay-in slip of fee settlement.',
-        highlightsSw: [
-          'Fomu ya Kujiunga + Fomu ya Afya iliyopigwa muhuri',
-          'Cheti cha Kuzaliwa (RITA) & Matokeo ya NECTA',
-          'Picha 4 za pasipoti & Stakabadhi halisi ya benki',
-        ],
-        highlightsEn: [
-          'Joining Form + Certified Medical Examination Form',
-          'Official Birth Certificate (RITA) & NECTA result slip',
-          '4 passport photos & original stamped bank pay-in slip',
-        ],
-        actionType: 'joining',
-        actionLabelSw: 'Mchakato wa Kujiunga',
-        actionLabelEn: 'Joining Process',
-      },
-
-      // 3. Academic Schedules & Calendars
-      {
-        id: 'schedules-terms',
-        category: 'schedules',
-        questionSw: 'Je, ratiba ya mihula ya masomo na likizo za mwaka 2026/2027 ikoje?',
-        questionEn: 'What is the academic term and holiday calendar for 2026/2027?',
-        answerSw:
-          'Mwaka wa masomo umegawanyika katika mihula miwili kulingana na muongozo wa Wizara ya Elimu, Sayansi na Teknolojia: Mhula wa Kwanza huanza Januari na kuhitimishwa Juni, kukiwa na mapumziko mafupi ya katikati ya mhula (Mid-Term) mwezi Aprili. Mhula wa Pili huanza Julai na kuhitimishwa Desemba, kukiwa na mapumziko ya katikati ya muhula mwezi Septemba. Ratiba maalum ya kambi za mitihani ya NECTA kwa Kidato cha 2 na cha 4 huendelea kama inavyotangazwa na Mkuu wa Shule.',
-        answerEn:
-          'The academic year operates on two comprehensive terms synchronized with the Ministry of Education guidelines: Term One commences in January and closes in June, featuring a mid-term break in April. Term Two commences in July and concludes in December, featuring a mid-term break in September. Special academic revision bootcamps for candidate classes (Form 2 and Form 4) proceed as scheduled by the Headmaster.',
-        highlightsSw: [
-          'Mhula wa 1: Januari – Juni (Mapumziko ya Aprili)',
-          'Mhula wa 2: Julai – Desemba (Mapumziko ya Septemba)',
-          'Kambi maalum za maandalizi ya mitihani ya kitaifa (NECTA)',
-        ],
-        highlightsEn: [
-          'Term 1: January – June (Mid-term break in April)',
-          'Term 2: July – December (Mid-term break in September)',
-          'Dedicated national examination revision bootcamps',
-        ],
-        actionType: 'contact',
-        actionLabelSw: 'Uliza Ratiba ya Sasa',
-        actionLabelEn: 'Ask Current Schedule',
-      },
-      {
-        id: 'schedules-daily-routine',
-        category: 'schedules',
-        questionSw: 'Ratiba ya kawaida ya siku (Daily Timetable) ya mwanafunzi wa Uomboni inakuwaje?',
-        questionEn: 'What does a typical daily timetable look like for a student at Uomboni?',
-        answerSw:
-          'Ratiba ya shule inalenga kujenga nidhamu thabiti ya kiakademia na malezi ya kiroho: 05:30 - 06:30 Asubuhi: Kuamka na maandalizi binafsi; 06:30 - 07:15: Kiamsha kinywa na ukaguzi wa usafi; 07:15 - 07:45: Mkutano wa gwaride la asubuhi (Morning Assembly); 08:00 - 14:30: Vipindi vya darasani na maabara (ikiwemo mapumziko mafupi na chai); 14:30 - 15:30: Chakula cha mchana na mapumziko; 16:00 - 17:30: Michezo, sanaa na vilabu vya masomo; 19:00 - 21:30: Maandalizi ya jioni (Evening Supervised Prep).',
-        answerEn:
-          'The daily regimen cultivates academic excellence, self-discipline and character: 05:30 - 06:30 AM: Rise, personal prep & quiet reflection; 06:30 - 07:15 AM: Breakfast & morning inspection; 07:15 - 07:45 AM: Morning assembly; 08:00 AM - 02:30 PM: Intensive classroom periods & laboratory experiments; 02:30 - 03:30 PM: Lunch & rest; 04:00 - 05:30 PM: Sports, athletics, and academic clubs; 07:00 - 09:30 PM: Evening supervised study prep.',
-        highlightsSw: [
-          'Vipindi vya darasani kuanzia 08:00 Asubuhi hadi 14:30 Mchana',
-          'Michezo na klabu za sayansi kila jioni',
-          'Jioni: Prep inayosimamiwa na walimu wa zamu',
-        ],
-        highlightsEn: [
-          'Academic class hours from 08:00 AM to 02:30 PM',
-          'Afternoon athletics and science club sessions',
-          'Evening supervised prep guided by duty masters',
-        ],
-      },
-      {
-        id: 'schedules-necta-exams',
-        category: 'schedules',
-        questionSw: 'Mitihani ya Kitaifa ya NECTA hufanyika katika vipindi gani?',
-        questionEn: 'When do the NECTA National Examinations take place at center S0486?',
-        answerSw:
-          'Shule ya Sekondari Uomboni ina namba ya kituo cha mtihani wa NECTA S0486. Mitihani hufanyika kulingana na ratiba rasmi ya Baraza la Mitihani la Taifa (NECTA): Mtihani wa Kidato cha Pili (FTNA) hufanyika mwezi Oktoba/Novemba; Mtihani wa Kidato cha Nne (CSEE) hufanyika mwezi Novemba; na Mtihani wa Kidato cha Sita (ACSEE) hufanyika mwezi Mei kila mwaka. Wanafunzi hufanya mitihani ya majaribio ya wilaya na mkoa mara kwa mara kupima utayari wao.',
-        answerEn:
-          'Uomboni Secondary School holds official NECTA Examination Center number S0486. National exams occur per the National Examinations Council of Tanzania calendar: Form Two National Assessment (FTNA) in October/November; Form Four Certificate of Secondary Education Examination (CSEE) in November; and Form Six Advanced Certificate (ACSEE) in May. Regular regional and district mock examinations precede these assessments.',
-        highlightsSw: [
-          'Kituo Rasmi cha NECTA: S0486 UOMBONI',
-          'Form 2 FTNA: Oktoba / Novemba',
-          'Form 4 CSEE: Novemba',
-        ],
-        highlightsEn: [
-          'Official NECTA Center: S0486 UOMBONI',
-          'Form 2 FTNA: October / November',
-          'Form 4 CSEE: November',
-        ],
-      },
-
-      // 4. Academic Streams & Facilities
-      {
-        id: 'academics-combinations',
-        category: 'academics',
-        questionSw: 'Ni michanganyiko ipi ya masomo (Combinations) inafundishwa kwa Kidato cha 5 na 6?',
-        questionEn: 'What subject combinations are offered for Advanced Level (Form 5 & 6)?',
-        answerSw:
-          'Shule inatoa michepuo mikuu ya Sayansi, Sanaa, na Biashara: 1. Sayansi: PCM (Physics, Chemistry, Mathematics), PCB (Physics, Chemistry, Biology), na CBG (Chemistry, Biology, Geography); 2. Sanaa na Lugha: HKL (History, Kiswahili, English Language) na HGL (History, Geography, English Language); 3. Sayansi ya Jamii na Biashara: EGM (Economics, Geography, Mathematics) na ECA (Economics, Commerce, Accountancy). Masomo yote yana walimu wenye weledi na maabara za kisasa.',
-        answerEn:
-          'The school offers premier Advanced Level combinations across Science, Arts, and Business streams: 1. Science: PCM (Physics, Chemistry, Mathematics), PCB (Physics, Chemistry, Biology), CBG (Chemistry, Biology, Geography); 2. Arts & Humanities: HKL (History, Kiswahili, English Language), HGL (History, Geography, English Language); 3. Commercial: EGM (Economics, Geography, Mathematics), ECA (Economics, Commerce, Accountancy). Each track is led by certified specialist tutors.',
-        highlightsSw: [
-          'Sayansi: PCM, PCB, CBG',
-          'Sanaa & Lugha: HKL, HGL',
-          'Biashara & Jamii: EGM, ECA',
-        ],
-        highlightsEn: [
-          'Science Streams: PCM, PCB, CBG',
-          'Arts & Humanities: HKL, HGL',
-          'Commerce & Economics: EGM, ECA',
-        ],
-        actionType: 'contact',
-        actionLabelSw: 'Uliza Mwalimu Mkuu wa Taaluma',
-        actionLabelEn: 'Consult Academic Master',
-      },
-      {
-        id: 'academics-science-labs',
-        category: 'academics',
-        questionSw: 'Je, kuna maabara za kutosha kwa ajili ya mafunzo ya vitendo ya sayansi?',
-        questionEn: 'Are there well-equipped laboratories for practical science learning?',
-        answerSw:
-          'Ndio, Shule ya Sekondari Uomboni inajivunia maabara tatu za kisasa za Sayansi zilizotengwa mahsusi: Maabara ya Fizikia (Physics), Maabara ya Kemia (Chemistry), na Maabara ya Biolojia (Biology). Kila maabara ina vifaa vya kutosha vya kisasa, kemikali salama, darubini, na mifumo ya usalama ya dharura. Vilevile, tunayo Maabara ya TEHAMA (Computer Laboratory) yenye kompyuta za kisasa na mtandao kwa ajili ya mafunzo ya teknolojia.',
-        answerEn:
-          'Yes, Uomboni Secondary School boasts three fully equipped modern science laboratories: Physics Lab, Chemistry Lab, and Biology Lab. Each facility contains certified experimental apparatus, safety showers, microscopes, and chemical reagents ensuring hands-on practical competence. Furthermore, our dedicated Computer & ICT Lab provides connected workstations for digital literacy and programming.',
-        highlightsSw: [
-          'Maabara 3 maalum: Fizikia, Kemia, na Biolojia',
-          'Maabara ya Kompyuta na TEHAMA yenye mtandao',
-          'Wataalamu wa maabara (Lab Technicians) waliohitimu',
-        ],
-        highlightsEn: [
-          '3 dedicated labs: Physics, Chemistry, Biology',
-          'Connected Computer & ICT digital lab',
-          'Certified laboratory technicians on staff',
-        ],
-      },
-    ],
-    []
-  );
-
-  // Filter items based on category and search query
-  const filteredFAQs = useMemo(() => {
-    return faqData.filter((item) => {
-      const matchesCategory =
-        selectedCategory === 'all' || item.category === selectedCategory;
-
+  const filteredFaqs = useMemo(() => {
+    return FAQ_DATA.filter((item) => {
+      const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
       if (!matchesCategory) return false;
 
       if (!searchQuery.trim()) return true;
 
-      const q = searchQuery.toLowerCase();
-      const matchSw =
-        item.questionSw.toLowerCase().includes(q) ||
-        item.answerSw.toLowerCase().includes(q) ||
-        (item.highlightsSw &&
-          item.highlightsSw.some((h) => h.toLowerCase().includes(q)));
-      const matchEn =
-        item.questionEn.toLowerCase().includes(q) ||
-        item.answerEn.toLowerCase().includes(q) ||
-        (item.highlightsEn &&
-          item.highlightsEn.some((h) => h.toLowerCase().includes(q)));
+      const qSw = item.questionSw.toLowerCase();
+      const qEn = item.questionEn.toLowerCase();
+      const aSw = item.answerSw.toLowerCase();
+      const aEn = item.answerEn.toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
 
-      return matchSw || matchEn;
+      return qSw.includes(q) || qEn.includes(q) || aSw.includes(q) || aEn.includes(q);
     });
-  }, [faqData, selectedCategory, searchQuery]);
-
-  const categories = [
-    {
-      id: 'all' as FAQCategory,
-      labelSw: 'Maswali Yote',
-      labelEn: 'All Questions',
-      count: faqData.length,
-      icon: Layers,
-    },
-    {
-      id: 'fees' as FAQCategory,
-      labelSw: 'Ada za Shule & Malipo',
-      labelEn: 'School Fees & Banking',
-      count: faqData.filter((f) => f.category === 'fees').length,
-      icon: CreditCard,
-    },
-    {
-      id: 'joining' as FAQCategory,
-      labelSw: 'Kujiunga & Fomu Rasmi',
-      labelEn: 'Joining & Admission',
-      count: faqData.filter((f) => f.category === 'joining').length,
-      icon: FileText,
-    },
-    {
-      id: 'schedules' as FAQCategory,
-      labelSw: 'Ratiba ya Masomo & Mihula',
-      labelEn: 'Schedules & Academic Calendar',
-      count: faqData.filter((f) => f.category === 'schedules').length,
-      icon: Calendar,
-    },
-    {
-      id: 'academics' as FAQCategory,
-      labelSw: 'Michepuo & Maabara',
-      labelEn: 'Streams & Laboratories',
-      count: faqData.filter((f) => f.category === 'academics').length,
-      icon: BookOpen,
-    },
-  ];
-
-  const handleAction = (item: FAQItem) => {
-    if (item.actionType === 'joining') {
-      if (onOpenJoiningInstructions) onOpenJoiningInstructions();
-      else if (onNavigate) onNavigate('admissions');
-    } else if (item.actionType === 'fees') {
-      if (onNavigate) onNavigate('fees');
-    } else if (item.actionType === 'vitu-muhimu') {
-      if (onOpenVituMuhimu) onOpenVituMuhimu();
-      else if (onNavigate) onNavigate('admissions');
-    } else if (item.actionType === 'medical') {
-      if (onOpenMedicalForm) onOpenMedicalForm();
-      else window.location.hash = '#medical';
-    } else if (item.actionType === 'contact') {
-      if (onNavigate) onNavigate('contact');
-    } else {
-      if (onNavigate) onNavigate('contact');
-    }
-  };
+  }, [activeCategory, searchQuery]);
 
   return (
-    <section
-      id="faq"
-      className="relative py-20 bg-gradient-to-b from-[#FFFFF0] via-[#F4F7FA] to-[#FFFFF0] text-[#102A43] overflow-hidden"
-    >
-      {/* Liquid background fluid refractions and glowing bubbles */}
-      <div className="absolute top-1/4 left-5 w-72 h-72 rounded-full bg-blue-300/20 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/3 right-8 w-96 h-96 rounded-full bg-amber-200/25 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full bg-cyan-200/15 blur-[120px] pointer-events-none" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-        {/* Section Liquid Header Card */}
-        <div className="liquid-panel text-white p-8 sm:p-10 mb-12 shadow-2xl relative">
-          {/* Decorative fluid droplets & sheen */}
-          <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-amber-300 uppercase tracking-widest mb-4 shadow-inner">
-              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-              <span>
-                {language === 'sw'
-                  ? 'Kituo cha Majibu & Miongozo Rasmi'
-                  : 'Official Answers & Knowledge Center'}
-              </span>
-            </div>
-
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight drop-shadow-md">
-              {language === 'sw'
-                ? 'Maswali Yanayoulizwa Mara kwa Mara (FAQ)'
-                : 'Frequently Asked Questions (FAQ)'}
-            </h2>
-
-            <p className="text-sm sm:text-base text-slate-200 font-normal leading-relaxed drop-shadow-xs mb-6">
-              {language === 'sw'
-                ? 'Pata majibu ya haraka na ya kina kuhusu ada za shule, utaratibu wa malipo ya benki, maelekezo ya kujiunga (Joining Instructions), fomu za afya, na ratiba rasmi ya masomo ya Shule ya Sekondari Uomboni (NECTA Kituo S0486).'
-                : 'Get clear, authoritative answers regarding school fees, bank payment verification, joining instructions, boarding checklists, medical requirements, and academic term schedules at Uomboni Secondary School (NECTA S0486).'}
-            </p>
-
-            {/* Liquid Search Input inside header */}
-            <div className="relative max-w-xl">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-300">
-                <Search className="w-4 h-4 text-cyan-300" />
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  language === 'sw'
-                    ? 'Tafuta swali kuhusu ada, kujiunga, ratiba, maabara...'
-                    : 'Search questions about fees, joining instructions, calendar...'
-                }
-                className="liquid-input w-full pl-10 pr-24 py-3 rounded-full text-xs sm:text-sm placeholder:text-slate-300/70"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-1.5 right-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors"
-                >
-                  {language === 'sw' ? 'Futa' : 'Clear'}
-                </button>
-              )}
-            </div>
+    <section id="faq" className="py-16 sm:py-20 bg-gradient-to-b from-white via-[#F8FAFC] to-[#FFFFF0] border-t border-slate-200">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-300">
+            <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
+            <span>{language === 'sw' ? 'MASWALI YANAYOULIZWA MARA KWA MARA' : 'FREQUENTLY ASKED QUESTIONS'}</span>
           </div>
 
-          {/* Quick Floating Highlights Badge on Right */}
-          <div className="hidden lg:flex flex-col gap-3 absolute top-8 right-8 z-10 w-72 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-            <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wide">
-              <ShieldCheck className="w-4 h-4 text-amber-300" />
-              <span>{language === 'sw' ? 'Uhakiki Rasmi' : 'Verified Info'}</span>
-            </div>
-            <p className="text-[12px] text-slate-200 leading-snug">
-              {language === 'sw'
-                ? 'Miongozo yote imethibitishwa na Uongozi wa Shule, Mkuu wa Shule na Bodi ya Shule kwa mwaka 2026/2027.'
-                : 'All responses verified by School Administration, Headmaster and Board for the 2026/2027 academic session.'}
-            </p>
-            <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[11px] text-cyan-200">
-              <span>NECTA: S0486 UOMBONI</span>
-              <span className="flex items-center gap-1 font-semibold">
-                <Clock className="w-3 h-3" /> 2026/2027
-              </span>
-            </div>
-          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#102A43] tracking-tight">
+            {language === 'sw' ? 'Maswali & Majibu Kuhusu Uomboni' : 'Frequently Asked Questions (FAQ)'}
+          </h2>
+
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+            {language === 'sw'
+              ? 'Pata majibu ya kina na ya papo hapo kuhusu udahili wa wanafunzi wapya, muundo wa ada na malipo, pamoja na ratiba na maisha ya kila siku shuleni.'
+              : 'Find quick, clear answers regarding Form One admissions, transfers, affordable fee structures, and daily school routines at Uomboni Secondary School.'}
+          </p>
         </div>
 
-        {/* Liquid Category Filter Tabs */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-4 mb-8 scrollbar-none">
-          {categories.map((cat) => {
-            const Icon = cat.icon;
-            const isSelected = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`liquid-btn flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold whitespace-nowrap cursor-pointer transition-all ${
-                  isSelected
-                    ? 'liquid-btn-navy !text-white !border-amber-400/80 shadow-md scale-105'
-                    : 'liquid-btn-glass text-slate-800 hover:text-[#102A43] hover:border-slate-400'
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 ${
-                    isSelected ? 'text-amber-300' : 'text-slate-600'
-                  }`}
-                />
-                <span>{language === 'sw' ? cat.labelSw : cat.labelEn}</span>
-                <span
-                  className={`ml-1 text-[11px] px-1.5 py-0.2 rounded-full font-black ${
-                    isSelected
-                      ? 'bg-amber-400 text-slate-950'
-                      : 'bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  {cat.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Results Summary (when active) */}
-        {searchQuery && (
-          <div className="mb-6 flex items-center justify-between bg-white/70 backdrop-blur-md px-4 py-2.5 rounded-lg border border-slate-200 text-xs text-slate-600">
-            <span>
-              {language === 'sw' ? (
-                <>
-                  Imepatikana maswali <strong>{filteredFAQs.length}</strong> kwa
-                  utafutaji wa "<strong>{searchQuery}</strong>"
-                </>
-              ) : (
-                <>
-                  Found <strong>{filteredFAQs.length}</strong> result
-                  {filteredFAQs.length === 1 ? '' : 's'} matching "
-                  <strong>{searchQuery}</strong>"
-                </>
-              )}
-            </span>
+        {/* Search & Category Filter Pills */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 max-w-4xl mx-auto">
+          {/* Category Tabs */}
+          <div className="flex flex-wrap items-center gap-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200">
             <button
-              onClick={() => setSearchQuery('')}
-              className="text-blue-600 hover:text-blue-800 font-semibold underline"
+              onClick={() => setActiveCategory('all')}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeCategory === 'all'
+                  ? 'bg-[#102A43] text-white shadow-xs'
+                  : 'text-slate-700 hover:text-[#102A43] hover:bg-white/60'
+              }`}
             >
-              {language === 'sw' ? 'Onyesha Yote' : 'Show All'}
+              {language === 'sw' ? 'Yote (All)' : 'All'}
+            </button>
+            <button
+              onClick={() => setActiveCategory('admissions')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeCategory === 'admissions'
+                  ? 'bg-[#102A43] text-white shadow-xs'
+                  : 'text-slate-700 hover:text-[#102A43] hover:bg-white/60'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span>{language === 'sw' ? 'Udahili' : 'Admissions'}</span>
+            </button>
+            <button
+              onClick={() => setActiveCategory('fees')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeCategory === 'fees'
+                  ? 'bg-[#102A43] text-white shadow-xs'
+                  : 'text-slate-700 hover:text-[#102A43] hover:bg-white/60'
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+              <span>{language === 'sw' ? 'Ada & Malipo' : 'School Fees'}</span>
+            </button>
+            <button
+              onClick={() => setActiveCategory('schedule')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeCategory === 'schedule'
+                  ? 'bg-[#102A43] text-white shadow-xs'
+                  : 'text-slate-700 hover:text-[#102A43] hover:bg-white/60'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5 text-blue-500" />
+              <span>{language === 'sw' ? 'Ratiba & Maisha' : 'Daily Schedule'}</span>
             </button>
           </div>
-        )}
 
-        {/* Empty State */}
-        {filteredFAQs.length === 0 && (
-          <div className="liquid-glass-card p-12 text-center my-8 bg-white/60">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
-              <HelpCircle className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-bold text-[#102A43] mb-2">
-              {language === 'sw'
-                ? 'Hakuna Swali Lililopatikana'
-                : 'No Questions Found'}
-            </h3>
-            <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              {language === 'sw'
-                ? 'Hatujaweza kupata swali linalolingana na maneno uliyotafuta. Unaweza kujaribu neno lingine au uwasiliane nasi moja kwa moja.'
-                : "We couldn't find any questions matching your query. Please try different keywords or contact the school office directly."}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
+          {/* Search Input */}
+          <div className="relative sm:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={language === 'sw' ? 'Tafuta swali au jibu...' : 'Search questions...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-[#102A43] placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#102A43] focus:border-transparent transition-all shadow-2xs"
+            />
+          </div>
+        </div>
+
+        {/* Accordion List */}
+        <div className="max-w-4xl mx-auto space-y-3.5">
+          {filteredFaqs.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
+              <HelpCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-700">
+                {language === 'sw' ? 'Hakuna swali lililopatikana.' : 'No matching questions found.'}
+              </p>
               <button
                 onClick={() => {
                   setSearchQuery('');
-                  setSelectedCategory('all');
+                  setActiveCategory('all');
                 }}
-                className="liquid-btn liquid-btn-navy px-5 py-2.5 text-xs font-bold text-white cursor-pointer"
+                className="mt-3 text-xs text-[#102A43] font-bold underline cursor-pointer"
               >
-                {language === 'sw' ? 'Onyesha Maswali Yote' : 'View All FAQs'}
+                {language === 'sw' ? 'Onyesha maswali yote' : 'Show all questions'}
               </button>
-              {onNavigate && (
-                <button
-                  onClick={() => onNavigate('contact')}
-                  className="liquid-btn liquid-btn-gold px-5 py-2.5 text-xs font-bold cursor-pointer"
-                >
-                  {language === 'sw' ? 'Wasiliana na Ofisi' : 'Contact School Office'}
-                </button>
-              )}
             </div>
-          </div>
-        )}
+          ) : (
+            filteredFaqs.map((faq) => {
+              const isOpen = expandedId === faq.id;
+              const question = language === 'sw' ? faq.questionSw : faq.questionEn;
+              const answer = language === 'sw' ? faq.answerSw : faq.answerEn;
+              const highlights = language === 'sw' ? faq.highlightsSw : faq.highlightsEn;
 
-        {/* Accordion List with Liquid Glass Style */}
-        <div className="space-y-4">
-          {filteredFAQs.map((item, index) => {
-            const isOpen = !!openItemIds[item.id];
-            const q = language === 'sw' ? item.questionSw : item.questionEn;
-            const a = language === 'sw' ? item.answerSw : item.answerEn;
-            const highlights =
-              language === 'sw' ? item.highlightsSw : item.highlightsEn;
-            const actionLabel =
-              language === 'sw' ? item.actionLabelSw : item.actionLabelEn;
-
-            return (
-              <div
-                key={item.id}
-                className={`transition-all duration-300 rounded-2xl overflow-hidden border ${
-                  isOpen
-                    ? 'liquid-glass-card-active shadow-xl bg-white/95 border-amber-400/50'
-                    : 'liquid-glass-card bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300'
-                }`}
-              >
-                {/* Accordion Header Button */}
-                <button
-                  onClick={() => toggleItem(item.id)}
-                  className="w-full text-left px-5 sm:px-7 py-5 flex items-start justify-between gap-4 cursor-pointer focus:outline-none"
-                  aria-expanded={isOpen}
+              return (
+                <div
+                  key={faq.id}
+                  className={`border rounded-2xl transition-all duration-200 overflow-hidden ${
+                    isOpen
+                      ? 'bg-white border-[#102A43]/30 shadow-md ring-1 ring-[#102A43]/10'
+                      : 'bg-white/80 hover:bg-white border-slate-200 hover:border-slate-300 shadow-2xs'
+                  }`}
                 >
-                  <div className="flex items-start gap-3 sm:gap-4 flex-grow">
-                    <span
-                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 ${
-                        isOpen
-                          ? 'bg-[#102A43] text-amber-300 shadow-md ring-2 ring-amber-300/40'
-                          : 'bg-slate-100 text-[#102A43]'
+                  <button
+                    onClick={() => toggleAccordion(faq.id)}
+                    aria-expanded={isOpen}
+                    className="w-full px-5 py-4.5 text-left flex items-start justify-between gap-4 cursor-pointer focus:outline-hidden"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="p-1.5 rounded-lg bg-[#FFFFF0] border border-amber-200/80 text-[#102A43] shrink-0 mt-0.5">
+                        {faq.category === 'admissions' && <BookOpen className="w-4 h-4 text-[#C9A227]" />}
+                        {faq.category === 'fees' && <DollarSign className="w-4 h-4 text-emerald-600" />}
+                        {faq.category === 'schedule' && <Clock className="w-4 h-4 text-blue-600" />}
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-[#102A43] leading-snug">
+                        {question}
+                      </span>
+                    </div>
+
+                    <div
+                      className={`p-1 rounded-full shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 bg-[#102A43] text-white' : 'text-slate-400 hover:text-slate-600 bg-slate-100'
                       }`}
                     >
-                      {index + 1}
-                    </span>
-
-                    <div>
-                      {/* Category Tag */}
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
-                          {item.category === 'fees'
-                            ? language === 'sw'
-                              ? 'Ada & Malipo'
-                              : 'Fees & Banking'
-                            : item.category === 'joining'
-                            ? language === 'sw'
-                              ? 'Kujiunga & Fomu'
-                              : 'Joining Instructions'
-                            : item.category === 'schedules'
-                            ? language === 'sw'
-                              ? 'Ratiba & Mihula'
-                              : 'Academic Calendar'
-                            : language === 'sw'
-                            ? 'Michepuo & Taaluma'
-                            : 'Academics & Labs'}
-                        </span>
-                      </div>
-
-                      <h3
-                        className={`text-base sm:text-lg font-bold leading-snug transition-colors ${
-                          isOpen ? 'text-[#102A43]' : 'text-slate-800'
-                        }`}
-                      >
-                        {q}
-                      </h3>
+                      <ChevronDown className="w-4 h-4" />
                     </div>
-                  </div>
+                  </button>
 
-                  <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isOpen
-                        ? 'bg-amber-400 text-slate-950 rotate-180 shadow-md'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    <ChevronDown className="w-4 h-4 stroke-[2.5]" />
-                  </div>
-                </button>
+                  {isOpen && (
+                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-700 leading-relaxed border-t border-slate-100">
+                      <p className="mt-2 text-slate-600">{answer}</p>
 
-                {/* Accordion Content with Fluid Reveals */}
-                {isOpen && (
-                  <div className="px-5 sm:px-7 pb-6 pt-1 text-slate-700 border-t border-slate-100">
-                    <p className="text-sm sm:text-base leading-relaxed text-slate-700 mb-4 font-normal">
-                      {a}
-                    </p>
-
-                    {/* Highlights bullet pills */}
-                    {highlights && highlights.length > 0 && (
-                      <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200/70">
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#102A43] mb-2.5 block flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{language === 'sw' ? 'Mambo ya Kuzingatia:' : 'Key Takeaways:'}</span>
-                        </span>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {highlights.map((h, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 font-medium"
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                              <span>{h}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Bottom Action buttons */}
-                    {item.actionType && (
-                      <div className="pt-2 flex flex-wrap items-center gap-3">
-                        <button
-                          onClick={() => handleAction(item)}
-                          className="liquid-btn liquid-btn-navy inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white cursor-pointer"
-                        >
-                          <span>{actionLabel}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-
-                        {item.category === 'fees' && (
-                          <span className="text-[12px] text-slate-500 flex items-center gap-1 font-medium">
-                            <Building className="w-3.5 h-3.5 text-[#C9A227]" />
-                            CRDB: 01J1079051400
+                      {highlights && highlights.length > 0 && (
+                        <div className="mt-3.5 pt-3 border-t border-slate-100">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                            {language === 'sw' ? 'Muhtasari Muhimu:' : 'Key Highlights:'}
                           </span>
-                        )}
-                        {item.category === 'joining' && onOpenJoiningInstructions && (
-                          <button
-                            onClick={onOpenJoiningInstructions}
-                            className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold cursor-pointer"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>{language === 'sw' ? 'Pakua Fomu Sasa' : 'Download Form Now'}</span>
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {highlights.map((h, i) => (
+                              <div key={i} className="flex items-center gap-2 text-xs font-medium text-slate-800 bg-[#FFFFF0] p-2 rounded-lg border border-amber-200/60">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span>{h}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
-        {/* Liquid Help & Assistance Callout Panel */}
-        <div className="mt-12 liquid-panel p-6 sm:p-8 text-white relative shadow-2xl">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 text-left">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shadow-inner flex-shrink-0">
-                <MessageCircle className="w-7 h-7" />
-              </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-black text-white">
-                  {language === 'sw'
-                    ? 'Je, unalo swali ambalo halijajibiwa hapa?'
-                    : 'Do you have a question not answered here?'}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-xl">
-                  {language === 'sw'
-                    ? 'Wasiliana moja kwa moja na Ofisi ya Mkuu wa Shule au Idara ya Malipo (Bursar Desk). Tupo tayari kukuhudumia siku zote za kazi.'
-                    : 'Contact the Headmaster’s Office or Bursar Desk directly. Our administrative team is ready to assist you during all official working hours.'}
-                </p>
-              </div>
-            </div>
+        {/* Bottom Banner with Quick CTAs */}
+        <div className="max-w-4xl mx-auto p-6 rounded-2xl bg-[#102A43] text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-6 border border-[#C9A227]/30">
+          <div className="space-y-1 text-center sm:text-left">
+            <h4 className="text-base font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>{language === 'sw' ? 'Bado una swali ambalo halijajibiwa?' : 'Still have unanswered questions?'}</span>
+            </h4>
+            <p className="text-xs text-slate-300 max-w-md">
+              {language === 'sw'
+                ? 'Ofisi ya taaluma na ushauri wa wanafunzi ipo tayari kukusaidia. Pakua hati zote za kujiunga au wasiliana nasi moja kwa moja.'
+                : 'Our admissions desk and administration team are ready to assist. Download official documents or contact us directly.'}
+            </p>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
-              <a
-                href="tel:+255782558127"
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-2 px-4 py-2.5 text-xs font-black cursor-pointer"
+          <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
+            {onOpenAdmissionDocuments && (
+              <button
+                onClick={onOpenAdmissionDocuments}
+                className="liquid-btn liquid-btn-red px-4 py-2.5 text-white font-bold text-xs flex items-center gap-2 shadow-sm cursor-pointer"
               >
-                <Phone className="w-4 h-4" />
-                <span>+255 782 558 127</span>
-              </a>
+                <FileText className="w-3.5 h-3.5" />
+                <span>STUDENT ADMISSION</span>
+              </button>
+            )}
 
-              {onNavigate && (
-                <button
-                  onClick={() => onNavigate('contact')}
-                  className="liquid-btn liquid-btn-frosted inline-flex items-center gap-2 px-4 py-2.5 text-xs font-black cursor-pointer"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>{language === 'sw' ? 'Tuma Ujumbe' : 'Send Message'}</span>
-                </button>
-              )}
-            </div>
+            {onOpenContact && (
+              <button
+                onClick={onOpenContact}
+                className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>{language === 'sw' ? 'Wasiliana Nasi' : 'Contact Us'}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -1,7 +1,5 @@
 # Robots.txt for Uomboni Secondary School (NECTA S0486)
-# Official Website: https://www.uomboniss.sc.tz/
-# Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)
-# Location: Kijiji cha Uomboni, Marangu, Moshi Vijijini, Kilimanjaro, Tanzania
+# Canonical Website: https://www.uomboniss.sc.tz/
 
 User-agent: *
 Allow: /
@@ -9,32 +7,41 @@ Allow: /about
 Allow: /admissions
 Allow: /admission-documents
 Allow: /academics
-Allow: /results
-Allow: /campus-tour
-Allow: /fees
-Allow: /teachers
+Allow: /facilities
 Allow: /news
-Allow: /gallery
+Allow: /faq
 Allow: /contact
-Allow: /media/
-Allow: /images/
-Allow: /assets/
-Allow: /sitemap.xml
-Allow: /38b4d1c97a2e4f0bb68e3a291f0f4a7c.txt
+Allow: /location
+Allow: /results
+Allow: /offline.html
+Allow: /manifest.webmanifest
+Allow: /manifest.json
+Allow: /favicon.ico
+Allow: /favicon.svg
 
-# Strictly protect private internal administrative portals, login gateways, and system files
+# Allow all critical static assets for search engine rendering (Googlebot, Bingbot, etc.)
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.woff$
+Allow: /*.woff2$
+
+# Disallow private administrative, staff, student dashboards, and API endpoints
+Disallow: /api/
 Disallow: /admin
+Disallow: /staff
+Disallow: /teacher
+Disallow: /bursar
 Disallow: /portal
+Disallow: /student
 Disallow: /login
 Disallow: /signup
-Disallow: /verify-email
 Disallow: /forgot-password
-Disallow: /api/auth/
-Disallow: /api/blob/
-Disallow: /server/
+Disallow: /verify-email
 
-# Crawl Delay
-Crawl-delay: 1
-
-# Canonical XML Sitemap
+# Official XML Sitemap Location
 Sitemap: https://www.uomboniss.sc.tz/sitemap.xml

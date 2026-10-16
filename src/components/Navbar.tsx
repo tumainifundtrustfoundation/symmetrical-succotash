@@ -17,7 +17,9 @@ import {
   GraduationCap,
   ShieldCheck,
   Flame,
+  FileText,
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   activeSection?: string;
@@ -27,8 +29,8 @@ interface NavbarProps {
   onOpenAcademicPortal?: () => void;
   onOpenAdmin?: () => void;
   onOpenNews?: () => void;
-  onOpenAdmissionDocuments?: () => void;
   onOpenAdmissions?: () => void;
+  onOpenAdmissionDocuments?: () => void;
   onOpenJoiningInstructions?: () => void;
   onOpenVituMuhimu?: () => void;
   onOpenWelcome?: () => void;
@@ -43,8 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAcademicPortal,
   onOpenAdmin,
   onOpenNews,
-  onOpenAdmissionDocuments,
   onOpenAdmissions,
+  onOpenAdmissionDocuments,
   onOpenJoiningInstructions,
   onOpenVituMuhimu,
   onOpenWelcome,
@@ -90,17 +92,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navLinks = [
-    { id: 'home', label: language === 'sw' ? 'Mwanzo' : 'Home' },
-    { id: 'about', label: language === 'sw' ? 'Kuhusu' : 'About' },
-    { id: 'academics', label: language === 'sw' ? 'Taaluma' : 'Academics' },
-    { id: 'teachers', label: language === 'sw' ? 'Walimu' : 'Teachers' },
-    { id: 'videos', label: language === 'sw' ? '🎬 Video' : '🎬 Videos' },
-    { id: 'campus-tour', label: language === 'sw' ? '🏫 Majengo' : '🏫 Campus Tour' },
-    { id: 'gallery', label: language === 'sw' ? 'Picha' : 'Gallery' },
-    { id: 'faq', label: language === 'sw' ? 'Maswali (FAQ)' : 'FAQ' },
-    { id: 'news', label: language === 'sw' ? '🔥 Habari' : '🔥 News' },
-    { id: 'location', label: language === 'sw' ? '📍 Mahali' : '📍 Location' },
-    { id: 'contact', label: language === 'sw' ? 'Mawasiliano' : 'Contact' },
+    { id: 'home', label: 'Home' },
+    { id: 'about', label: 'About' },
+    { id: 'academics', label: 'Academics' },
+    { id: 'teachers', label: 'Teachers' },
+    { id: 'gallery', label: 'Gallery' },
+    { id: 'faq', label: 'FAQ' },
+    { id: 'news', label: '🔥 News' },
+    { id: 'contact', label: 'Contact' },
   ];
 
   return (
@@ -142,20 +141,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
-            {onOpenAdmin && (
+            {onOpenWelcome && (
               <button
-                id="topbar-admin-portal-btn"
-                onClick={onOpenAdmin}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 cursor-pointer"
-                title="Lango la Utawala & Udahili (Administration Portal)"
+                onClick={onOpenWelcome}
+                className="liquid-btn liquid-btn-frosted hidden lg:inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 cursor-pointer"
+                title="Welcome Screen (Animated Embossed Login)"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-950" />
-                  <span>🏛️ {language === 'sw' ? 'Utawala (Admin)' : 'Admin Portal'}</span>
-                </span>
+                <span className="relative z-10 flex items-center gap-1">✨ Welcome Screen</span>
               </button>
             )}
-            {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
+            {onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
                 className="liquid-btn liquid-btn-gold hidden sm:inline-flex items-center gap-1.5 text-[11px] font-black px-3.5 py-1 cursor-pointer"
@@ -167,6 +162,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
+            {onOpenAdmissionDocuments && (
+              <button
+                onClick={onOpenAdmissionDocuments}
+                id="topbar-student-admission-btn"
+                className="liquid-btn liquid-btn-red inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black text-white cursor-pointer shadow-md group"
+                title="Hati & Fomu Rasmi za Udahili (Student Admission)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-white" />
+                  <span className="tracking-wide">STUDENT ADMISSION</span>
+                </span>
+              </button>
+            )}
+            <PWAInstallButton variant="navbar" />
             <span className="text-[11px] font-semibold tracking-wider text-[#C9A227]">
               NECTA CENTRE S0486
             </span>
@@ -205,7 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Uomboni Secondary School
               </span>
               <span className="block text-[11px] text-slate-500 font-medium">
-                Tujiendeleze Sisi Wenyewe
+                Building Knowledge, Character &amp; Excellence
               </span>
             </div>
           </button>
@@ -232,12 +241,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {(onOpenAdmissionDocuments || onOpenAdmissions) && (
+            {onOpenNews && (
               <button
-                id="nav-admission-btn"
-                onClick={onOpenAdmissionDocuments || onOpenAdmissions}
-                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden shadow-lg hover:scale-[1.03] active:scale-[0.98]"
-                title="Student Admission Documents & Official Forms"
+                id="nav-news-hot-btn"
+                onClick={onOpenNews}
+                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden"
+                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
               >
                 {/* Glowing flame aura */}
                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-orange-400/40 to-red-600/30 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse pointer-events-none" />
@@ -250,18 +259,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
 
                   <span className="font-black tracking-wider uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
-                    STUDENT ADMISSION
+                    {language === 'sw' ? 'Habari' : 'News'}
+                  </span>
+
+                  <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black uppercase tracking-wider animate-pulse shadow-sm">
+                    🔥 HOT
                   </span>
                 </span>
               </button>
             )}
 
-            {/* Privileged Portals: strictly hidden until authenticated with verified role */}
-            {user && userProfile?.role === 'admin' && onOpenAdmin && (
+            {onOpenAdmissionDocuments && (
+              <button
+                id="nav-student-admission-btn"
+                onClick={onOpenAdmissionDocuments}
+                className="liquid-btn liquid-btn-red inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer shadow-md group"
+                title="Hati & Fomu Rasmi za Udahili (Student Admission)"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-white" />
+                  <span className="tracking-wide">STUDENT ADMISSION</span>
+                </span>
+              </button>
+            )}
+
+            {onOpenAdmin && (
               <button
                 id="nav-admin-portal-btn"
                 onClick={onOpenAdmin}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer shadow-xs"
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer"
                 title="Lango la Utawala & Udahili (Administration)"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
@@ -271,46 +297,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
-              <button
-                id="nav-academic-portal-btn"
-                onClick={onOpenAcademicPortal}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black cursor-pointer shadow-xs"
-                title="Lango la Taaluma na Mitihani (Academic Portal)"
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <GraduationCap className="w-3.5 h-3.5 text-amber-950" />
-                  <span>Portal ya Taaluma</span>
-                </span>
-              </button>
-            )}
+            <button
+              id="nav-parent-portal-btn"
+              onClick={onOpenParentPortal}
+              className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
+            >
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Parent Portal</span>
+              </span>
+            </button>
 
-            {user && (userProfile?.role === 'teacher' || userProfile?.role === 'staff' || userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenStaffPortal && (
-              <button
-                id="nav-staff-portal-btn"
-                onClick={onOpenStaffPortal}
-                className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer shadow-xs"
-                title="Lango la Watumishi na Walimu (Staff Portal)"
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>Staff Portal</span>
-                </span>
-              </button>
-            )}
-
-            {user && (userProfile?.role === 'parent' || userProfile?.role === 'admin') && onOpenParentPortal && (
-              <button
-                id="nav-parent-portal-btn"
-                onClick={onOpenParentPortal}
-                className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>Parent Portal</span>
-                </span>
-              </button>
-            )}
+            <button
+              id="nav-staff-portal-btn"
+              onClick={onOpenStaffPortal}
+              className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold cursor-pointer"
+            >
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Staff Portal</span>
+              </span>
+            </button>
 
             {user ? (
               <div className="flex items-center gap-2">
@@ -380,13 +387,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             <div className="pt-6 mt-4 border-t border-slate-200 flex flex-col gap-2.5">
-              {(onOpenAdmissionDocuments || onOpenAdmissions) && (
+              {onOpenNews && (
                 <button
-                  id="mobile-nav-admission-btn"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    if (onOpenAdmissionDocuments) onOpenAdmissionDocuments();
-                    else if (onOpenAdmissions) onOpenAdmissions();
+                    onOpenNews();
                   }}
                   className="fire-news-btn liquid-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer"
                 >
@@ -395,13 +400,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
                       <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
                     </span>
-                    <span className="drop-shadow-xs font-black uppercase tracking-wider">STUDENT ADMISSION</span>
+                    <span className="drop-shadow-xs">🔥 Habari Mpya &amp; Matangazo (Hot News)</span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black animate-pulse">
+                      HOT
+                    </span>
                   </span>
                 </button>
               )}
 
-              {/* Role-guarded mobile portal buttons: hidden until authenticated with verified role */}
-              {user && userProfile?.role === 'admin' && onOpenAdmin && (
+              {onOpenAdmissionDocuments && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAdmissionDocuments();
+                  }}
+                  id="mobile-student-admission-btn"
+                  className="liquid-btn liquid-btn-red w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black cursor-pointer shadow-md"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-white" />
+                    <span className="tracking-wide">STUDENT ADMISSION</span>
+                  </span>
+                </button>
+              )}
+
+              <PWAInstallButton variant="mobile" />
+
+              {onOpenAdmin && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -416,7 +441,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {user && (userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenAcademicPortal && (
+              {onOpenWelcome && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenWelcome();
+                  }}
+                  className="liquid-btn liquid-btn-frosted !text-stone-900 !bg-stone-100 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer border border-slate-300 shadow-xs"
+                >
+                  <span className="relative z-10">✨ Welcome Screen (Embossed Login)</span>
+                </button>
+              )}
+
+              {onOpenAcademicPortal && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -431,35 +468,31 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {user && (userProfile?.role === 'teacher' || userProfile?.role === 'staff' || userProfile?.role === 'academic_master' || userProfile?.role === 'admin') && onOpenStaffPortal && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenStaffPortal();
-                  }}
-                  className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#C9A227]" />
-                    <span>Staff Portal</span>
-                  </span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenParentPortal) onOpenParentPortal();
+                }}
+                className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#C9A227]" />
+                  <span>Parent Portal</span>
+                </span>
+              </button>
 
-              {user && (userProfile?.role === 'parent' || userProfile?.role === 'admin') && onOpenParentPortal && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenParentPortal();
-                  }}
-                  className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#C9A227]" />
-                    <span>Parent Portal</span>
-                  </span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenStaffPortal) onOpenStaffPortal();
+                }}
+                className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#C9A227]" />
+                  <span>Staff Portal</span>
+                </span>
+              </button>
 
               {user ? (
                 <button

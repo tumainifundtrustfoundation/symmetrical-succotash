@@ -6,9 +6,21 @@ import {
   Sparkles,
   BookOpen,
   Award,
+  Users,
   Compass,
   HeartHandshake,
-  GraduationCap
+  CheckCircle2,
+  MapPin,
+  Mail,
+  Phone,
+  Calendar,
+  Layers,
+  GraduationCap,
+  FlaskConical,
+  Trees,
+  Laptop,
+  Church,
+  Trophy
 } from 'lucide-react';
 
 interface AboutSectionProps {
@@ -19,6 +31,59 @@ interface AboutSectionProps {
 export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAdmissions }) => {
   const { language } = useLanguage();
   const { schoolProfile } = useData();
+
+  // 7 Core Features verbatim from the official School Flyer / Karatasi ya Udahili
+  const flyerFeatures = [
+    {
+      icon: Users,
+      titleSw: 'Experienced & Committed Teachers',
+      titleEn: 'Experienced & Committed Teachers',
+      descSw: 'Walimu wenye uzoefu mkubwa wa kitaaluma, waliojitolea na wanaoishi maadili ya malezi ya mwanafunzi.',
+      descEn: 'Highly qualified, dedicated educators providing rigorous syllabus coverage and individual academic guidance.',
+    },
+    {
+      icon: Trees,
+      titleSw: 'Conducive Learning Environment',
+      titleEn: 'Conducive Learning Environment',
+      descSw: 'Mazingira tulivu, hewa safi na uoto wa asili kwenye mteremko wa Mlima Kilimanjaro, Marangu West.',
+      descEn: 'Serene, distraction-free campus nestled on the cool slopes of Mount Kilimanjaro in Marangu.',
+    },
+    {
+      icon: FlaskConical,
+      titleSw: 'Modern Library & Science Labs',
+      titleEn: 'Modern Library & Science Labs',
+      descSw: 'Maabara tatu kamili za Fizikia, Kemia, Baiolojia na Maktaba kubwa ya kisasa yenye maelfu ya vitabu.',
+      descEn: 'Fully equipped Physics, Chemistry, Biology laboratories and extensive resource library.',
+    },
+    {
+      icon: Trophy,
+      titleSw: 'High Academic Excellence',
+      titleEn: 'High Academic Excellence',
+      descSw: 'Ufaulu wa juu endelevu katika mitihani ya NECTA na CSSC na idadi kubwa ya wanafunzi wa Daraja I na II.',
+      descEn: 'Consistent high pass-rate track record in National (NECTA) and Northern Zone Christian schools exams.',
+    },
+    {
+      icon: Church,
+      titleSw: 'Spiritual & Moral Guidance (Catholic Values)',
+      titleEn: 'Spiritual & Moral Guidance (Catholic Values)',
+      descSw: 'Malezi ya kiroho, Misa Takatifu na maadili thabiti chini ya Jimbo Katoliki la Moshi na Padri Mlezi.',
+      descEn: 'Holistic Catholic values, resident chaplaincy, spiritual retreats, and strong moral discipline.',
+    },
+    {
+      icon: Award,
+      titleSw: 'Sports & Extracurricular Activities',
+      titleEn: 'Sports & Extracurricular Activities',
+      descSw: 'Michezo ya mpira wa miguu, pete, wavu, kwaya, mijadala ya kiingereza na vilabu vya taaluma.',
+      descEn: 'Vibrant sports, liturgical choir, debate clubs, scouts, and student leadership development.',
+    },
+    {
+      icon: Laptop,
+      titleSw: 'Computer & ICT Studies',
+      titleEn: 'Computer & ICT Studies',
+      descSw: 'Maabara ya kisasa ya kompyuta yenye intaneti na mafunzo ya stadi za kidijitali na TEHAMA.',
+      descEn: 'Modern computer lab with educational software and internet equipping students with digital literacy.',
+    },
+  ];
 
   return (
     <section id="about" className="py-12 sm:py-16 bg-[#FFFFF0] border-b border-[#102A43]/10">
@@ -126,9 +191,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 </span>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <p className="font-serif text-2xl sm:text-3xl font-black text-amber-300 tracking-wide">
-                  “TUJIENDELEZE SISI WENYEWE”
+                  “ELIMU NI MAISHA”
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-white/95">
+                  “TUJENDELEE SISI WENYEWE”
                 </p>
                 <p className="text-xs text-amber-200/90 font-medium">
                   Misingi ya Nembo: <span className="font-black text-white">PRAYER · EDUCATION · WORK</span> (Sala, Elimu na Kazi)
@@ -137,8 +205,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
 
               <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed pt-1">
                 {language === 'sw'
-                  ? 'Kaulimbiu hii inayopatikana kwenye nembo na karatasi rasmi ya shule inasisitiza bidii, maombi (Prayer), elimu (Education), na kazi (Work) ili kujiendeleza wenyewe kwa mafanikio mema.'
-                  : 'Our institutional motto embodies persistent prayer, academic rigor, and diligent work to achieve true self-reliance and excellence.'}
+                  ? 'Kaulimbiu hii inayopatikana kwenye nembo na karatasi rasmi ya shule inasisitiza kwamba elimu ya kweli ni chachu ya maisha, ikishirikiana na maombi, heshima, na kazi ya bidii ili kujiendeleza wenyewe.'
+                  : 'Our institutional motto embodies education as the foundation of meaningful life, combining persistent prayer, academic rigor, and diligent work to achieve true self-reliance.'}
               </p>
             </div>
           </div>
@@ -237,10 +305,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                   {language === 'sw' ? 'Kaulimbiu ya Shule' : 'Motto'}
                 </h4>
                 <p className="mt-1 text-sm font-serif font-black text-[#102A43]">
-                  “TUJIENDELEZE SISI WENYEWE”
+                  “ELIMU NI MAISHA”
                 </p>
                 <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Misingi ya Nembo: Prayer · Education · Work (Sala, Elimu na Kazi).
+                  Tujendelee Sisi Wenyewe: Prayer · Education · Work.
                 </p>
               </div>
               <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded self-start border border-amber-200">
@@ -250,6 +318,44 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
           </div>
         </div>
 
+        {/* Hallmark Strengths (Compact 4-Card Highlights) */}
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#102A43]/15 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wider">
+                {language === 'sw' ? 'Sifa Kuu za Uomboni Secondary' : 'Key School Hallmark Features'}
+              </h4>
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium">
+              NECTA S0486 · Marangu West, Kilimanjaro
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {flyerFeatures.slice(0, 4).map((feat, idx) => {
+              const Icon = feat.icon;
+              return (
+                <div
+                  key={idx}
+                  className="p-3.5 rounded-xl bg-[#FFFFF0] border border-[#102A43]/10 space-y-1.5 flex flex-col justify-between"
+                >
+                  <div className="space-y-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-[#102A43] text-amber-300 flex items-center justify-center">
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <h5 className="text-xs font-bold text-[#102A43] leading-snug">
+                      {language === 'sw' ? feat.titleSw : feat.titleEn}
+                    </h5>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {language === 'sw' ? feat.descSw : feat.descEn}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Action Link Footer */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-[#102A43] text-white">
