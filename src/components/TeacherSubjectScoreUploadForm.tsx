@@ -125,7 +125,20 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
     return checkMarkEntryPermission(selectedForm, selectedExam);
   }, [checkMarkEntryPermission, selectedForm, selectedExam, academicDirectives]);
 
+  // Strict Subject Permission Enforcement (Prompt requirement: teacher cannot enter marks for unassigned subjects)
+  const isSubjectAssigned = useMemo(() => {
+    if (isAcademicMaster) return true;
+    if (!assignedSubjects || assignedSubjects.length === 0) return false;
+    return assignedSubjects.some(
+      (a) =>
+        a.toLowerCase() === selectedSubject.toLowerCase() ||
+        a.toLowerCase().includes(selectedSubject.toLowerCase()) ||
+        selectedSubject.toLowerCase().includes(a.toLowerCase())
+    );
+  }, [isAcademicMaster, assignedSubjects, selectedSubject]);
+
   const isEntryAllowed = isAcademicMaster || permission.isAllowed;
+  const canEditMarks = isEntryAllowed && isSubjectAssigned;
 
   // Filter students for current class & exam, incorporating all registered school students
   const currentClassStudents = useMemo(() => {

@@ -35,6 +35,13 @@ export const GoogleAccountSelectModal: React.FC<GoogleAccountSelectModalProps> =
   // Preset Google Accounts available to choose from
   const savedGoogleAccounts: GoogleAccountChoice[] = [
     {
+      email: 'yohanabahati665@gmail.com',
+      name: 'Mwl. Yohana Bahati (Academic Master & Admin)',
+      role: 'admin',
+      isOwner: true,
+      avatar: '/media/media_3.webp',
+    },
+    {
       email: 'tumainifundtrustfoundation@gmail.com',
       name: 'Tumaini Fund Trust Foundation (Owner)',
       role: 'admin',

@@ -31,6 +31,13 @@ export const AUTHORIZED_STAFF_DIRECTORY: Record<
     titleEn: 'Super Administrator',
     additionalRoles: ['academic_master', 'bursar', 'teacher'],
   },
+  'yohanabahati665@gmail.com': {
+    role: 'admin',
+    name: 'Mwl. Yohana Bahati',
+    titleSw: 'Mkuu wa Taaluma na Msimamizi wa Mfumo (Admin & Academic Master)',
+    titleEn: 'Academic Master & Administrator',
+    additionalRoles: ['academic_master', 'bursar', 'teacher'],
+  },
   'adolphmassawe@gmail.com': {
     role: 'admin',
     name: 'Br. Adolph Massawe',
@@ -148,6 +155,7 @@ export function checkStaffAuthorization(
     if (
       isFirestoreAdmin ||
       (directoryEntry && (directoryEntry.role === 'admin' || directoryEntry.additionalRoles?.includes('admin'))) ||
+      cleanEmail === 'yohanabahati665@gmail.com' ||
       cleanEmail === 'tumainifundtrustfoundation@gmail.com' ||
       cleanEmail === 'adolphmassawe@gmail.com' ||
       cleanEmail === 'headmaster@uombonisecondary.ac.tz'
@@ -181,6 +189,7 @@ export function checkStaffAuthorization(
         (directoryEntry.role === 'bursar' ||
           directoryEntry.role === 'admin' ||
           directoryEntry.additionalRoles?.includes('bursar'))) ||
+      cleanEmail === 'yohanabahati665@gmail.com' ||
       cleanEmail === 'sigminja@gmail.com' ||
       cleanEmail === 'bursar@uombonisecondary.ac.tz' ||
       cleanEmail === 'tumainifundtrustfoundation@gmail.com' ||
@@ -214,6 +223,7 @@ export function checkStaffAuthorization(
         (directoryEntry.role === 'academic_master' ||
           directoryEntry.role === 'admin' ||
           directoryEntry.additionalRoles?.includes('academic_master'))) ||
+      cleanEmail === 'yohanabahati665@gmail.com' ||
       cleanEmail === 'yohana.bahati@uombonisec.ac.tz' ||
       cleanEmail === 'adela.manyanga@uombonisec.ac.tz' ||
       cleanEmail === 'academic@uombonisecondary.ac.tz' ||

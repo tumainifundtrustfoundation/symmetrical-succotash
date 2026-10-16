@@ -31,6 +31,17 @@ export const TEACHER_AUTH_DIRECTORY: Record<string, TeacherAuthProfile> = {
     phone: '+255 745 548 225',
     imageUrl: '/media/media_3.webp',
   },
+  'tch-yohana-google': {
+    id: 'tch-yohana-google',
+    name: 'Mwl. Yohana Bahati',
+    email: 'yohanabahati665@gmail.com',
+    role: 'Mtaaluma Mkuu (Academic Master) & Msimamizi Mkuu',
+    department: 'Sayansi (Science) & Utawala',
+    assignedSubjects: ['Physics', 'Basic Mathematics', 'General Studies'],
+    defaultPin: '745225',
+    phone: '+255 745 548 225',
+    imageUrl: '/media/media_3.webp',
+  },
   'tch-005': {
     id: 'tch-005',
     name: 'Mwl. Endrew Benson',

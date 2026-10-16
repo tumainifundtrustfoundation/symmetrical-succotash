@@ -289,27 +289,34 @@ export async function syncUserProfile(
   const userRef = doc(db, 'users', user.uid);
   const now = new Date().toISOString();
 
+  const cleanEmail = (user.email || '').toLowerCase().trim();
+  const isMasterAdminEmail =
+    cleanEmail === 'yohanabahati665@gmail.com' ||
+    cleanEmail === 'tumainifundtrustfoundation@gmail.com' ||
+    cleanEmail === 'adolphmassawe@gmail.com' ||
+    cleanEmail === 'headmaster@uombonisecondary.ac.tz' ||
+    cleanEmail.includes('admin@uomboni');
+
   let existing = await getUserProfile(user.uid);
 
   if (existing) {
-    // Determine updated role: NEVER let user self-escalate to admin
-    const safeRole = customData.role && customData.role !== 'admin' ? customData.role : existing.role;
+    // Determine updated role: authorized admin emails are always guaranteed admin
+    let safeRole = customData.role && customData.role !== 'admin' ? customData.role : existing.role;
+    if (isMasterAdminEmail) {
+      safeRole = 'admin';
+    }
 
     const updatedData: Partial<UserProfile> = {
       fullName: customData.fullName || user.displayName || existing.fullName,
       email: user.email || existing.email,
       phone: customData.phone !== undefined ? customData.phone : (existing.phone || ''),
       photoURL: user.photoURL || existing.photoURL || null,
+      role: isMasterAdminEmail ? 'admin' : (existing.role === 'admin' ? 'admin' : safeRole),
       updatedAt: now,
       lastLogin: now,
       emailVerified: user.emailVerified,
       school: 'UOMBONI SECONDARY SCHOOL',
     };
-
-    // Only update role if explicitly allowed and not admin self-escalation
-    if (customData.role && existing.role !== 'admin') {
-      updatedData.role = safeRole;
-    }
 
     try {
       await updateDoc(userRef, updatedData as any);
@@ -331,8 +338,9 @@ export async function syncUserProfile(
   }
 
   // Create new profile
-  // Normal users cannot self-assign admin role on registration
-  const assignedRole: UserRole = (customData.role === 'admin' ? 'student' : customData.role) || 'student';
+  const assignedRole: UserRole = isMasterAdminEmail
+    ? 'admin'
+    : ((customData.role === 'admin' ? 'student' : customData.role) || 'student');
 
   const newProfile: UserProfile = {
     uid: user.uid,
