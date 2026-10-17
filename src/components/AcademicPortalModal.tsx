@@ -57,6 +57,8 @@ import { GoogleSignInButton } from './GoogleSignInButton';
 import { SchoolLogo } from './SchoolLogo';
 import { AcademicStudentRosterTab } from './academic/AcademicStudentRosterTab';
 import { AcademicDirectivesManagerTab } from './academic/AcademicDirectivesManagerTab';
+import { AcademicTeacherAccountsManagerTab } from './academic/AcademicTeacherAccountsManagerTab';
+import { AcademicExamSittingsTab } from './academic/AcademicExamSittingsTab';
 import { StudentResult, Teacher, StudentProfile, SubjectResult, ResultsPdfDocument } from '../types';
 import {
   downloadStudentResultSlipPdf,
@@ -208,7 +210,19 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   const [academicGoogleUser, setAcademicGoogleUser] = useState<any>(null);
   const [academicAuthError, setAcademicAuthError] = useState(false);
   const [academicEmailError, setAcademicEmailError] = useState('');
-  const [academicActiveTab, setAcademicActiveTab] = useState<'teachers_admin' | 'directives' | 'necta_sheet' | 'students_roster' | 'overview' | 'broadsheet' | 'manage' | 'pdfBooks' | 'recompute'>('teachers_admin');
+  const [academicActiveTab, setAcademicActiveTab] = useState<
+    | 'exam_sittings'
+    | 'teachers_admin'
+    | 'students_roster'
+    | 'marks_approval'
+    | 'directives'
+    | 'necta_sheet'
+    | 'overview'
+    | 'broadsheet'
+    | 'manage'
+    | 'pdfBooks'
+    | 'recompute'
+  >('exam_sittings');
   const [broadsheetForm, setBroadsheetForm] = useState<string>('Form 4');
   const [broadsheetExam, setBroadsheetExam] = useState<string>('NECTA Mock 2025');
   const [recomputeSuccess, setRecomputeSuccess] = useState(false);
@@ -1218,28 +1232,32 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Quick Select Student Chips */}
-                    {studentResults.length > 0 && (
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs">
-                        <span className="text-red-900 text-[11px] font-semibold shrink-0">
-                          {language === 'sw' ? 'Wanafunzi:' : 'Students:'}
+                    {/* Parent Child Status & Privacy Notice */}
+                    {selectedParentStudent ? (
+                      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-950 font-semibold shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                          <span>
+                            {language === 'sw' ? 'Mwanafunzi Wako Aliyethibitishwa:' : 'Your Enrolled Child:'}{' '}
+                            <strong className="text-emerald-950 font-black">{selectedParentStudent.studentName}</strong> ({selectedParentStudent.examNumber}) - {selectedParentStudent.form}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-emerald-800 italic">
+                          {language === 'sw' ? '🔒 Faragha Imelindwa (Majina ya wengine yamefichwa)' : '🔒 Privacy Protected'}
                         </span>
-                        {studentResults.slice(0, 5).map((stu) => (
-                          <button
-                            key={stu.id}
-                            onClick={() => setSelectedParentStudent(stu)}
-                            className={`px-2.5 py-1 rounded-lg border text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                              selectedParentStudent?.id === stu.id
-                                ? 'bg-red-700 text-[#FFFFF0] border-red-800 font-black shadow-xs'
-                                : 'bg-[#FAF7EE] text-red-950 border-red-200 hover:bg-red-50'
-                            }`}
-                          >
-                            {stu.studentName.split(' ')[0]} ({stu.form}) - {stu.division}
-                          </button>
-                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+                        <span>
+                          {language === 'sw'
+                            ? 'Weka namba ya mtihani au jina la mtoto wako hapo juu ili kuangalia ripoti yake ya maendeleo ya kitaaluma.'
+                            : 'Enter your child’s exam number or name above to open their personal academic report.'}
+                        </span>
                       </div>
                     )}
                   </div>
+
 
               {selectedParentStudent ? (
                 <div className="space-y-6">
@@ -2318,6 +2336,18 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* Academic Master Subtabs */}
                   <div className="flex items-center gap-2 border-b-2 border-red-200 pb-2 overflow-x-auto">
                     <button
+                      onClick={() => setAcademicActiveTab('exam_sittings')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                        academicActiveTab === 'exam_sittings'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
+                      }`}
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{language === 'sw' ? '🗓️ Kuandaa Aina za Mitihani (Sitting Types)' : '🗓️ Exam Sitting Types'}</span>
+                    </button>
+
+                    <button
                       onClick={() => setAcademicActiveTab('teachers_admin')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'teachers_admin'
@@ -2325,8 +2355,32 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
                       }`}
                     >
-                      <UserCheck className="w-3.5 h-3.5" />
-                      <span>{language === 'sw' ? '👨‍🏫 Usimamizi wa Walimu & Masomo' : 'Teacher Marks Admin'}</span>
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>{language === 'sw' ? '👨‍🏫 Walimu, Masomo & Paswodi' : 'Teachers, Subjects & PINs'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setAcademicActiveTab('students_roster')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                        academicActiveTab === 'students_roster'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{language === 'sw' ? `📋 Wanafunzi & Masomo Wasiofanya (${students.length})` : `📋 Students & Exemptions (${students.length})`}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setAcademicActiveTab('marks_approval')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                        academicActiveTab === 'marks_approval'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
+                      }`}
+                    >
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      <span>{language === 'sw' ? '✍️ Idhini ya Alama za Masomo' : 'Subject Marks Approval'}</span>
                     </button>
 
                     <button
@@ -2339,18 +2393,6 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     >
                       <Table className="w-3.5 h-3.5" />
                       <span>{language === 'sw' ? '🏛️ Matokeo Rasmi NECTA / CSSC & Uchapishaji' : 'Official NECTA Results Sheet'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => setAcademicActiveTab('students_roster')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                        academicActiveTab === 'students_roster'
-                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
-                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
-                      }`}
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span>{language === 'sw' ? `📋 Daftari la Wanafunzi (${students.length})` : `📋 Student Register (${students.length})`}</span>
                     </button>
 
                     <button
@@ -2402,8 +2444,18 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     </button>
                   </div>
 
-                  {/* TAB 0: TEACHER MARKS ADMIN & WORKFLOW (ACADEMIC MASTER AS ADMIN) */}
+                  {/* TAB 0: EXAMINATION SITTING TYPES (KUANDAA EXAMINATION SITTING TYPE) */}
+                  {academicActiveTab === 'exam_sittings' && (
+                    <AcademicExamSittingsTab language={language} />
+                  )}
+
+                  {/* TAB 1: TEACHER ACCOUNTS & PORTAL PASSWORD MANAGEMENT */}
                   {academicActiveTab === 'teachers_admin' && (
+                    <AcademicTeacherAccountsManagerTab language={language} />
+                  )}
+
+                  {/* TAB 2: MARKS APPROVAL & WORKFLOW */}
+                  {academicActiveTab === 'marks_approval' && (
                     <AcademicSubjectEntryModule
                       mode="academic_master"
                       currentTeacherName={academicEmailInput || 'Mwl. Yohana Bahati / Madam Adela Manyanga (Taaluma)'}
@@ -2413,7 +2465,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     />
                   )}
 
-                  {/* TAB 0B: NECTA / CSSC OFFICIAL BROADSHEET & PARENT ACCESS PUBLISHER */}
+                  {/* TAB 3: NECTA / CSSC OFFICIAL BROADSHEET & PARENT ACCESS PUBLISHER */}
                   {academicActiveTab === 'necta_sheet' && (
                     <NectaResultsOfficialView isAcademicMasterView={true} />
                   )}

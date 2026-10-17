@@ -443,6 +443,14 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Primary Action: Submit and Save to Cloud Firestore as 'pending' results
   const handleSubmitToFirestore = async () => {
+    if (!canEditMarks) {
+      alert(
+        language === 'sw'
+          ? `Huna ruhusa ya kuingiza au kubadilisha alama za somo hili (${selectedSubject}). Ni mwalimu mhusika (${assignedSubjects.join(', ')}) au Mkuu wa Taaluma pekee.`
+          : 'You are not authorized to submit marks for this subject.'
+      );
+      return;
+    }
     setIsSavingToFirestore(true);
 
     // Prepare list of scores to save
@@ -823,8 +831,12 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                   (a) => a.toLowerCase() === sub.name.toLowerCase()
                 );
                 return (
-                  <option key={sub.code} value={sub.name}>
-                    {sub.name} ({sub.code}) {isAssigned ? '★ Mwalimu Mhusika' : ''}
+                  <option
+                    key={sub.code}
+                    value={sub.name}
+                    disabled={!isAcademicMaster && !isAssigned}
+                  >
+                    {sub.name} ({sub.code}) {isAssigned ? '★ Somo Lako Pekee' : (!isAcademicMaster ? '🔒 Limezuiwa (Si Somo Lako)' : '')}
                   </option>
                 );
               })}
@@ -862,6 +874,40 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           </div>
         </div>
       </div>
+
+      {/* Strict Subject Access Restriction Banner (Prompt requirement: teacher cannot enter marks for unassigned subjects) */}
+      {!isSubjectAssigned && (
+        <div className="p-5 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 space-y-3 shadow-md">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-amber-200 text-amber-900 rounded-xl shrink-0">
+              <Lock className="w-5 h-5 text-amber-800" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-amber-900">
+                🔒 Ulinzi wa Mfumo: Huna Idhini ya Kuingiza Alama za Somo Hili ({selectedSubject})
+              </h4>
+              <p className="text-xs text-amber-900/80 mt-1 leading-relaxed">
+                Mwalimu {currentTeacherName}: Umeidhinishwa tu kuingiza na kuhariri alama kwa masomo uliyopangiwa rasmi na Mkuu wa Taaluma ({assignedSubjects.join(', ')}). Alama za masomo mengine haziwezi kuingizwa au kubadilishwa na mwalimu asiyehusika.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-amber-300">
+            {onOpenResultsPreview && (
+              <button
+                type="button"
+                onClick={onOpenResultsPreview}
+                className="px-4 py-2 rounded-xl bg-amber-900 hover:bg-amber-950 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+              >
+                <Eye className="w-4 h-4 text-amber-300" />
+                <span>Tazama Ubao wa Jumla wa Matokeo (Broadsheet) ↗</span>
+              </button>
+            )}
+            <span className="text-xs text-amber-800 italic">
+              (Unaweza kuona ubao wa jumla wa matokeo shuleni bila uwezo wa kubadilisha alama za walimu wengine)
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* 4. CLASS PERFORMANCE SUMMARY MINI CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

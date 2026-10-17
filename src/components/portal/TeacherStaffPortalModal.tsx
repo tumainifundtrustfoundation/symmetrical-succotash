@@ -31,6 +31,7 @@ import {
   Sparkles,
   Sliders,
   Check,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { StudentProfile } from '../../types';
 import { downloadClassBroadsheetPdf } from '../../utils/pdfService';
@@ -44,6 +45,7 @@ import {
   TeacherAuthProfile,
 } from '../../services/teacherAuthDirectory';
 import { TeacherSubjectScoreUploadForm } from '../TeacherSubjectScoreUploadForm';
+import { NoticeboardBroadsheetView } from '../results/NoticeboardBroadsheetView';
 
 interface TeacherStaffPortalModalProps {
   isOpen: boolean;
@@ -68,6 +70,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
 
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
+    | 'broadsheet'
     | 'records'
     | 'attendance'
     | 'results'
@@ -364,9 +367,10 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'broadsheet', label: 'Ubao wa Matokeo (Broadsheet)', icon: FileSpreadsheet },
+    { id: 'results', label: 'Kuingiza Alama (Somo Lako)', icon: Award },
     { id: 'records', label: 'Student Records', icon: Users },
     { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
-    { id: 'results', label: 'Academic Results', icon: Award },
     { id: 'timetable', label: 'Timetable', icon: Calendar },
     { id: 'classes', label: 'Classes', icon: Layers },
     { id: 'assignments', label: 'Assignments', icon: BookOpen },
@@ -1047,6 +1051,40 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* 3B. UBAO WA MATOKEO YA JUMLA (SCHOOL-WIDE BROADSHEET - READ ONLY FOR TEACHERS) */}
+            {activeTab === 'broadsheet' && (
+              <div className="space-y-6">
+                <div className="p-4 rounded-xl bg-amber-50/80 border-2 border-amber-300 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-serif text-base font-black text-[#704214] flex items-center gap-1.5">
+                        <FileSpreadsheet className="w-5 h-5 text-[#C9A227]" />
+                        Ubao wa Matokeo ya Jumla (School-Wide Broadsheet)
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-950 font-black text-[10px] uppercase tracking-wider border border-amber-400">
+                        👁️ Mwonekano wa Walimu Wote (Read-Only)
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-900 mt-1 max-w-3xl leading-relaxed">
+                      Walimu wote wanaruhusiwa kuona ubao mzima wa matokeo ya wanafunzi, alama za masomo yote, na madaraja ya NECTA. Hauruhusiwi kurekebisha au kuingiza alama za masomo ya walimu wengine hapa. Ili kuingiza alama kwa ajili ya somo lako (<strong>{currentTeacher.subjects.join(', ')}</strong>), tumia kichupo cha <em>Kuingiza Alama</em>.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('results')}
+                    className="px-4 py-2 bg-[#704214] hover:bg-[#58330F] text-[#FFFFF0] text-xs font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
+                  >
+                    <Award className="w-4 h-4 text-[#C9A227]" />
+                    <span>Ingiza Alama za {currentTeacher.subjects.join(', ')} &rarr;</span>
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-xl border border-[#704214]/20 p-2 sm:p-4 shadow-xs overflow-hidden">
+                  <NoticeboardBroadsheetView isParentView={false} />
                 </div>
               </div>
             )}

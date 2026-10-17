@@ -12,6 +12,7 @@ import {
   AlertCircle,
   HelpCircle,
   RefreshCw,
+  ShieldCheck,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,6 +38,7 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
   const { language } = useLanguage();
   const {
     studentResults,
+    currentLoggedInStudent,
     isResultsPublishedToParents,
     publishResultsToParents,
     recomputeNectaDivisions,
@@ -69,18 +71,28 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
     });
   }, [studentResults, selectedForm, selectedExam]);
 
-  // Clean matched child query
+  // Clean matched child query, prioritizing search input or logged-in student
   const matchedChildResult = useMemo(() => {
     const q = parentChildQuery.trim().toLowerCase();
-    if (!q) return null;
-    return currentResults.find(
-      (r) =>
-        r.examNumber.toLowerCase().includes(q) ||
-        formatCno(r.examNumber).toLowerCase().includes(q) ||
-        r.studentName.toLowerCase().includes(q) ||
-        r.id.toLowerCase() === q
-    ) || null;
-  }, [parentChildQuery, currentResults]);
+    if (q) {
+      return currentResults.find(
+        (r) =>
+          r.examNumber.toLowerCase().includes(q) ||
+          formatCno(r.examNumber).toLowerCase().includes(q) ||
+          r.studentName.toLowerCase().includes(q) ||
+          r.id.toLowerCase() === q
+      ) || null;
+    }
+    if (currentLoggedInStudent) {
+      return currentResults.find(
+        (r) =>
+          (currentLoggedInStudent.examNumber && r.examNumber.toLowerCase() === currentLoggedInStudent.examNumber.toLowerCase()) ||
+          r.studentName.toLowerCase() === currentLoggedInStudent.fullName.toLowerCase() ||
+          r.id === currentLoggedInStudent.id
+      ) || null;
+    }
+    return null;
+  }, [parentChildQuery, currentLoggedInStudent, currentResults]);
 
   // Division summary computed in NECTA / CSSC exact format
   const divisionSummary = useMemo(() => {
@@ -452,6 +464,23 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
             </span>
           </div>
 
+          {/* Strict Parent Privacy Notice */}
+          {!isAcademicMasterView && (
+            <div className="p-3 bg-amber-50/90 border-2 border-amber-300 rounded-xl flex items-start gap-3 text-xs text-amber-950 shadow-xs">
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block font-bold text-amber-900">
+                  {language === 'sw' ? 'Kanuni ya Faragha ya Wazazi & Wanafunzi (Student Privacy Protection):' : 'Parent & Student Privacy Policy:'}
+                </strong>
+                <p className="text-[11px] text-amber-900/90 mt-0.5 leading-relaxed">
+                  {language === 'sw'
+                    ? 'Kwa mujibu wa mfumo wa shule, mzazi ana ruhusa ya kuona jina na taarifa za mtoto wake pekee (anayeangaziwa kwa rangi ya dhahabu ★). Majina ya wanafunzi wengine yamefichwa kulinda faragha ya familia zao.'
+                    : 'According to privacy compliance, parents are authorized to view their own enrolled child’s name and marks (highlighted with ★). Other candidates’ names are masked to safeguard student privacy.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto border border-slate-400 rounded-lg">
             <table className="w-full border-collapse text-left text-xs font-mono">
               <thead>
@@ -472,8 +501,10 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                       (matchedChildResult.id === st.id ||
                         formatCno(matchedChildResult.examNumber) === cnoFormatted);
 
-                    // Names are always visible across all portal views
-                    const showNameInThisRow = true;
+                    // Parent Privacy Rule:
+                    // Academic Master can see all names.
+                    // Parents ONLY see their own child's name; other student names are masked!
+                    const canSeeStudentName = isAcademicMasterView ? showAllNamesAdminToggle : isMyChild;
 
                     // Compute clean aggregate
                     const divUpper = (st.division || '').toUpperCase();
@@ -513,9 +544,15 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                           <div className="font-mono font-bold text-slate-900">{cnoFormatted}</div>
                           <div className="mt-0.5 font-sans font-bold text-xs flex flex-wrap items-center gap-1.5">
                             {isMyChild && <span className="text-amber-600 font-black">★</span>}
-                            <span className={isMyChild ? 'text-emerald-950 font-black' : 'text-slate-900 font-semibold'}>
-                              {st.studentName}
-                            </span>
+                            {canSeeStudentName ? (
+                              <span className={isMyChild ? 'text-emerald-950 font-black' : 'text-slate-900 font-semibold'}>
+                                {st.studentName}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px] italic tracking-tight">
+                                [Jina Limefichwa - Faragha ya Mzazi]
+                              </span>
+                            )}
                             {isMyChild && (
                               <span className="px-1.5 py-0.2 rounded-md bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
                                 {language === 'sw' ? 'Mtoto Wako' : 'Your Child'}

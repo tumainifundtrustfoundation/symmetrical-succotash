@@ -30,10 +30,14 @@ import { exportResultsToExcel } from '../../utils/excelService';
 
 interface NoticeboardBroadsheetViewProps {
   onSelectStudent?: (student: StudentResult) => void;
+  isParentView?: boolean;
+  parentChildExamNumber?: string;
 }
 
 export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps> = ({
   onSelectStudent,
+  isParentView = false,
+  parentChildExamNumber = '',
 }) => {
   const { language } = useLanguage();
   const [selectedExamType, setSelectedExamType] = useState<'cssc_f4_2026' | 'cssc_f2_2026' | 'annual_f4_2025'>('cssc_f4_2026');
@@ -524,13 +528,42 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
                         {st.classPosition}
                       </td>
                       <td className="py-2 px-3 font-bold text-slate-900">
-                        <button
-                          type="button"
-                          onClick={() => onSelectStudent && onSelectStudent(st)}
-                          className="hover:text-blue-700 hover:underline text-left cursor-pointer"
-                        >
-                          {st.studentName}
-                        </button>
+                        {(() => {
+                          const isMyChild =
+                            isParentView &&
+                            Boolean(parentChildExamNumber.trim()) &&
+                            (st.examNumber.toLowerCase().includes(parentChildExamNumber.trim().toLowerCase()) ||
+                              st.studentName.toLowerCase().includes(parentChildExamNumber.trim().toLowerCase()));
+                          const canShowName = !isParentView || isMyChild;
+
+                          if (canShowName) {
+                            return (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {isMyChild && <span className="text-amber-600 font-black">★</span>}
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectStudent && onSelectStudent(st)}
+                                  className={`hover:text-blue-700 hover:underline text-left cursor-pointer ${
+                                    isMyChild ? 'text-amber-950 font-black' : ''
+                                  }`}
+                                >
+                                  {st.studentName}
+                                </button>
+                                {isMyChild && (
+                                  <span className="px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 text-[9px] font-black uppercase">
+                                    {language === 'sw' ? 'Mtoto Wako' : 'Your Child'}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="text-slate-400 font-mono text-[11px] italic">
+                              [Jina Limefichwa - Faragha ya Mzazi]
+                            </div>
+                          );
+                        })()}
                         <div className="text-[9px] text-slate-400 font-mono">{st.examNumber}</div>
                       </td>
                       <td className="py-2 px-1 text-center font-semibold text-slate-600">{st.gender}</td>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../context/DataContext';
 import {
@@ -79,6 +79,11 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
   const [searchStudentInput, setSearchStudentInput] = useState('');
   const [selectedResultForPdf, setSelectedResultForPdf] = useState<StudentResult | null>(null);
 
+  // Child Lookup & Link State
+  const [childLookupInput, setChildLookupInput] = useState('');
+  const [childLookupError, setChildLookupError] = useState('');
+  const [childLookupSuccess, setChildLookupSuccess] = useState('');
+
   // Message Form State
   const [msgTarget, setMsgTarget] = useState<'Headmaster' | 'Academic Master' | 'Second Master' | 'Class Teacher' | 'Bursar'>('Class Teacher');
   const [msgSubject, setMsgSubject] = useState('');
@@ -121,6 +126,42 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
   const totalFees = activeStudent.feeTotal || 1500000;
   const paidFees = activeStudent.feePaid || 1200000;
   const balanceFees = Math.max(0, totalFees - paidFees);
+
+  // Strict Parent Privacy: Only students associated with this parent are listed
+  const parentLinkedStudents = useMemo(() => {
+    if (currentLoggedInStudent) {
+      if (currentLoggedInStudent.parentPhone) {
+        const siblings = students.filter(
+          (s) => s.parentPhone === currentLoggedInStudent.parentPhone
+        );
+        if (siblings.length > 0) return siblings;
+      }
+      return [currentLoggedInStudent];
+    }
+    return [activeStudent];
+  }, [currentLoggedInStudent, activeStudent, students]);
+
+  const handleLookupChild = (e: React.FormEvent) => {
+    e.preventDefault();
+    setChildLookupError('');
+    setChildLookupSuccess('');
+    const q = childLookupInput.trim().toLowerCase();
+    if (!q) return;
+    const found = students.find(
+      (s) =>
+        s.examNumber.toLowerCase() === q ||
+        s.studentId.toLowerCase() === q ||
+        s.fullName.toLowerCase().includes(q)
+    );
+    if (found) {
+      setSelectedChildId(found.studentId || found.id);
+      loginStudent(found.studentId || found.examNumber || found.fullName);
+      setChildLookupSuccess(`Mwanafunzi ${found.fullName} (${found.form}) ameunganishwa kikamilifu!`);
+      setChildLookupInput('');
+    } else {
+      setChildLookupError('Mwanafunzi hakupatikana kwa kitambulisho hicho. Tafadhali thibitisha namba ya mtihani au namba ya usajili.');
+    }
+  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -376,21 +417,28 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
             {/* 2. MY CHILD / CHILDREN */}
             {activeTab === 'children' && (
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-[#704214]">Wanafunzi Wangu (My Children)</h3>
-                  <p className="text-xs text-[#704214]/70 mt-1">
-                    Chagua mwanafunzi unayetaka kuangalia maendeleo yake ya kitaaluma, mahudhurio, na ada.
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#704214]">Wanafunzi Wangu (My Enrolled Children)</h3>
+                    <p className="text-xs text-[#704214]/70 mt-1">
+                      Mwanafunzi wako aliyesajiliwa katika mfumo wa shule. Chagua kuangalia maendeleo ya kitaaluma, ada na mahudhurio.
+                    </p>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                    <span>Faragha ya Mzazi: Majina ya Wengine Yamefichwa</span>
+                  </div>
                 </div>
 
+                {/* Enrolled Children Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {students.slice(0, 6).map((student) => {
+                  {parentLinkedStudents.map((student) => {
                     const isSelected = student.studentId === activeStudent.studentId || student.id === activeStudent.id;
                     return (
                       <div
                         key={student.id}
                         onClick={() => setSelectedChildId(student.studentId || student.id)}
-                        className={`p-5 rounded-lg border transition-all cursor-pointer ${
+                        className={`p-5 rounded-xl border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-white border-2 border-[#704214] shadow-md ring-2 ring-[#704214]/20'
                             : 'bg-white border-[#704214]/20 hover:border-[#704214] shadow-xs'
@@ -401,16 +449,16 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A227]">
                               {student.studentType || 'Mwanafunzi wa Bweni'}
                             </span>
-                            <h4 className="text-base font-bold text-[#704214] mt-0.5">
+                            <h4 className="text-base font-black text-[#704214] mt-0.5">
                               {student.fullName}
                             </h4>
-                            <p className="text-xs text-[#704214]/80 mt-1">
+                            <p className="text-xs text-[#704214]/80 mt-1 font-mono">
                               ID: {student.studentId} · Mtihani: {student.examNumber}
                             </p>
                           </div>
                           {isSelected && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#704214] text-white">
-                              Selected
+                            <span className="px-2.5 py-1 rounded text-[10px] font-black bg-[#704214] text-white shadow-xs">
+                              Mtoto Wako
                             </span>
                           )}
                         </div>
@@ -422,6 +470,44 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Child Lookup / Switch Form */}
+                <div className="p-5 rounded-2xl bg-[#FFFDF8] border-2 border-[#704214]/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Search className="w-4 h-4 text-[#704214]" />
+                    <h4 className="text-sm font-bold text-[#704214]">
+                      Unganisha Mtoto Mwingine wa Familia (Link Another Sibling)
+                    </h4>
+                  </div>
+                  <p className="text-xs text-[#704214]/70">
+                    Kama una mtoto mwingine anayesoma Sekondari ya Uomboni, weka Namba yake ya Mtihani (Mfano: S0486/0002/2026) au Namba ya Usajili:
+                  </p>
+                  <form onSubmit={handleLookupChild} className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={childLookupInput}
+                      onChange={(e) => setChildLookupInput(e.target.value)}
+                      placeholder="Namba ya Mtihani au Namba ya Usajili..."
+                      className="flex-1 px-4 py-2 border-2 border-[#704214]/30 rounded-xl bg-white text-xs font-bold text-[#704214] placeholder-stone-400 focus:outline-none focus:border-[#704214]"
+                    />
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-[#704214] hover:bg-[#58330F] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
+                    >
+                      Unganisha Mtoto
+                    </button>
+                  </form>
+                  {childLookupSuccess && (
+                    <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold">
+                      {childLookupSuccess}
+                    </div>
+                  )}
+                  {childLookupError && (
+                    <div className="p-2.5 rounded-lg bg-red-100 border border-red-300 text-red-900 text-xs font-bold">
+                      {childLookupError}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

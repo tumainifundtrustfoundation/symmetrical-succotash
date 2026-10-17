@@ -256,7 +256,7 @@ function MainSchoolApp() {
           UOMBONI SECONDARY SCHOOL
         </h2>
         <p className="text-xs text-[#C9A227] mt-1 font-medium">
-          Building Knowledge, Character &amp; Excellence · NECTA S0486
+          Tujiendeleze Sisi Wenyewe · NECTA S0486
         </p>
         <div className="mt-6 flex items-center gap-2 text-xs text-[#FFFFF0]/80">
           <Loader2 className="w-4 h-4 animate-spin text-[#C9A227]" />

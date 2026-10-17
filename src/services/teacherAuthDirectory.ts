@@ -500,3 +500,11 @@ export function normalizeTeacherAssignedSubjects(rawSubjects: string[]): string[
 
   return result.length > 0 ? result : ['Chemistry'];
 }
+
+/**
+ * Resets a teacher's portal PIN / password (called by Academic Master)
+ */
+export function adminResetTeacherPin(teacherId: string, newPin: string): boolean {
+  if (!newPin || newPin.length < 4) return false;
+  return setCustomTeacherPin(teacherId, newPin);
+}

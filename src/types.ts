@@ -98,6 +98,27 @@ export interface ExamTypeConfig {
   isCurrentForEntry?: boolean;
 }
 
+export interface ExamSittingType {
+  id: string;
+  name: string;
+  code: string;
+  sittingMode: string;
+  sittingModeSw: string;
+  academicYear: string;
+  term: string;
+  targetForms: string[];
+  weightPercentage: number;
+  startDate: string;
+  endDate: string;
+  markEntryDeadline: string;
+  status: 'Open for Marks' | 'Entry Locked' | 'Completed / Published' | string;
+  isEntryOpen: boolean;
+  instructionsSw?: string;
+  active?: boolean;
+  dateCreated?: string;
+  createdAt?: string;
+}
+
 export interface NewsItem {
   id: string;
   titleSw: string;
@@ -156,6 +177,9 @@ export interface Teacher {
   email: string;
   phone: string;
   experienceYears?: number;
+  defaultPin?: string;
+  portalPin?: string;
+  assignedClasses?: string[];
 }
 
 export interface BankAccount {
@@ -333,6 +357,9 @@ export interface StudentProfile {
   feePaid?: number;
   avatarUrl?: string;
   photoUrl?: string;
+  registeredSubjects?: string[];
+  exemptSubjects?: string[];
+  subjectExemptionReasons?: Record<string, string>;
 }
 
 export interface SchoolAsset {

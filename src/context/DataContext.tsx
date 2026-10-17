@@ -26,6 +26,7 @@ import {
   SchoolProfile,
   AcademicDirective,
   ExamTypeConfig,
+  ExamSittingType,
 } from '../types';
 import {
   saveAcademicDirectiveToFirestore,
@@ -35,10 +36,11 @@ import {
   deleteExamTypeFromFirestore,
   getExamTypesFromFirestore,
 } from '../services/academicFirestoreService';
-import { isTeacherAuthorizedForSubject } from '../services/teacherAuthDirectory';
+import { isTeacherAuthorizedForSubject, setCustomTeacherPin } from '../services/teacherAuthDirectory';
 import {
   INITIAL_STUDENT_RESULTS,
   INITIAL_EXAM_TYPES,
+  INITIAL_EXAM_SITTING_TYPES,
   SAMPLE_MOCK_STUDENT_RESULTS,
   INITIAL_NEWS,
   INITIAL_EVENTS,
@@ -144,11 +146,26 @@ interface DataContextType {
   deleteExamType: (id: string) => void;
   toggleExamTypeEntryStatus: (id: string, isOpen: boolean) => void;
 
+  // Examination Sitting Types Management (Kuandaa Examination Sitting Types)
+  examSittingTypes: ExamSittingType[];
+  addExamSittingType: (sitting: Omit<ExamSittingType, 'id'>) => ExamSittingType;
+  updateExamSittingType: (id: string, updates: Partial<ExamSittingType>) => void;
+  deleteExamSittingType: (id: string) => void;
+  toggleExamSittingActive: (id: string) => void;
+
   // Students Directory & Profiles Management
   students: StudentProfile[];
   addStudent: (student: StudentProfile) => void;
   updateStudent: (student: StudentProfile) => void;
   deleteStudent: (id: string) => void;
+  updateStudentSubjectEnrollment: (
+    studentId: string,
+    registeredSubjects: string[],
+    exemptSubjects: string[],
+    exemptionReasons?: Record<string, string>
+  ) => void;
+  bulkExemptStudentsFromSubject: (subjectCode: string, studentIds: string[], reason: string) => void;
+  bulkEnrollStudentsInSubject: (subjectCode: string, studentIds: string[]) => void;
 
   // Student Auth & Session
   currentLoggedInStudent: StudentProfile | null;
@@ -201,6 +218,7 @@ interface DataContextType {
   addTeacher: (item: Teacher) => void;
   updateTeacher: (item: Teacher) => void;
   deleteTeacher: (id: string) => void;
+  updateTeacherSubjectsAndPin: (teacherId: string, subjects: string[], newPin?: string) => void;
 
   // Student Council (Serikali ya Wanafunzi)
   studentCouncil: StudentCouncilMember[];
@@ -540,6 +558,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       .catch((err) => console.warn('Could not load exam types from Firestore on mount:', err));
   }, []);
+
+  // Exam Sitting Types (Kuandaa Examination Sitting Types) state for Academic Master
+  const [examSittingTypes, setExamSittingTypes] = useState<ExamSittingType[]>(() => {
+    const loaded = safeGetStorage<ExamSittingType[]>('uomboni_exam_sitting_types', INITIAL_EXAM_SITTING_TYPES);
+    return Array.isArray(loaded) && loaded.length > 0 ? loaded : INITIAL_EXAM_SITTING_TYPES;
+  });
 
   const [isOffline, setIsOffline] = useState<boolean>(() => {
     return typeof navigator !== 'undefined' ? !navigator.onLine : false;
@@ -1853,6 +1877,49 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  // Examination Sitting Types Management (Kuandaa Examination Sitting Types)
+  const addExamSittingType = (data: Omit<ExamSittingType, 'id'>): ExamSittingType => {
+    const newSitting: ExamSittingType = {
+      ...data,
+      id: `sit-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`,
+      dateCreated: data.dateCreated || new Date().toISOString().split('T')[0],
+      status: data.status || 'Open for Marks',
+      isEntryOpen: typeof data.isEntryOpen === 'boolean' ? data.isEntryOpen : true,
+    };
+
+    setExamSittingTypes((prev) => {
+      const next = [newSitting, ...prev];
+      safeSetStorage('uomboni_exam_sitting_types', next);
+      return next;
+    });
+
+    return newSitting;
+  };
+
+  const updateExamSittingType = (id: string, updates: Partial<ExamSittingType>) => {
+    setExamSittingTypes((prev) => {
+      const next = prev.map((s) => (s.id === id ? { ...s, ...updates } : s));
+      safeSetStorage('uomboni_exam_sitting_types', next);
+      return next;
+    });
+  };
+
+  const deleteExamSittingType = (id: string) => {
+    setExamSittingTypes((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      safeSetStorage('uomboni_exam_sitting_types', next);
+      return next;
+    });
+  };
+
+  const toggleExamSittingActive = (id: string) => {
+    setExamSittingTypes((prev) => {
+      const next = prev.map((s) => (s.id === id ? { ...s, active: !s.active } : s));
+      safeSetStorage('uomboni_exam_sitting_types', next);
+      return next;
+    });
+  };
+
   const syncResultsToOfflineStorage = async (): Promise<{ success: boolean; count: number }> => {
     const res = await cacheStudentResultsOffline(studentResults);
     if (res.success) {
@@ -1936,6 +2003,77 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentLoggedInStudent(null);
       sessionStorage.removeItem('uomboni_active_student');
     }
+  };
+
+  const updateStudentSubjectEnrollment = (
+    studentId: string,
+    registeredSubjects: string[],
+    exemptSubjects: string[],
+    exemptionReasons?: Record<string, string>
+  ) => {
+    setStudents((prev) => {
+      const updated = prev.map((s) => {
+        if (s.id === studentId || s.studentId === studentId) {
+          return {
+            ...s,
+            registeredSubjects,
+            exemptSubjects,
+            subjectExemptionReasons: exemptionReasons || s.subjectExemptionReasons,
+          };
+        }
+        return s;
+      });
+      safeSetStorage('uomboni_students', updated);
+      pushEntityToServer('students', updated);
+      return updated;
+    });
+  };
+
+  const bulkExemptStudentsFromSubject = (subjectCode: string, studentIds: string[], reason: string) => {
+    setStudents((prev) => {
+      const targetIds = new Set(studentIds);
+      const updated = prev.map((s) => {
+        if (!targetIds.has(s.id) && !targetIds.has(s.studentId)) return s;
+        const currentExempt = s.exemptSubjects || [];
+        const newExempt = currentExempt.includes(subjectCode) ? currentExempt : [...currentExempt, subjectCode];
+        const newReasons = { ...(s.subjectExemptionReasons || {}), [subjectCode]: reason };
+        const currentReg = s.registeredSubjects || [];
+        const newReg = currentReg.filter((c) => c !== subjectCode);
+        return {
+          ...s,
+          exemptSubjects: newExempt,
+          registeredSubjects: newReg,
+          subjectExemptionReasons: newReasons,
+        };
+      });
+      safeSetStorage('uomboni_students', updated);
+      pushEntityToServer('students', updated);
+      return updated;
+    });
+  };
+
+  const bulkEnrollStudentsInSubject = (subjectCode: string, studentIds: string[]) => {
+    setStudents((prev) => {
+      const targetIds = new Set(studentIds);
+      const updated = prev.map((s) => {
+        if (!targetIds.has(s.id) && !targetIds.has(s.studentId)) return s;
+        const currentExempt = s.exemptSubjects || [];
+        const newExempt = currentExempt.filter((c) => c !== subjectCode);
+        const currentReg = s.registeredSubjects || [];
+        const newReg = currentReg.includes(subjectCode) ? currentReg : [...currentReg, subjectCode];
+        const newReasons = { ...(s.subjectExemptionReasons || {}) };
+        delete newReasons[subjectCode];
+        return {
+          ...s,
+          exemptSubjects: newExempt,
+          registeredSubjects: newReg,
+          subjectExemptionReasons: newReasons,
+        };
+      });
+      safeSetStorage('uomboni_students', updated);
+      pushEntityToServer('students', updated);
+      return updated;
+    });
   };
 
   // Student / Parent Auth
@@ -2297,6 +2435,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       pushEntityToServer('teachers', updated);
       return updated;
     });
+  };
+
+  const updateTeacherSubjectsAndPin = (teacherId: string, subjects: string[], newPin?: string) => {
+    setTeachers((prev) => {
+      const updated = prev.map((t) => {
+        if (t.id === teacherId) {
+          return {
+            ...t,
+            subjects,
+            ...(newPin ? { portalPin: newPin, defaultPin: newPin } : {}),
+          };
+        }
+        return t;
+      });
+      safeSetStorage('uomboni_teachers', updated);
+      pushEntityToServer('teachers', updated);
+      return updated;
+    });
+
+    if (newPin) {
+      setCustomTeacherPin(teacherId, newPin);
+    }
   };
 
   const submitPaymentRecord = (record: Omit<FeePaymentRecord, 'id' | 'status' | 'receiptNumber'>) => {
@@ -2987,10 +3147,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateExamType,
         deleteExamType,
         toggleExamTypeEntryStatus,
+        examSittingTypes,
+        addExamSittingType,
+        updateExamSittingType,
+        deleteExamSittingType,
+        toggleExamSittingActive,
         students,
         addStudent,
         updateStudent,
         deleteStudent,
+        updateStudentSubjectEnrollment,
+        bulkExemptStudentsFromSubject,
+        bulkEnrollStudentsInSubject,
         currentLoggedInStudent,
         loginStudent,
         logoutStudent,
@@ -3027,6 +3195,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addTeacher,
         updateTeacher,
         deleteTeacher,
+        updateTeacherSubjectsAndPin,
         studentCouncil,
         addStudentCouncilMember,
         updateStudentCouncilMember,
